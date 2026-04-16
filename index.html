@@ -342,9 +342,6 @@ header {
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
-<!-- Google APIs -->
-<script src="https://apis.google.com/js/api.js"></script>
-<script src="https://accounts.google.com/gsi/client"></script>
 <script>
 /* ══════════════════════════════════════════════════════
    CONFIG — edit these if credentials change
@@ -487,8 +484,9 @@ const Drive = {
 ══════════════════════════════════════════════════════ */
 function initGapi() {
   gapi.load('client', async () => {
-    await gapi.client.init({});
-    await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
+    await gapi.client.init({
+      discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+    });
     S.gapiReady = true;
     checkBothReady();
   });
@@ -918,18 +916,12 @@ document.addEventListener('keydown', e => {
 window.onload = () => {
   showLoading('Starting up…');
   buildNamePicker();
-  // GAPI loads via callback in the script tag below
-  // GIS loads async and calls initGis when ready
-  if (window.google?.accounts) initGis();
 };
-
-// GIS callback
-window.initGis = initGis;
 </script>
 
-<!-- GIS calls window.initGis when ready -->
-<script src="https://accounts.google.com/gsi/client" async defer onload="if(window.initGis)window.initGis()"></script>
+<!-- Load Google libraries ONCE, each with its own init callback -->
 <script src="https://apis.google.com/js/api.js" onload="initGapi()"></script>
+<script src="https://accounts.google.com/gsi/client" async defer onload="initGis()"></script>
 
 </body>
 </html>
