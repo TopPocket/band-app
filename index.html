@@ -325,6 +325,18 @@ header {
 }
 .tp-song-nav-btn:hover:not(:disabled) { border-color: var(--c-teal-pale); color: var(--c-text); }
 .tp-song-nav-btn:disabled { opacity: 0.2; cursor: default; }
+/* swipe ghost */
+.tp-swipe-ghost {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  pointer-events: none; z-index: 10;
+  font-family: var(--f-display); font-size: 16px;
+  color: var(--c-teal-pale); background: var(--c-surface);
+  padding: 10px 16px; border-radius: 8px; border: 1px solid var(--c-border);
+  max-width: 55vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  opacity: 0;
+}
+.tp-swipe-ghost.ghost-prev { left: 10px; }
+.tp-swipe-ghost.ghost-next { right: 10px; }
 /* comment creation panel */
 .comment-panel {
   position: fixed; inset: 0; z-index: 250;
@@ -379,6 +391,82 @@ header {
   .tp-body[data-expand] .tp-lyrics,
   .tp-body[data-expand] .tp-versions { flex-basis: unset; flex: unset; }
 }
+
+/* ══ SESSION PLAYER PANEL ══ */
+.sess-player { flex-shrink:0; border-top:1px solid var(--c-border); background:var(--c-surface); display:none; flex-direction:column; max-height:60vh; overflow-y:auto; }
+.sess-player.visible { display:flex; }
+.sess-player-info { padding:7px 14px 0; display:flex; align-items:center; gap:8px; }
+.sess-player-title { flex:1; font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sess-waveform-wrap { height:56px; position:relative; background:var(--c-bg); overflow:hidden; touch-action:none; flex-shrink:0; }
+#sess-waveform-canvas { width:100%; height:100%; display:block; cursor:crosshair; }
+.sess-wave-time { position:absolute; bottom:2px; right:6px; font-family:var(--f-mono); font-size:9px; color:rgba(46,70,68,0.9); pointer-events:none; }
+.sess-controls { display:flex; align-items:center; gap:6px; padding:6px 10px; border-bottom:1px solid var(--c-border); flex-shrink:0; }
+.sess-ctrl-btn { flex:1; display:flex; align-items:center; justify-content:center; background:transparent; border:1px solid var(--c-border); border-radius:8px; color:var(--c-text); cursor:pointer; font-size:17px; padding:8px 4px; transition:background 0.15s; user-select:none; }
+.sess-ctrl-btn:hover { background:rgba(255,255,255,0.06); }
+.sess-ctrl-btn.play-btn { flex:2; }
+.sess-ctrl-btn.comment-btn { flex:1.5; font-size:12px; color:var(--c-teal-pale); font-family:var(--f-mono); gap:4px; }
+.sess-ctrl-btn.recording { background:rgba(196,69,54,0.2); border-color:var(--c-accent); color:var(--c-accent); }
+.sess-comments-toggle { display:flex; align-items:center; justify-content:space-between; padding:7px 14px; cursor:pointer; user-select:none; flex-shrink:0; }
+.sess-comments-label { font-family:var(--f-mono); font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:var(--c-border); }
+.sess-comments-body { padding:0 14px 10px; }
+
+/* ══ COMMENTS DISCOVERY ══ */
+.cd-filter-bar { padding:10px 14px; display:flex; flex-direction:column; gap:8px; border-bottom:1px solid var(--c-border); flex-shrink:0; background:var(--c-surface); }
+.cd-people { display:flex; gap:5px; flex-wrap:wrap; }
+.cd-person-btn { font-family:var(--f-mono); font-size:10px; padding:4px 10px; border:1px solid var(--c-border); border-radius:20px; background:transparent; color:var(--c-teal-pale); cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.cd-person-btn.on { background:rgba(25,114,120,0.2); border-color:var(--c-teal); color:var(--c-text); }
+.cd-song-select { background:var(--c-bg); border:1px solid var(--c-border); border-radius:6px; color:var(--c-text); font-family:var(--f-mono); font-size:11px; padding:7px 10px; width:100%; outline:none; }
+.cd-song-select:focus { border-color:var(--c-teal); }
+.cd-comment-list { display:flex; flex-direction:column; gap:8px; padding:12px 14px; }
+.cd-comment-card { background:var(--c-surface); border:1px solid var(--c-border); border-radius:8px; overflow:hidden; position:relative; touch-action:pan-y; user-select:none; }
+.cd-comment-card.deleting { background:rgba(196,69,54,0.12); border-color:var(--c-accent); }
+.cd-card-inner { padding:10px 12px; }
+.cd-card-top { display:flex; align-items:flex-start; gap:8px; margin-bottom:4px; }
+.cd-card-song { font-family:var(--f-display); font-size:14px; font-weight:600; flex:1; }
+.cd-card-meta { font-family:var(--f-mono); font-size:9px; color:var(--c-border); text-align:right; flex-shrink:0; white-space:nowrap; }
+.cd-card-ver { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); margin-bottom:4px; }
+.cd-card-text { font-size:13px; line-height:1.5; margin-bottom:6px; }
+.cd-card-directed { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); margin-bottom:8px; }
+.cd-card-actions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.cd-action-btn { font-family:var(--f-mono); font-size:10px; padding:3px 9px; border:1px solid var(--c-border); border-radius:5px; background:transparent; color:var(--c-teal-pale); cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.cd-action-btn.playing { border-color:var(--c-teal); background:rgba(25,114,120,0.15); }
+.cd-action-btn.loop-on { border-color:var(--c-teal); background:rgba(25,114,120,0.1); }
+.cd-action-btn.perched { border-color:var(--c-text-dim); color:var(--c-text-dim); background:rgba(217,145,133,0.12); }
+.cd-card-time { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); margin-left:auto; }
+.cd-delete-reveal { position:absolute; right:0; top:0; bottom:0; width:72px; display:flex; align-items:center; justify-content:center; background:var(--c-accent); color:var(--c-text); font-size:20px; opacity:0; pointer-events:none; border-radius:0 8px 8px 0; transition:opacity 0.1s; }
+.cd-delete-confirm { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(196,69,54,0.92); color:var(--c-text); font-family:var(--f-mono); font-size:12px; gap:12px; z-index:5; opacity:0; pointer-events:none; transition:opacity 0.15s; border-radius:8px; }
+.cd-delete-confirm.show { opacity:1; pointer-events:auto; }
+.cd-del-yes { background:var(--c-accent); border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:5px; padding:5px 14px; font-family:var(--f-mono); font-size:12px; cursor:pointer; }
+.cd-del-no  { background:transparent; border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:5px; padding:5px 14px; font-family:var(--f-mono); font-size:12px; cursor:pointer; }
+.cd-reply-toggle { font-family:var(--f-mono); font-size:10px; color:var(--c-border); cursor:pointer; padding:2px 12px 8px; display:block; }
+.cd-reply-toggle:hover { color:var(--c-teal-pale); }
+.cd-replies { border-top:1px solid var(--c-border); padding:10px 12px; display:none; flex-direction:column; gap:10px; }
+.cd-replies.open { display:flex; }
+.cd-reply-item { display:flex; flex-direction:column; gap:3px; }
+.cd-reply-author { font-family:var(--f-mono); font-size:9px; color:var(--c-teal-pale); }
+.cd-reply-body { font-size:12px; line-height:1.4; }
+.cd-reply-img { max-width:100%; border-radius:6px; border:1px solid var(--c-border); margin-top:4px; }
+.cd-new-reply { display:flex; flex-direction:column; gap:6px; background:var(--c-bg); border-radius:6px; padding:10px; }
+.cd-reply-type-row { display:flex; gap:4px; }
+.cd-type-btn { font-family:var(--f-mono); font-size:10px; padding:3px 8px; border:1px solid var(--c-border); border-radius:4px; background:transparent; color:var(--c-border); cursor:pointer; transition:all 0.15s; }
+.cd-type-btn.on { border-color:var(--c-teal-pale); color:var(--c-teal-pale); background:rgba(25,114,120,0.08); }
+.cd-reply-ta { background:var(--c-surface); border:1px solid var(--c-border); border-radius:5px; color:var(--c-text); font-family:var(--f-sans); font-size:13px; padding:7px 9px; resize:none; outline:none; height:56px; width:100%; }
+.cd-reply-ta:focus { border-color:var(--c-teal); }
+.cd-reply-img-preview { max-width:100%; border-radius:5px; border:1px solid var(--c-border); display:none; margin-top:4px; }
+
+/* ══ UNDO TOAST ══ */
+#undo-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--c-surface2); border:1px solid var(--c-accent); color:var(--c-text); font-family:var(--f-mono); font-size:12px; padding:9px 16px; border-radius:6px; z-index:500; display:flex; align-items:center; gap:12px; opacity:0; transition:opacity 0.2s; pointer-events:none; white-space:nowrap; }
+#undo-toast.show { opacity:1; pointer-events:auto; }
+.undo-btn { color:var(--c-accent); cursor:pointer; font-weight:600; }
+
+/* ══ VERSION STAR ══ */
+.tp-ver-star { font-size:13px; cursor:pointer; flex-shrink:0; padding:2px 4px; opacity:0.35; transition:opacity 0.15s, transform 0.15s; }
+.tp-ver-star.starred { opacity:1; transform:scale(1.2); }
+
+/* ══ PERCH REACTION ══ */
+.perch-btn { font-family:var(--f-mono); font-size:10px; color:var(--c-border); cursor:pointer; padding:2px 6px; border:1px solid transparent; border-radius:4px; transition:all 0.15s; flex-shrink:0; display:inline-flex; align-items:center; gap:2px; }
+.perch-btn:hover { border-color:var(--c-border); }
+.perch-btn.perched { color:var(--c-text-dim); border-color:var(--c-text-dim); background:rgba(217,145,133,0.1); }
 
 /* ══ TOAST ══ */
 .toast {
@@ -456,11 +544,11 @@ header {
         <div class="nav-card-arrow">›</div>
       </div>
 
-      <div class="nav-card soon" style="margin-top:14px" title="Coming in Phase 3">
+      <div class="nav-card" style="margin-top:14px" onclick="goComments()">
         <div class="nav-card-icon">𓅰</div>
         <div class="nav-card-text">
           <div class="nav-card-title">Comments</div>
-          <div class="nav-card-sub">Review feedback on tracks — coming soon</div>
+          <div class="nav-card-sub">Browse and reply to feedback on tracks</div>
         </div>
         <div class="nav-card-arrow">›</div>
       </div>
@@ -489,6 +577,7 @@ header {
 
   <!-- ── TRACK DETAIL ── -->
   <div class="screen" id="screen-track">
+    <div id="tp-swipe-ghost" class="tp-swipe-ghost"></div>
     <div class="screen-nav">
       <button class="back-btn" onclick="backToTracks()">‹ Tracks</button>
       <div class="screen-nav-title" id="tp-title">—</div>
@@ -498,7 +587,7 @@ header {
       </div>
     </div>
     <div class="tp-body" id="tp-body" data-expand=""
-         ontouchstart="tpSwipeStart(event)" ontouchend="tpSwipeEnd(event)">
+         ontouchstart="tpSwipeStart(event)" ontouchmove="tpSwipeMove(event)" ontouchend="tpSwipeEnd(event)">
 
       <!-- lyrics / notes -->
       <div class="tp-lyrics">
@@ -529,9 +618,9 @@ header {
                 ontouchstart="commentBtnDown(event)" ontouchend="commentBtnUp(event)">
           𓅦 Comment
         </button>
-        <button class="tp-ctrl-btn" onclick="tpPrevVersion()" title="Previous version">⏮</button>
-        <button class="tp-ctrl-btn play-btn" id="tp-ctrl-play" onclick="tpTogglePlay()">▶</button>
-        <button class="tp-ctrl-btn" onclick="tpNextVersion()" title="Next version">⏭</button>
+        <button class="tp-ctrl-btn" onclick="tpPrevVersion()" title="Previous version">⏮&#xFE0E;</button>
+        <button class="tp-ctrl-btn play-btn" id="tp-ctrl-play" onclick="tpTogglePlay()">▶&#xFE0E;</button>
+        <button class="tp-ctrl-btn" onclick="tpNextVersion()" title="Next version">⏭&#xFE0E;</button>
       </div>
 
       <!-- waveform -->
@@ -556,11 +645,55 @@ header {
   <!-- ── SESSION DETAIL ── -->
   <div class="screen" id="screen-session">
     <div class="screen-nav">
-      <button class="back-btn" onclick="showScreen('screen-sessions')">‹ Sessions</button>
+      <button class="back-btn" onclick="backFromSession()">‹ Sessions</button>
       <div class="screen-nav-title" id="session-detail-title">Session</div>
     </div>
-    <div class="scroll-area" style="padding-bottom: calc(var(--c-player-h) + 18px)">
+    <div class="scroll-area" style="padding-bottom:8px">
       <div class="track-list" id="session-track-list"></div>
+    </div>
+    <!-- session player panel -->
+    <div id="sess-player" class="sess-player">
+      <div class="sess-player-info">
+        <div class="sess-player-title" id="sess-player-title">—</div>
+      </div>
+      <div class="sess-waveform-wrap">
+        <canvas id="sess-waveform-canvas"
+                onclick="sessWaveSeek(event)"
+                onwheel="sessWaveZoom(event)"></canvas>
+        <div class="sess-wave-time" id="sess-wave-time">0:00 / —:——</div>
+      </div>
+      <div class="sess-controls">
+        <button class="sess-ctrl-btn comment-btn" id="sess-ctrl-comment"
+                onmousedown="sessCommentBtnDown()" onmouseup="sessCommentBtnUp()"
+                ontouchstart="sessCommentBtnDown(event)" ontouchend="sessCommentBtnUp(event)">
+          𓅦 Comment
+        </button>
+        <button class="sess-ctrl-btn" onclick="SessPlayer.prev()">⏮&#xFE0E;</button>
+        <button class="sess-ctrl-btn play-btn" id="sess-ctrl-play" onclick="SessPlayer.togglePlay()">▶&#xFE0E;</button>
+        <button class="sess-ctrl-btn" onclick="SessPlayer.next()">⏭&#xFE0E;</button>
+      </div>
+      <div class="sess-comments-toggle" onclick="toggleSessComments()">
+        <span class="sess-comments-label">Comments</span>
+        <span id="sess-comments-arrow">▾</span>
+      </div>
+      <div class="sess-comments-body" id="sess-comments-body" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- ── COMMENTS DISCOVERY ── -->
+  <div class="screen" id="screen-comments">
+    <div class="screen-nav">
+      <button class="back-btn" onclick="showScreen('screen-home')">‹ Home</button>
+      <div class="screen-nav-title">Comments</div>
+    </div>
+    <div class="cd-filter-bar">
+      <div class="cd-people" id="cd-people"></div>
+      <select class="cd-song-select" id="cd-song-select" onchange="renderCommentsList()">
+        <option value="">All Songs</option>
+      </select>
+    </div>
+    <div class="scroll-area" style="padding:0">
+      <div class="cd-comment-list" id="cd-comment-list"></div>
     </div>
   </div>
 
@@ -598,6 +731,9 @@ header {
     </div>
   </div>
 </div>
+
+<!-- ── UNDO TOAST ── -->
+<div id="undo-toast"><span id="undo-msg">Deleted.</span><span class="undo-btn" onclick="undoDelete()">Undo</span></div>
 
 <!-- ── LOADING ── -->
 <div class="loading-overlay" id="loading-overlay">
@@ -736,6 +872,20 @@ const Drive = {
         body: form,
       });
     }
+  },
+
+  // Upload a binary file (returns new fileId)
+  async uploadFile(blob, mimeType, fileName, parentId) {
+    const token = gapi.client.getToken()?.access_token;
+    const meta  = { name: fileName, parents: [parentId] };
+    const form  = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
+    form.append('file', blob);
+    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+      method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: form,
+    });
+    const data = await res.json();
+    return data.id;
   },
 
   // Find a folder by name inside a parent
@@ -1013,8 +1163,10 @@ async function openSession(session) {
     showScreen('screen-session');
     hideLoading();
 
-    // Auto-load first track into player without playing
-    if (tracks.length > 0) Player.load(tracks, 0, false);
+    // Hide global player bar; session uses its own panel
+    $('player-bar').classList.remove('visible');
+    // Auto-load first track without playing
+    if (tracks.length > 0) SessPlayer.load(tracks, 0, false);
 
   } catch(e) {
     hideLoading();
@@ -1053,7 +1205,7 @@ function renderTrackList(tracks, session) {
       </div>
       <div class="track-dur" id="dur-${i}">—</div>
     `;
-    row.addEventListener('click', () => Player.load(tracks, i, true));
+    row.addEventListener('click', () => SessPlayer.load(tracks, i, true));
     list.appendChild(row);
   });
 }
@@ -1356,15 +1508,76 @@ function tpPrevSong() { const r = S.songs.filter(s=>s.type!=='egg'); if (S.tp.so
 function tpNextSong() { const r = S.songs.filter(s=>s.type!=='egg'); if (S.tp.songIdx<r.length-1) openSong(r[S.tp.songIdx+1].name, S.tp.songIdx+1); }
 
 /* ── SWIPE ───────────────────────────────────────────── */
-let _swipeX = null;
-function tpSwipeStart(e) { if (e.touches?.length === 1) _swipeX = e.touches[0].clientX; }
-function tpSwipeEnd(e) {
-  if (_swipeX === null) return;
-  const dx = (e.changedTouches?.[0]?.clientX ?? 0) - _swipeX;
-  _swipeX = null;
-  if (Math.abs(dx) < 60) return;
-  dx < 0 ? tpNextSong() : tpPrevSong();
+const _swipe = { x: null, y: null, dx: 0, locked: null };
+
+function tpSwipeStart(e) {
+  if (e.touches.length !== 1) return;
+  _swipe.x = e.touches[0].clientX;
+  _swipe.y = e.touches[0].clientY;
+  _swipe.dx = 0; _swipe.locked = null;
 }
+
+function tpSwipeMove(e) {
+  if (_swipe.x === null || e.touches.length !== 1) return;
+  const dx = e.touches[0].clientX - _swipe.x;
+  const dy = e.touches[0].clientY - _swipe.y;
+  if (_swipe.locked === null) {
+    if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+    _swipe.locked = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+  }
+  if (_swipe.locked === 'v') return;
+  e.preventDefault();
+  _swipe.dx = dx;
+  const body = $('tp-body');
+  body.style.transition = 'none';
+  body.style.transform  = `translateX(${dx}px)`;
+  _updateSwipeGhost(dx);
+}
+
+function tpSwipeEnd(e) {
+  if (_swipe.x === null) return;
+  const locked = _swipe.locked, dx = _swipe.dx;
+  _swipe.x = null;
+  if (locked !== 'h') return;
+  const W = window.innerWidth, threshold = W * 0.35;
+  const body = $('tp-body');
+  _hideSwipeGhost();
+  const realSongs = S.songs.filter(s => s.type !== 'egg');
+  const canNext = S.tp.songIdx < realSongs.length - 1;
+  const canPrev = S.tp.songIdx > 0;
+  if (dx < -threshold && canNext) {
+    body.style.transition = 'transform 0.2s ease-out';
+    body.style.transform  = `translateX(${-W}px)`;
+    setTimeout(() => { body.style.transform = ''; body.style.transition = ''; tpNextSong(); }, 200);
+  } else if (dx > threshold && canPrev) {
+    body.style.transition = 'transform 0.2s ease-out';
+    body.style.transform  = `translateX(${W}px)`;
+    setTimeout(() => { body.style.transform = ''; body.style.transition = ''; tpPrevSong(); }, 200);
+  } else {
+    body.style.transition = 'transform 0.25s ease-out';
+    body.style.transform  = '';
+    setTimeout(() => body.style.transition = '', 250);
+  }
+}
+
+function _updateSwipeGhost(dx) {
+  const realSongs = S.songs.filter(s => s.type !== 'egg');
+  const ghost = $('tp-swipe-ghost');
+  const W = window.innerWidth, threshold = W * 0.35;
+  ghost.className = 'tp-swipe-ghost';
+  let name = null;
+  if (dx > 30 && S.tp.songIdx > 0) {
+    name = '‹ ' + realSongs[S.tp.songIdx - 1].name;
+    ghost.classList.add('ghost-prev');
+  } else if (dx < -30 && S.tp.songIdx < realSongs.length - 1) {
+    name = realSongs[S.tp.songIdx + 1].name + ' ›';
+    ghost.classList.add('ghost-next');
+  }
+  ghost.textContent = name || '';
+  ghost.style.opacity = name ? Math.min(0.95, (Math.abs(dx) - 30) / (threshold - 30) * 0.95) : 0;
+}
+
+function _hideSwipeGhost() { $('tp-swipe-ghost').style.opacity = 0; }
 
 /* ── VERSIONS LIST ───────────────────────────────────── */
 function renderVersionsList() {
@@ -1378,6 +1591,8 @@ function renderVersionsList() {
     const row = document.createElement('div');
     row.className = 'tp-ver-row';
     row.id = `tpver-${i}`;
+    const songEntry = S.songs.find(s => s.name === S.tp.songName);
+    const starred   = (songEntry?.starredVersions || []).includes(v.fileId);
     row.innerHTML = `
       <div class="tp-ver-badge">V${v.version}</div>
       <div class="tp-ver-info">
@@ -1385,6 +1600,7 @@ function renderVersionsList() {
         <div class="tp-ver-type">${v.sessionType}</div>
       </div>
       <div class="tp-ver-dur" id="tpvdur-${i}">—</div>
+      <div class="tp-ver-star${starred?' starred':''}" title="Star this version" onclick="toggleStar(event,'${v.fileId}')">𓅃</div>
       <div class="tp-ver-play">▶</div>`;
     row.onclick = () => selectVersion(i);
     body.appendChild(row);
@@ -1397,7 +1613,7 @@ async function selectVersion(idx) {
   if (!v) return;
 
   document.querySelectorAll('.tp-ver-row').forEach((r,i) => r.classList.toggle('active', i===idx));
-  $('tp-ctrl-play').textContent = '⏳';
+  $('tp-ctrl-play').textContent = '…';
   S.tp.audio.pause();
   if (S.tp.blobUrl) { URL.revokeObjectURL(S.tp.blobUrl); S.tp.blobUrl = null; }
   S.tp.peaks = null;
@@ -1426,7 +1642,7 @@ async function selectVersion(idx) {
   } catch(e) {
     hideLoading();
     showToast('Could not load: ' + e.message);
-    $('tp-ctrl-play').textContent = '▶';
+    $('tp-ctrl-play').textContent = '▶\uFE0E';
   }
 }
 
@@ -1436,9 +1652,9 @@ function tpTogglePlay() {
 function tpPrevVersion() { if (S.tp.versionIdx > 0) selectVersion(S.tp.versionIdx - 1); }
 function tpNextVersion() { if (S.tp.versionIdx < S.tp.versions.length - 1) selectVersion(S.tp.versionIdx + 1); }
 
-S.tp.audio.addEventListener('play',  () => { $('tp-ctrl-play').textContent = '⏸'; startWaveRaf(); });
-S.tp.audio.addEventListener('pause', () => { $('tp-ctrl-play').textContent = '▶'; drawWave(); });
-S.tp.audio.addEventListener('ended', () => { $('tp-ctrl-play').textContent = '▶'; drawWave(); });
+S.tp.audio.addEventListener('play',  () => { $('tp-ctrl-play').textContent = '\u23F8\uFE0E'; startWaveRaf(); });
+S.tp.audio.addEventListener('pause', () => { $('tp-ctrl-play').textContent = '\u25B6\uFE0E'; drawWave(); });
+S.tp.audio.addEventListener('ended', () => { $('tp-ctrl-play').textContent = '\u25B6\uFE0E'; drawWave(); });
 
 /* ── EXPAND / COLLAPSE ───────────────────────────────── */
 function tpToggleExpand(section) {
@@ -1655,11 +1871,14 @@ function renderComments() {
       el.dataset.start = c.startTime;
       const timeStr = c.endTime ? `${fmt(c.startTime)}–${fmt(c.endTime)}` : fmt(c.startTime);
       const toStr   = c.directedTo?.length ? `→ ${c.directedTo.join(', ')}` : '';
+      const perches  = c.perches || [];
+      const iPerched = perches.includes(S.user?.name);
       el.innerHTML = `
         <div class="tp-comment-time">${timeStr}</div>
         <div class="tp-comment-text">${c.text}</div>
-        <div class="tp-comment-meta">${c.author}<br>${toStr}</div>`;
-      el.onclick = () => { S.tp.audio.currentTime = c.startTime; if (S.tp.audio.paused) S.tp.audio.play(); };
+        <div class="tp-comment-meta">${c.author}<br>${toStr}</div>
+        <div class="perch-btn${iPerched?' perched':''}" onclick="tpTogglePerch(event,'${c.id}')" title="Perch on this comment">𓅦 ${perches.length||''}</div>`;
+      el.onclick = e => { if (e.target.classList.contains('perch-btn') || e.target.closest('.perch-btn')) return; S.tp.audio.currentTime = c.startTime; if (S.tp.audio.paused) S.tp.audio.play(); };
       body.appendChild(el);
     });
   });
@@ -1728,15 +1947,26 @@ async function submitComment() {
   const start    = parseFloat(panel.dataset.start);
   const end      = panel.dataset.end ? parseFloat(panel.dataset.end) : null;
   const directed = [...$('comment-members').querySelectorAll('.on')].map(b => b.title);
-  const v        = S.tp.versions[S.tp.versionIdx];
-  if (!v) return;
+  const isSess   = panel.dataset.context === 'session';
+
+  let songName, fileId, version, sessionDate;
+  if (isSess) {
+    const t = SessPlayer.tracks[SessPlayer.idx];
+    songName = t?.title || ''; fileId = t?.fileId || '';
+    version  = t?.version || 1; sessionDate = t?.sessionDate || '';
+  } else {
+    const v = S.tp.versions[S.tp.versionIdx];
+    if (!v) return;
+    songName = S.tp.songName; fileId = v.fileId;
+    version  = v.version; sessionDate = v.sessionDate;
+  }
 
   const comment = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
-    songName: S.tp.songName, fileId: v.fileId,
-    version: v.version, sessionDate: v.sessionDate,
+    songName, fileId, version, sessionDate,
     author: S.user.name, startTime: start, endTime: end,
     text, directedTo: directed, createdAt: new Date().toISOString(),
+    perches: [], replies: [],
   };
 
   hideCommentPanel();
@@ -1748,11 +1978,524 @@ async function submitComment() {
     if (existing) { try { all = await Drive.readJson(existing.id); } catch(e) {} }
     all.push(comment);
     await Drive.writeJson(existing?.id, all, 'comments.json', metaId);
-    S.tp.comments.push(comment);
-    renderComments();
-    drawWave();
+    if (isSess) {
+      SessPlayer.comments.push(comment);
+      renderSessComments(); drawSessWave();
+    } else {
+      S.tp.comments.push(comment);
+      renderComments(); drawWave();
+    }
     showToast('Comment saved 𓅦');
   } catch(e) { showToast('Save failed: ' + e.message); console.error(e); }
+}
+
+/* ══════════════════════════════════════════════════════
+   SESSION PLAYER
+══════════════════════════════════════════════════════ */
+const SessPlayer = {
+  tracks:[], idx:0, audio:new Audio(), blobUrl:null,
+  peaks:null, zoom:1.0, rafId:null,
+  comments:[], commentStart:null, commentRange:false,
+
+  async load(tracks, idx, autoPlay=false) {
+    this.tracks=tracks; this.idx=idx;
+    const t=tracks[idx];
+    document.querySelectorAll('.track-row').forEach((r,i)=>r.classList.toggle('playing',i===idx));
+    $('sess-player').classList.add('visible');
+    $('sess-player-title').textContent = t.title+(t.version?` — V${t.version}`:'');
+    $('sess-ctrl-play').textContent='…';
+    $('sess-wave-time').textContent='0:00 / —:——';
+    this.peaks=null; clearSessWave();
+    this.audio.pause();
+    if(this.blobUrl){URL.revokeObjectURL(this.blobUrl);this.blobUrl=null;}
+    try {
+      showLoading('Fetching…');
+      const blob=await Drive.fetchBlob(t.fileId);
+      hideLoading();
+      this.blobUrl=URL.createObjectURL(blob);
+      this.audio.src=this.blobUrl;
+      if(autoPlay) await this.audio.play();
+      generatePeaks(blob,t.fileId).then(peaks=>{this.peaks=peaks;drawSessWave();}).catch(()=>{});
+      this.audio.addEventListener('loadedmetadata',()=>{
+        const el=$(`dur-${idx}`); if(el&&el.textContent==='—') el.textContent=fmt(this.audio.duration);
+      },{once:true});
+      await loadSessComments(t);
+    } catch(e) {
+      hideLoading(); showToast('Could not load: '+e.message);
+      $('sess-ctrl-play').textContent='\u25B6\uFE0E';
+    }
+  },
+  togglePlay(){ if(this.audio.paused) this.audio.play(); else this.audio.pause(); },
+  prev(){ if(this.idx>0) this.load(this.tracks,this.idx-1,!this.audio.paused); },
+  next(){ if(this.idx<this.tracks.length-1) this.load(this.tracks,this.idx+1,true); },
+  stop(){ this.audio.pause(); this.audio.src=''; if(this.blobUrl){URL.revokeObjectURL(this.blobUrl);this.blobUrl=null;} $('sess-player').classList.remove('visible'); },
+};
+SessPlayer.audio.addEventListener('play',  ()=>{ $('sess-ctrl-play').textContent='\u23F8\uFE0E'; startSessWaveRaf(); });
+SessPlayer.audio.addEventListener('pause', ()=>{ $('sess-ctrl-play').textContent='\u25B6\uFE0E'; drawSessWave(); });
+SessPlayer.audio.addEventListener('ended', ()=>{ $('sess-ctrl-play').textContent='\u25B6\uFE0E'; drawSessWave(); SessPlayer.next(); }); // auto-advance!
+SessPlayer.audio.addEventListener('timeupdate', ()=>{
+  if(!_sessCommentsOpen) return;
+  const cur=SessPlayer.audio.currentTime;
+  document.querySelectorAll('#sess-comments-body .tp-comment-item').forEach(el=>{
+    const t=parseFloat(el.dataset.start);
+    el.classList.toggle('highlight',!isNaN(t)&&Math.abs(t-cur)<2);
+  });
+});
+
+function backFromSession(){ SessPlayer.stop(); showScreen('screen-sessions'); }
+function clearSessWave(){ const c=$('sess-waveform-canvas'); if(c) c.getContext('2d').clearRect(0,0,c.width,c.height); }
+function drawSessWave(){
+  const canvas=$('sess-waveform-canvas'); if(!canvas) return;
+  const dpr=window.devicePixelRatio||1, W=canvas.offsetWidth, H=canvas.offsetHeight;
+  if(!W||!H) return;
+  if(canvas.width!==W*dpr||canvas.height!==H*dpr){canvas.width=W*dpr;canvas.height=H*dpr;}
+  const ctx=canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+  const audio=SessPlayer.audio, dur=audio.duration||0, cur=audio.currentTime||0;
+  if(dur>0) $('sess-wave-time').textContent=`${fmt(cur)} / ${fmt(dur)}`;
+  const peaks=SessPlayer.peaks;
+  if(!peaks?.length){ctx.fillStyle='rgba(83,168,166,0.15)';ctx.fillRect(0,H/2-1,W,2);return;}
+  const visFrac=1/SessPlayer.zoom, playFrac=dur>0?cur/dur:0;
+  const viewStart=Math.max(0,Math.min(1-visFrac,playFrac-visFrac/2));
+  const fi=Math.floor(viewStart*peaks.length), li=Math.ceil((viewStart+visFrac)*peaks.length);
+  const count=Math.max(1,li-fi); let maxP=0;
+  for(let i=fi;i<li;i++) if((peaks[i]||0)>maxP) maxP=peaks[i]; if(!maxP) maxP=1;
+  const barW=W/count;
+  for(let i=0;i<count;i++){
+    const p=(peaks[fi+i]||0)/maxP, bh=Math.max(2,p*(H-4));
+    ctx.fillStyle=(fi+i)/peaks.length<playFrac?'rgba(25,114,120,0.9)':'rgba(25,114,120,0.3)';
+    ctx.fillRect(i*barW,(H-bh)/2,Math.max(1,barW-0.5),bh);
+  }
+  SessPlayer.comments.forEach(c=>{
+    const cf=c.startTime/dur; const visFracS=1/SessPlayer.zoom;
+    if(cf>=viewStart&&cf<=viewStart+visFracS){
+      const cx=((cf-viewStart)/visFracS)*W;
+      ctx.fillStyle='rgba(196,122,53,0.85)'; ctx.fillRect(cx-1,0,2,H);
+      ctx.beginPath(); ctx.arc(cx,4,3,0,Math.PI*2); ctx.fill();
+    }
+  });
+  const px=((playFrac-viewStart)/visFrac)*W;
+  ctx.fillStyle='#C44536'; ctx.fillRect(px-1,0,2,H);
+}
+function startSessWaveRaf(){
+  if(SessPlayer.rafId) return;
+  const loop=()=>{drawSessWave();if(!SessPlayer.audio.paused)SessPlayer.rafId=requestAnimationFrame(loop);else SessPlayer.rafId=null;};
+  SessPlayer.rafId=requestAnimationFrame(loop);
+}
+function sessWaveSeek(e){
+  const c=$('sess-waveform-canvas'), rect=c.getBoundingClientRect();
+  const x=(e.clientX-rect.left)/rect.width, dur=SessPlayer.audio.duration;
+  if(isNaN(dur)) return;
+  const vf=1/SessPlayer.zoom, pf=SessPlayer.audio.currentTime/dur;
+  SessPlayer.audio.currentTime=(Math.max(0,Math.min(1-vf,pf-vf/2))+x*vf)*dur; drawSessWave();
+}
+function sessWaveZoom(e){
+  e.preventDefault();
+  SessPlayer.zoom=Math.max(1,Math.min(20,SessPlayer.zoom*(e.deltaY>0?0.85:1.15))); drawSessWave();
+}
+
+async function loadSessComments(track){
+  SessPlayer.comments=[];
+  try{
+    const metaId=S.folders['_meta']; if(!metaId){renderSessComments();return;}
+    const files=await Drive.list(metaId,{filesOnly:true});
+    const f=files.find(f=>f.name==='comments.json');
+    const all=f?await Drive.readJson(f.id):[];
+    SessPlayer.comments=all.filter(c=>c.fileId===track.fileId||(c.songName?.toLowerCase()===track.title?.toLowerCase()&&c.sessionDate===track.sessionDate));
+  }catch(e){}
+  renderSessComments();
+}
+let _sessCommentsOpen=false;
+function toggleSessComments(){
+  _sessCommentsOpen=!_sessCommentsOpen;
+  $('sess-comments-body').style.display=_sessCommentsOpen?'block':'none';
+  $('sess-comments-arrow').textContent=_sessCommentsOpen?'▴':'▾';
+}
+function renderSessComments(){
+  const body=$('sess-comments-body'); if(!body) return;
+  if(!SessPlayer.comments.length){
+    body.innerHTML=`<div style="font-family:var(--f-mono);font-size:11px;color:var(--c-border);padding:4px 0 8px">No comments for this track.</div>`;
+    return;
+  }
+  body.innerHTML='';
+  SessPlayer.comments.sort((a,b)=>a.startTime-b.startTime).forEach(c=>{
+    const el=document.createElement('div');
+    el.className='tp-comment-item'; el.dataset.start=c.startTime;
+    const timeStr=c.endTime?`${fmt(c.startTime)}–${fmt(c.endTime)}`:fmt(c.startTime);
+    const toStr=c.directedTo?.length?`→ ${c.directedTo.join(', ')}`:'';    el.innerHTML=`<div class="tp-comment-time">${timeStr}</div><div class="tp-comment-text">${c.text||''}</div><div class="tp-comment-meta">${c.author}<br>${toStr}</div>`;
+    el.onclick=()=>{SessPlayer.audio.currentTime=c.startTime;if(SessPlayer.audio.paused)SessPlayer.audio.play();};
+    body.appendChild(el);
+  });
+}
+let _sessCommentHoldTimer=null;
+function sessCommentBtnDown(e){
+  if(e) e.preventDefault();
+  SessPlayer.commentStart=SessPlayer.audio.currentTime; SessPlayer.commentRange=false;
+  _sessCommentHoldTimer=setTimeout(()=>{SessPlayer.commentRange=true;$('sess-ctrl-comment').classList.add('recording');},400);
+}
+function sessCommentBtnUp(e){
+  if(e) e.preventDefault();
+  clearTimeout(_sessCommentHoldTimer); $('sess-ctrl-comment').classList.remove('recording');
+  const start=SessPlayer.commentStart; if(start===null) return;
+  const end=SessPlayer.commentRange?SessPlayer.audio.currentTime:null;
+  SessPlayer.commentStart=null;
+  $('comment-panel').dataset.context='session';
+  showCommentPanel(start,end);
+}
+
+/* ══════════════════════════════════════════════════════
+   STARRING
+══════════════════════════════════════════════════════ */
+async function toggleStar(e, fileId){
+  e.stopPropagation();
+  const songEntry=S.songs.find(s=>s.name===S.tp.songName); if(!songEntry) return;
+  if(!songEntry.starredVersions) songEntry.starredVersions=[];
+  const i=songEntry.starredVersions.indexOf(fileId);
+  if(i>=0) songEntry.starredVersions.splice(i,1); else songEntry.starredVersions.push(fileId);
+  const star=e.currentTarget; star.classList.toggle('starred', songEntry.starredVersions.includes(fileId));
+  try{
+    const metaId=S.folders['_meta'];
+    const files=await Drive.list(metaId,{filesOnly:true});
+    const f=files.find(f=>f.name==='songs.json');
+    await Drive.writeJson(f?.id,S.songs,'songs.json',metaId);
+  }catch(ex){ console.warn('Star save failed',ex); }
+}
+
+/* ══════════════════════════════════════════════════════
+   PERCHING (track page)
+══════════════════════════════════════════════════════ */
+async function tpTogglePerch(e, commentId){
+  e.stopPropagation();
+  const comment=S.tp.comments.find(c=>c.id===commentId); if(!comment) return;
+  if(!comment.perches) comment.perches=[];
+  const me=S.user?.name;
+  const i=comment.perches.indexOf(me);
+  if(i>=0) comment.perches.splice(i,1); else comment.perches.push(me);
+  await savePerchToDrive(commentId, comment.perches);
+  renderComments();
+}
+async function savePerchToDrive(commentId, perches){
+  try{
+    const metaId=S.folders['_meta'];
+    const files=await Drive.list(metaId,{filesOnly:true});
+    const f=files.find(f=>f.name==='comments.json');
+    if(!f) return;
+    const all=await Drive.readJson(f.id);
+    const c=all.find(c=>c.id===commentId); if(c) c.perches=perches;
+    await Drive.writeJson(f.id,all,'comments.json',metaId);
+  }catch(ex){ console.warn('Perch save failed',ex); }
+}
+
+/* ══════════════════════════════════════════════════════
+   COMMENTS DISCOVERY
+══════════════════════════════════════════════════════ */
+let _cdAllComments=[], _cdPersonFilter='', _cdAudio=new Audio(), _cdPlayingId=null, _cdLooping=false;
+let _cdUndoBuffer=null, _cdUndoTimer=null;
+
+async function goComments(){
+  showScreen('screen-comments');
+  buildCdPeopleFilter();
+  await loadAllComments();
+}
+
+function buildCdPeopleFilter(){
+  const el=$('cd-people'); el.innerHTML='';
+  const opts=[{label:'All',val:''},{label:'Only Me',val:'__me__'},...CONFIG.BAND_MEMBERS.map(m=>({label:m,val:m}))];
+  opts.forEach(o=>{
+    const btn=document.createElement('button');
+    btn.className='cd-person-btn'+(o.val===_cdPersonFilter?' on':'');
+    btn.textContent=o.label;
+    btn.onclick=()=>{
+      _cdPersonFilter=o.val;
+      el.querySelectorAll('.cd-person-btn').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      renderCommentsList();
+    };
+    el.appendChild(btn);
+  });
+}
+
+async function loadAllComments(){
+  showLoading('Loading comments…');
+  try{
+    const metaId=S.folders['_meta'];
+    if(!metaId){_cdAllComments=[];renderCommentsList();return;}
+    const files=await Drive.list(metaId,{filesOnly:true});
+    const f=files.find(f=>f.name==='comments.json');
+    _cdAllComments=f?await Drive.readJson(f.id):[];
+    // Populate song dropdown
+    const sel=$('cd-song-select');
+    sel.innerHTML='<option value="">All Songs</option>';
+    const songNames=[...new Set(_cdAllComments.map(c=>c.songName).filter(Boolean))].sort();
+    songNames.forEach(n=>{const opt=document.createElement('option');opt.value=n;opt.textContent=n;sel.appendChild(opt);});
+    renderCommentsList();
+  }catch(e){ showToast('Could not load comments: '+e.message); }
+  finally{ hideLoading(); }
+}
+
+function renderCommentsList(){
+  const songFilter=$('cd-song-select').value;
+  const me=S.user?.name||'';
+  let list=[..._cdAllComments];
+  // Song filter
+  if(songFilter) list=list.filter(c=>c.songName===songFilter);
+  // Person filter
+  if(_cdPersonFilter==='__me__') list=list.filter(c=>(c.directedTo||[]).includes(me));
+  else if(_cdPersonFilter) list=list.filter(c=>(c.directedTo||[]).includes(_cdPersonFilter));
+  // Newest first
+  list.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+
+  const container=$('cd-comment-list');
+  container.innerHTML='';
+  if(!list.length){
+    container.innerHTML=`<div class="empty-state"><div class="empty-bird">𓅙</div><div class="empty-text">No comments found.</div></div>`;
+    return;
+  }
+  list.forEach(c=>container.appendChild(buildCommentCard(c)));
+}
+
+function buildCommentCard(c){
+  const card=document.createElement('div');
+  card.className='cd-comment-card'; card.id='cdcard-'+c.id;
+  const timeStr=c.endTime?`${fmt(c.startTime)}–${fmt(c.endTime)}`:fmt(c.startTime);
+  const toStr=c.directedTo?.length?`→ ${c.directedTo.join(', ')}`:'';  const isPerched=(c.perches||[]).includes(S.user?.name);
+  const replyCount=(c.replies||[]).length;
+  card.innerHTML=`
+    <div class="cd-card-inner">
+      <div class="cd-card-top">
+        <div class="cd-card-song">${c.songName||'Unknown'}</div>
+        <div class="cd-card-meta">${c.author}<br>${c.sessionDate||''}</div>
+      </div>
+      <div class="cd-card-ver">V${c.version} · ${timeStr}</div>
+      ${toStr?`<div class="cd-card-directed">${toStr}</div>`:''}
+      <div class="cd-card-text">${c.text}</div>
+      <div class="cd-card-actions">
+        <button class="cd-action-btn" id="cdplay-${c.id}" onclick="cdPlayComment('${c.id}')">▶&#xFE0E; Play</button>
+        <button class="cd-action-btn" id="cdloop-${c.id}" onclick="cdToggleLoop('${c.id}')">⟳ Loop</button>
+        <button class="cd-action-btn${isPerched?' perched':''}" id="cdperch-${c.id}" onclick="cdTogglePerch('${c.id}')">𓅦 ${(c.perches||[]).length||''}</button>
+        <span class="cd-card-time">${new Date(c.createdAt).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>
+      </div>
+    </div>
+    <div class="cd-delete-reveal" id="cddel-${c.id}">🗑</div>
+    <div class="cd-delete-confirm" id="cdconf-${c.id}">
+      Delete comment?
+      <button class="cd-del-yes" onclick="confirmDelete('${c.id}')">Delete</button>
+      <button class="cd-del-no"  onclick="cancelDelete('${c.id}')">Keep</button>
+    </div>
+    <div class="cd-reply-toggle" onclick="cdToggleReplies('${c.id}')">
+      𓅦 ${replyCount} ${replyCount===1?'reply':'replies'} — tap to expand
+    </div>
+    <div class="cd-replies" id="cdreplies-${c.id}">
+      ${(c.replies||[]).map(r=>renderReplyHTML(r)).join('')}
+      <div class="cd-new-reply">
+        <div class="cd-reply-type-row">
+          <button class="cd-type-btn on" onclick="cdSetReplyType('${c.id}','text',this)">Text</button>
+          <button class="cd-type-btn" onclick="cdSetReplyType('${c.id}','image',this)">Image</button>
+          <button class="cd-type-btn" style="opacity:0.4;cursor:default" title="Coming soon">Tab</button>
+        </div>
+        <textarea class="cd-reply-ta" id="cdreply-ta-${c.id}" placeholder="Write a reply…"></textarea>
+        <input type="file" accept="image/*" id="cdreply-img-${c.id}" style="display:none" onchange="cdPreviewImage('${c.id}',this)">
+        <img class="cd-reply-img-preview" id="cdreply-imgprev-${c.id}">
+        <button class="btn btn-teal cd-reply-submit" onclick="cdSubmitReply('${c.id}')">Send 𓅥</button>
+      </div>
+    </div>`;
+
+  // Swipe to delete
+  let sx=null, sdx=0;
+  card.addEventListener('touchstart', e=>{ if(e.touches.length===1) sx=e.touches[0].clientX; },{passive:true});
+  card.addEventListener('touchmove',  e=>{
+    if(sx===null||e.touches.length!==1) return;
+    sdx=e.touches[0].clientX-sx;
+    if(sdx>0) return; // only left swipe
+    const prog=Math.min(1,Math.abs(sdx)/150);
+    card.querySelector('.cd-card-inner').style.transform=`translateX(${sdx}px)`;
+    const del=$(`cddel-${c.id}`); del.style.opacity=prog;
+    if(prog>0.7) card.classList.add('deleting'); else card.classList.remove('deleting');
+  },{passive:true});
+  card.addEventListener('touchend', ()=>{
+    if(sx===null) return; sx=null;
+    if(Math.abs(sdx)>150){
+      $(`cdconf-${c.id}`).classList.add('show');
+      card.querySelector('.cd-card-inner').style.transform='';
+    } else {
+      card.querySelector('.cd-card-inner').style.transform='';
+      card.classList.remove('deleting');
+    }
+    sdx=0;
+  });
+  return card;
+}
+
+function renderReplyHTML(r){
+  if(r.type==='image'&&r.driveFileId){
+    return `<div class="cd-reply-item"><div class="cd-reply-author">${r.author} · ${new Date(r.createdAt).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div><img class="cd-reply-img" src="" data-fileid="${r.driveFileId}" onload="this.style.display='block'" style="display:none"><div class="cd-reply-body">${r.caption||''}</div></div>`;
+  }
+  return `<div class="cd-reply-item"><div class="cd-reply-author">${r.author} · ${new Date(r.createdAt).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div><div class="cd-reply-body">${r.text||''}</div></div>`;
+}
+
+const _cdReplyTypes={};
+function cdSetReplyType(cid,type,btn){
+  _cdReplyTypes[cid]=type;
+  btn.closest('.cd-reply-type-row').querySelectorAll('.cd-type-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const ta=$(`cdreply-ta-${cid}`), imgIn=$(`cdreply-img-${cid}`), prev=$(`cdreply-imgprev-${cid}`);
+  ta.style.display=type==='text'?'':'none';
+  if(type==='image'){ imgIn.click(); } else { prev.style.display='none'; }
+}
+function cdPreviewImage(cid,input){
+  const file=input.files?.[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{ const prev=$(`cdreply-imgprev-${cid}`); prev.src=e.target.result; prev.style.display='block'; };
+  reader.readAsDataURL(file);
+}
+function cdToggleReplies(cid){
+  const el=$(`cdreplies-${cid}`);
+  el.classList.toggle('open');
+  // Lazy-load reply images
+  el.querySelectorAll('img[data-fileid]').forEach(async img=>{
+    if(!img.src||img.src===window.location.href){
+      try{ const blob=await Drive.fetchBlob(img.dataset.fileid); img.src=URL.createObjectURL(blob); }catch(ex){}
+    }
+  });
+}
+
+/* ── Comment playback ──────────────────────────────── */
+async function cdPlayComment(cid){
+  const c=_cdAllComments.find(c=>c.id===cid); if(!c) return;
+  const btn=$(`cdplay-${cid}`);
+  // Stop current
+  if(_cdPlayingId===cid){ _cdAudio.pause(); _cdPlayingId=null; btn.textContent='▶\uFE0E Play'; btn.classList.remove('playing'); return; }
+  if(_cdPlayingId){ const pb=$(`cdplay-${_cdPlayingId}`); if(pb){pb.textContent='▶\uFE0E Play';pb.classList.remove('playing');} }
+  btn.textContent='… Loading'; btn.classList.add('playing'); _cdPlayingId=cid;
+  try{
+    showLoading('Fetching…');
+    const blob=await Drive.fetchBlob(c.fileId);
+    hideLoading();
+    if(_cdAudio.src) { try{URL.revokeObjectURL(_cdAudio.src);}catch(ex){} }
+    _cdAudio.src=URL.createObjectURL(blob);
+    _cdAudio.currentTime=c.startTime;
+    await _cdAudio.play();
+    btn.textContent='\u23F8\uFE0E Pause';
+  }catch(e){ hideLoading(); showToast('Could not load: '+e.message); btn.textContent='▶\uFE0E Play'; btn.classList.remove('playing'); _cdPlayingId=null; }
+}
+_cdAudio.addEventListener('pause',()=>{ if(_cdPlayingId){ const b=$(`cdplay-${_cdPlayingId}`); if(b){b.textContent='▶\uFE0E Play';b.classList.remove('playing');} _cdPlayingId=null; }});
+_cdAudio.addEventListener('timeupdate',()=>{
+  if(!_cdPlayingId) return;
+  const c=_cdAllComments.find(c=>c.id===_cdPlayingId); if(!c) return;
+  const end=c.endTime||c.startTime+10;
+  if(_cdAudio.currentTime>=end){
+    if(_cdLooping&&$(`cdloop-${_cdPlayingId}`)?.classList.contains('loop-on')){ _cdAudio.currentTime=c.startTime; }
+    else { _cdAudio.pause(); }
+  }
+});
+
+function cdToggleLoop(cid){
+  const btn=$(`cdloop-${cid}`);
+  const on=btn.classList.toggle('loop-on');
+  _cdLooping=on;
+}
+
+/* ── Perching from comments page ─────────────────── */
+async function cdTogglePerch(cid){
+  const c=_cdAllComments.find(c=>c.id===cid); if(!c) return;
+  if(!c.perches) c.perches=[];
+  const me=S.user?.name; const i=c.perches.indexOf(me);
+  if(i>=0) c.perches.splice(i,1); else c.perches.push(me);
+  const btn=$(`cdperch-${cid}`);
+  btn.classList.toggle('perched',c.perches.includes(me));
+  btn.textContent=`𓅦 ${c.perches.length||''}`;
+  await savePerchToDrive(cid,c.perches);
+}
+
+/* ── Swipe-delete flow ────────────────────────────── */
+function cancelDelete(cid){
+  const card=$('cdcard-'+cid); if(!card) return;
+  card.querySelector('.cd-card-inner').style.transform='';
+  card.classList.remove('deleting');
+  $(`cdconf-${cid}`).classList.remove('show');
+}
+function confirmDelete(cid){
+  const card=$('cdcard-'+cid); if(!card) return;
+  $(`cdconf-${cid}`).classList.remove('show');
+  // Animate out
+  card.style.transition='opacity 0.25s, max-height 0.3s, margin 0.3s';
+  card.style.opacity='0'; card.style.maxHeight='0'; card.style.marginBottom='0';
+  const c=_cdAllComments.find(c=>c.id===cid);
+  _cdUndoBuffer={comment:c, idx:_cdAllComments.indexOf(c)};
+  _cdAllComments=_cdAllComments.filter(c=>c.id!==cid);
+  setTimeout(()=>card.remove(),320);
+  showUndoToast('Comment deleted.');
+}
+let _undoToastTimer=null;
+function showUndoToast(msg){
+  clearTimeout(_undoToastTimer);
+  $('undo-msg').textContent=msg;
+  $('undo-toast').classList.add('show');
+  _undoToastTimer=setTimeout(()=>{ $('undo-toast').classList.remove('show'); commitDelete(); },5000);
+}
+function undoDelete(){
+  clearTimeout(_undoToastTimer);
+  $('undo-toast').classList.remove('show');
+  if(!_cdUndoBuffer) return;
+  _cdAllComments.splice(_cdUndoBuffer.idx,0,_cdUndoBuffer.comment);
+  _cdUndoBuffer=null;
+  renderCommentsList();
+}
+async function commitDelete(){
+  if(!_cdUndoBuffer) return; // already re-added via undo
+  _cdUndoBuffer=null;
+  try{
+    const metaId=S.folders['_meta'];
+    const files=await Drive.list(metaId,{filesOnly:true});
+    const f=files.find(f=>f.name==='comments.json');
+    if(f) await Drive.writeJson(f.id,_cdAllComments,'comments.json',metaId);
+  }catch(e){ console.warn('Delete commit failed',e); }
+}
+
+/* ── Reply submission ─────────────────────────────── */
+async function cdSubmitReply(cid){
+  const c=_cdAllComments.find(c=>c.id===cid); if(!c) return;
+  const type=_cdReplyTypes[cid]||'text';
+  const ta=$(`cdreply-ta-${cid}`);
+  const text=ta.value.trim();
+  const imgInput=$(`cdreply-img-${cid}`);
+  const imgFile=imgInput?.files?.[0];
+  if(type==='text'&&!text){showToast('Add some text');return;}
+  if(type==='image'&&!imgFile){showToast('Pick an image');return;}
+
+  const reply={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),author:S.user?.name,createdAt:new Date().toISOString(),type};
+  if(type==='text') reply.text=text;
+  if(type==='image'){
+    try{
+      showLoading('Uploading image…');
+      const blob=new Blob([await imgFile.arrayBuffer()],{type:imgFile.type});
+      const metaId=S.folders['_meta'];
+      const driveFileId=await Drive.uploadFile(blob,imgFile.type,imgFile.name,metaId);
+      reply.driveFileId=driveFileId; reply.caption=text;
+      hideLoading();
+    }catch(e){hideLoading();showToast('Upload failed: '+e.message);return;}
+  }
+
+  if(!c.replies) c.replies=[];
+  c.replies.push(reply);
+  try{
+    const metaId=S.folders['_meta'];
+    const files=await Drive.list(metaId,{filesOnly:true});
+    const f=files.find(f=>f.name==='comments.json');
+    await Drive.writeJson(f?.id,_cdAllComments,'comments.json',metaId);
+    // Refresh reply section
+    const repliesEl=$(`cdreplies-${cid}`);
+    if(repliesEl){
+      const newReply=document.createElement('div');
+      newReply.innerHTML=renderReplyHTML(reply);
+      repliesEl.insertBefore(newReply.firstElementChild, repliesEl.querySelector('.cd-new-reply'));
+    }
+    ta.value=''; if(imgInput) imgInput.value='';
+    $(`cdreply-imgprev-${cid}`).style.display='none';
+    const tog=$(`cdreplies-${cid}`)?.previousElementSibling;
+    if(tog) tog.textContent=`𓅦 ${c.replies.length} ${c.replies.length===1?'reply':'replies'} — tap to expand`;
+    showToast('Reply sent 𓅦');
+  }catch(e){showToast('Save failed: '+e.message);}
 }
 
 /* ══════════════════════════════════════════════════════
