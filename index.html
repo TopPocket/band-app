@@ -751,8 +751,15 @@ header {
 const CONFIG = {
   CLIENT_ID:     '960496564550-ng6p62fvijgjr7bahf0oskove1jj3o0a.apps.googleusercontent.com',
   ROOT_FOLDER:   '1LLn460g9uPrWazG5PgprxpVb_BUaKcOU',
-  SCOPES:        'https://www.googleapis.com/auth/drive',
+  SCOPES:        'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/userinfo.email',
   BAND_MEMBERS:  ['Barn', 'Christy', 'Neda', 'Pat', 'Rory'],
+  EMAIL_MAP: {
+    'patrickgenemoore@gmail.com': 'Pat',
+    'discouse@gmail.com':          'Barn',
+    'nedazeinali06@gmail.com':     'Neda',
+    'rorybateman70@gmail.com':     'Rory',
+    // Christy: add email here when known
+  },
 };
 
 /* ══════════════════════════════════════════════════════
@@ -935,7 +942,7 @@ function checkBothReady() {
   hideLoading();
 }
 
-function onToken(resp) {
+async function onToken(resp) {
   if (resp.error) {
     $('auth-error').textContent = 'Sign-in failed: ' + resp.error;
     $('auth-error').style.display = 'block';
@@ -943,14 +950,39 @@ function onToken(resp) {
     hideLoading();
     return;
   }
-  // Token acquired — proceed to app or name picker
-  if (S.user) {
-    enterApp();
-  } else {
-    // We need to know who they are
-    showScreen('screen-whoami');
-    hideLoading();
+
+  // If we already have a stored identity, go straight in
+  if (S.user) { enterApp(); return; }
+
+  // Try to auto-identify from Google email
+  try {
+    const res  = await fetch('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
+      headers: { Authorization: `Bearer ${gapi.client.getToken().access_token}` },
+    });
+    const info = await res.json();
+    const name = CONFIG.EMAIL_MAP[(info.email || '').toLowerCase()];
+    if (name) {
+      S.user = { name, initials: name[0], email: info.email };
+      localStorage.setItem('bandapp_user', JSON.stringify(S.user));
+      enterApp();
+      return;
+    }
+    if (info.email) {
+      // Recognised Google account but not on the band list
+      $('auth-error').textContent = `${info.email} isn't on the band list yet.`;
+      $('auth-error').style.display = 'block';
+      showScreen('screen-auth');
+      hideLoading();
+      return;
+    }
+  } catch(e) {
+    console.warn('Could not fetch userinfo — falling back to name picker', e);
   }
+
+  // Fallback: manual name picker (useful during development)
+  buildNamePicker();
+  showScreen('screen-whoami');
+  hideLoading();
 }
 
 $('btn-signin').addEventListener('click', () => {
