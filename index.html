@@ -1778,9 +1778,9 @@ function renderVersionsList() {
       </div>
       <div class="tp-ver-dur" id="tpvdur-${i}">—</div>
       <div class="tp-ver-star${starred?' starred':''}" title="Star this version" onclick="toggleStar(event,'${v.fileId}')">★</div>
-      ${S.tp.isEgg ? `<div class="tp-ver-promote" title="Hatch into a track" onclick="event.stopPropagation();openHatchModal('${v.fileId}','${v.fileName}')">𓅣 Hatch</div>` : ''}
+      ${S.tp.isEgg ? `<div class="tp-ver-promote" title="Hatch into a track" onclick="openHatchModal('${v.fileId}','${v.fileName}')">𓅣 Hatch</div>` : ''}
       <div class="tp-ver-play">▶</div>`;
-    row.onclick = () => selectVersion(i);
+    row.onclick = e => { if (e.target.closest('.tp-ver-promote,.tp-ver-star')) return; selectVersion(i); };
     body.appendChild(row);
   });
 }
@@ -2422,23 +2422,22 @@ function openHatchModal(fileId, fileName) {
 async function confirmHatch() {
   const fileId   = $('promote-fileid').value;
   const selected = $('promote-song-select').value;
-  const newSong  = selected || $('promote-new-name').value.trim();
+  const newSong  = (selected || $('promote-new-name').value || '').trim();
   if (!newSong) { showToast('Pick or type a song name'); return; }
 
+  $('promote-modal').style.display = 'none';
   showLoading('Hatching…');
   try {
-    // Store mapping in songs.json — no file rename needed
     const pool = getEggPool();
     if (!pool.hatchedTo) pool.hatchedTo = {};
     pool.hatchedTo[fileId] = newSong;
 
-    // Transfer notes
     const eggNote = pool.eggNotes?.[fileId] || '';
     delete pool.eggNotes[fileId];
 
     if (selected) {
-      const songEntry = S.songs.find(s => s.name === selected);
-      if (songEntry && eggNote) songEntry.notes = (songEntry.notes ? songEntry.notes + '\n\n' + eggNote : eggNote);
+      const entry = S.songs.find(s => s.name === selected);
+      if (entry && eggNote) entry.notes = entry.notes ? entry.notes + '\n\n' + eggNote : eggNote;
     } else {
       S.songs.push({ name: newSong, notes: eggNote, starredVersions: [] });
     }
@@ -2446,14 +2445,13 @@ async function confirmHatch() {
     S.trackIndexLoaded = false;
     sessionStorage.removeItem('bandapp_trackIndex');
     await saveSongsJson();
-    $('promote-modal').style.display = 'none';
     hideLoading();
-    showToast(`"${newSong}" hatched!`);
+    showToast('"' + newSong + '" hatched!');
     backToTracks();
   } catch(e) {
     hideLoading();
-    showToast('Hatch failed: ' + e.message);
-    console.error('confirmHatch error:', e);
+    showToast('Hatch failed: ' + (e?.message || String(e)));
+    console.error('confirmHatch:', e);
   }
 }
 
