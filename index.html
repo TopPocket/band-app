@@ -2095,8 +2095,21 @@ function drawWave() {
   }
 
   // Comment markers
-  S.tp.comments.forEach(c => {
-    const cf = c.startTime / dur;
+  if (dur > 0) S.tp.comments.forEach(c => {
+    const cf  = c.startTime / dur;
+    const ef  = c.endTime   ? c.endTime / dur : cf;
+
+    // Translucent range band (only when comment spans a range)
+    if (c.endTime && c.endTime > c.startTime) {
+      const rx1 = ((Math.max(cf, viewStart) - viewStart) / visFrac) * W;
+      const rx2 = ((Math.min(ef, viewEnd)   - viewStart) / visFrac) * W;
+      if (rx2 > rx1) {
+        ctx.fillStyle = 'rgba(196,122,53,0.18)';
+        ctx.fillRect(rx1, 0, rx2 - rx1, H);
+      }
+    }
+
+    // Start-point line + dot (shown whenever start is in view)
     if (cf >= viewStart && cf <= viewEnd) {
       const cx = ((cf - viewStart) / visFrac) * W;
       ctx.fillStyle = 'rgba(196,122,53,0.85)';
