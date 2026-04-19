@@ -1465,7 +1465,7 @@ async function loadSongs() {
 function renderSongList() {
   const list = $('song-list');
   list.innerHTML = '';
-  const realSongs = S.songs.filter(s => s.type !== 'egg');
+  const realSongs = S.songs.filter(s => s.type !== 'egg' && s.name !== '__eggs__');
   const eggs      = S.songs.filter(s => s.type === 'egg');
 
   realSongs.forEach((song, i) => {
@@ -1506,8 +1506,12 @@ function renderSongList() {
   eggCard.onclick = () => openEggs();
   list.appendChild(eggCard);
   ensureTrackIndex().then(() => {
-    const total = eggs.reduce((n, egg) =>
-      n + (S.trackIndex[(egg.name||'').toLowerCase()] || []).length, 0);
+    const realKeys = new Set(
+      S.songs.filter(s => s.type !== 'egg' && s.name !== '__eggs__').map(s => s.name.toLowerCase())
+    );
+    const total = Object.entries(S.trackIndex)
+      .filter(([k]) => !realKeys.has(k))
+      .reduce((n, [, vrs]) => n + vrs.length, 0);
     const el = $('eggscard-count');
     if (el) el.textContent = total === 1 ? '1 recording' : `${total} recordings`;
   });
@@ -1574,7 +1578,7 @@ async function openSong(songName, songIdx) {
   const verTitle = $('tp-versions-title');
   if (verTitle) verTitle.textContent = 'Versions';
 
-  const realSongs = S.songs.filter(s => s.type !== 'egg');
+  const realSongs = S.songs.filter(s => s.type !== 'egg' && s.name !== '__eggs__');
   $('tp-prev-song').disabled = songIdx <= 0;
   $('tp-next-song').disabled = songIdx >= realSongs.length - 1;
   $('tp-versions-body').innerHTML = '';
@@ -1615,13 +1619,18 @@ function getEggPool() {
 
 async function openEggs() {
   await ensureTrackIndex();
-  const eggs = S.songs.filter(s => s.type === 'egg');
-  // Pool all egg versions across all egg songs, tagging each with eggName
+  // Collect any recording whose filename prefix doesn't match a real song
+  const realKeys = new Set(
+    S.songs
+      .filter(s => s.type !== 'egg' && s.name !== '__eggs__')
+      .map(s => s.name.toLowerCase())
+  );
   const allVersions = [];
   let counter = 1;
-  eggs.forEach(egg => {
-    const vrs = S.trackIndex[(egg.name||'').toLowerCase()] || [];
-    vrs.forEach(v => allVersions.push({ ...v, version: counter++, eggName: egg.name }));
+  Object.entries(S.trackIndex).forEach(([key, vrs]) => {
+    if (!realKeys.has(key)) {
+      vrs.forEach(v => allVersions.push({ ...v, version: counter++, eggName: key }));
+    }
   });
 
   S.tp.songName    = '__eggs__';
@@ -1685,7 +1694,7 @@ function tpSwipeEnd(e) {
   const W = window.innerWidth, threshold = W * 0.35;
   const body = $('tp-body');
   _hideSwipeGhost();
-  const realSongs = S.songs.filter(s => s.type !== 'egg');
+  const realSongs = S.songs.filter(s => s.type !== 'egg' && s.name !== '__eggs__');
   const canNext = S.tp.songIdx < realSongs.length - 1;
   const canPrev = S.tp.songIdx > 0;
   if (dx < -threshold && canNext) {
@@ -1704,7 +1713,7 @@ function tpSwipeEnd(e) {
 }
 
 function _updateSwipeGhost(dx) {
-  const realSongs = S.songs.filter(s => s.type !== 'egg');
+  const realSongs = S.songs.filter(s => s.type !== 'egg' && s.name !== '__eggs__');
   const ghost = $('tp-swipe-ghost');
   const W = window.innerWidth, threshold = W * 0.35;
   ghost.className = 'tp-swipe-ghost';
@@ -2349,9 +2358,22 @@ function tpEditTitle() {
       if (idx >= 0) {
         S.songs[idx].name = newName;
         S.tp.songName = newName;
-        S.trackIndexLoaded = false;
-        sessionStorage.removeItem('bandapp_trackIndex');
-        try { await saveSongsJson(); showToast('Renamed to ' + newName); } catch(e) { console.warn(e); }
+        // Rename all MP3 files on Drive (filename prefix = song name)
+        const versions = S.tp.versions;
+        showLoading('Renaming files…');
+        try {
+          await Promise.all(versions.map(v => {
+            const parts = v.fileName.replace(/\.mp3$/i, '').split(/\s*-\s*/);
+            parts[0] = newName;
+            const newFileName = parts.join(' - ') + '.mp3';
+            return Drive.renameFile(v.fileId, newFileName);
+          }));
+          S.trackIndexLoaded = false;
+          sessionStorage.removeItem('bandapp_trackIndex');
+          await saveSongsJson();
+          hideLoading();
+          showToast('Renamed to ' + newName);
+        } catch(e) { hideLoading(); showToast('Rename failed: ' + e.message); console.warn(e); }
       }
     }
   };
