@@ -44,7 +44,7 @@ header {
   border-bottom: 1px solid var(--c-border); flex-shrink: 0; height: 50px;
 }
 .logo { font-family: var(--f-display); font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 9px; }
-.logo-birds { font-size: 18px; letter-spacing: 2px; color: var(--c-amber-lt); opacity: 0.85; }
+.logo-birds { font-size: 14px; letter-spacing: 1px; color: var(--c-amber-lt); opacity: 0.85; }
 .user-chip {
   display: flex; align-items: center; gap: 8px;
   font-family: var(--f-mono); font-size: 11px; color: var(--c-teal-pale); cursor: pointer;
@@ -143,9 +143,9 @@ header {
 .session-date-block { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 44px; }
 .session-day { font-family: var(--f-display); font-size: 22px; font-weight: 700; line-height: 1; }
 .session-month { font-family: var(--f-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--c-teal-pale); }
-.session-year { font-family: var(--f-mono); font-size: 9px; color: var(--c-border); }
+.session-year { font-family: var(--f-mono); font-size: 9px; color: var(--c-teal-pale); }
 .session-divider { width: 1px; background: var(--c-border); align-self: stretch; flex-shrink: 0; }
-.session-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.session-info { flex: 1; min-width: 0; overflow: hidden; display: flex; flex-direction: column; gap: 3px; }
 .session-track-count { font-family: var(--f-mono); font-size: 11px; color: var(--c-teal-pale); }
 .session-track-names { font-size: 12px; color: var(--c-text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .session-type-badge {
@@ -471,6 +471,16 @@ header {
 /* ══ VERSION STAR ══ */
 .tp-ver-star { font-size:13px; cursor:pointer; flex-shrink:0; padding:2px 4px; opacity:0.35; transition:opacity 0.15s, transform 0.15s; }
 .tp-ver-star.starred { opacity:1; transform:scale(1.2); }
+.tp-ver-promote { background:none; border:none; color:var(--c-teal-pale); font-size:20px; font-weight:300; cursor:pointer; padding:0 6px; line-height:1; flex-shrink:0; }
+.tp-ver-promote:hover { color:var(--c-amber-lt); }
+.egg-section-sep { display:flex; align-items:center; gap:8px; padding:14px 16px 6px; font-family:var(--f-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--c-text-dim); }
+.egg-section-sep::before { content:''; flex:1; height:1px; background:var(--c-border); }
+#tp-title[contenteditable="true"] { background:var(--c-surface2); border-radius:4px; padding:2px 6px; outline:1px solid var(--c-teal); cursor:text; }
+#promote-modal { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; display:none; align-items:flex-end; }
+.promote-sheet { background:var(--c-surface); border-radius:14px 14px 0 0; padding:20px 16px 36px; width:100%; box-sizing:border-box; }
+.promote-sheet h3 { margin:0 0 14px; font-size:15px; color:var(--c-amber-lt); }
+.promote-sheet select, .promote-sheet input[type=text] { width:100%; box-sizing:border-box; background:var(--c-surface2); border:1px solid var(--c-border); color:var(--c-text); padding:8px 10px; border-radius:6px; font-size:13px; margin-bottom:10px; }
+.promote-actions { display:flex; gap:8px; margin-top:4px; }
 
 /* ══ PERCH REACTION ══ */
 .perch-btn { font-family:var(--f-mono); font-size:10px; color:var(--c-border); cursor:pointer; padding:2px 6px; border:1px solid transparent; border-radius:4px; transition:all 0.15s; flex-shrink:0; display:inline-flex; align-items:center; gap:2px; }
@@ -589,7 +599,7 @@ header {
     <div id="tp-swipe-ghost" class="tp-swipe-ghost"></div>
     <div class="screen-nav">
       <button class="back-btn" onclick="backToTracks()">‹ Tracks</button>
-      <div class="screen-nav-title" id="tp-title">—</div>
+      <div class="screen-nav-title" id="tp-title" onclick="tpEditTitle()" title="Tap to rename" style="cursor:pointer">—</div>
       <div class="tp-song-nav">
         <button class="tp-song-nav-btn" id="tp-prev-song" onclick="tpPrevSong()">‹</button>
         <button class="tp-song-nav-btn" id="tp-next-song" onclick="tpNextSong()">›</button>
@@ -614,7 +624,7 @@ header {
       <!-- versions -->
       <div class="tp-versions">
         <div class="tp-section-header" onclick="tpToggleExpand('versions')">
-          <span class="tp-section-title">Versions</span>
+          <span class="tp-section-title" id="tp-versions-title">Versions</span>
           <span class="tp-section-toggle" id="tp-versions-toggle">▾</span>
         </div>
         <div class="tp-versions-body" id="tp-versions-body"></div>
@@ -908,6 +918,17 @@ const Drive = {
   async findFolder(parentId, name) {
     const files = await Drive.list(parentId, { foldersOnly: true });
     return files.find(f => f.name.toLowerCase() === name.toLowerCase()) || null;
+  },
+
+  // Rename a file (metadata-only patch)
+  async renameFile(fileId, newName) {
+    const token = gapi.client.getToken()?.access_token;
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newName }),
+    });
+    if (!res.ok) throw new Error(`Rename failed ${res.status}`);
   },
 };
 
@@ -1390,6 +1411,7 @@ Object.assign(S, {
     commentRange: false,
     rafId:        null,
     notesSaveTimer: null,
+    isEgg:        false,
   },
 });
 
@@ -1447,17 +1469,29 @@ function renderSongList() {
   });
 
   if (eggs.length > 0) {
-    const card = document.createElement('div');
-    card.className = 'song-card egg-card';
-    card.innerHTML = `
-      <div class="song-card-icon">𓅤</div>
-      <div class="song-card-info">
-        <div class="song-card-name">Eggs</div>
-        <div class="song-card-sub">${eggs.length} unhatched idea${eggs.length !== 1 ? 's' : ''}</div>
-      </div>
-      <div style="color:var(--c-border)">›</div>`;
-    card.onclick = () => openSong('__eggs__', realSongs.length);
-    list.appendChild(card);
+    const sep = document.createElement('div');
+    sep.className = 'egg-section-sep';
+    sep.textContent = '𓅤 Eggs';
+    list.appendChild(sep);
+
+    eggs.forEach((egg, i) => {
+      const card = document.createElement('div');
+      card.className = 'song-card egg-card';
+      card.innerHTML = `
+        <div class="song-card-icon">𓅤</div>
+        <div class="song-card-info">
+          <div class="song-card-name">${egg.name}</div>
+          <div class="song-card-sub" id="eggscard-${i}">—</div>
+        </div>
+        <div style="color:var(--c-border)">›</div>`;
+      card.onclick = () => openSong(egg.name, i, true);
+      list.appendChild(card);
+      ensureTrackIndex().then(() => {
+        const el = $(`eggscard-${i}`);
+        const n = (S.trackIndex[(egg.name||'').toLowerCase()] || []).length;
+        if (el) el.textContent = n === 1 ? '1 recording' : `${n} recordings`;
+      });
+    });
   }
 }
 
@@ -1509,18 +1543,27 @@ async function ensureTrackIndex() {
 }
 
 /* ── OPEN SONG ───────────────────────────────────────── */
-async function openSong(songName, songIdx) {
+async function openSong(songName, songIdx, forceEgg = false) {
   S.tp.songName = songName;
   S.tp.songIdx  = songIdx;
+  S.tp.isEgg    = forceEgg || S.songs.find(s => s.name === songName)?.type === 'egg';
   S.tp.peaks    = null;
   S.tp.zoom     = 1.0;
   S.tp.audio.pause();
 
   showScreen('screen-track');
-  $('tp-title').textContent = songName === '__eggs__' ? 'Eggs 𓅤' : songName;
+  $('tp-title').textContent = songName;
+  const verTitle = $('tp-versions-title');
+  if (verTitle) verTitle.textContent = S.tp.isEgg ? 'Eggs' : 'Versions';
+
   const realSongs = S.songs.filter(s => s.type !== 'egg');
-  $('tp-prev-song').disabled = songIdx <= 0;
-  $('tp-next-song').disabled = songIdx >= realSongs.length - 1;
+  if (S.tp.isEgg) {
+    $('tp-prev-song').disabled = true;
+    $('tp-next-song').disabled = true;
+  } else {
+    $('tp-prev-song').disabled = songIdx <= 0;
+    $('tp-next-song').disabled = songIdx >= realSongs.length - 1;
+  }
   $('tp-versions-body').innerHTML = '';
   $('tp-comments-body').innerHTML = '';
   clearWaveCanvas();
@@ -1624,10 +1667,12 @@ function _hideSwipeGhost() { $('tp-swipe-ghost').style.opacity = 0; }
 function renderVersionsList() {
   const body = $('tp-versions-body');
   body.innerHTML = '';
+  const emptyLabel = S.tp.isEgg ? 'recordings' : 'versions';
   if (!S.tp.versions.length) {
-    body.innerHTML = `<div class="empty-state"><div class="empty-bird">𓅙</div><div class="empty-text">No versions found.</div></div>`;
+    body.innerHTML = `<div class="empty-state"><div class="empty-bird">𓅙</div><div class="empty-text">No ${emptyLabel} found.</div></div>`;
     return;
   }
+  const badge = S.tp.isEgg ? 'Egg' : 'V';
   S.tp.versions.forEach((v, i) => {
     const row = document.createElement('div');
     row.className = 'tp-ver-row';
@@ -1635,13 +1680,14 @@ function renderVersionsList() {
     const songEntry = S.songs.find(s => s.name === S.tp.songName);
     const starred   = (songEntry?.starredVersions || []).includes(v.fileId);
     row.innerHTML = `
-      <div class="tp-ver-badge">V${v.version}</div>
+      <div class="tp-ver-badge">${badge}${v.version}</div>
       <div class="tp-ver-info">
         <div class="tp-ver-date">${fmtDate(v.sessionDate)}</div>
         <div class="tp-ver-type">${v.sessionType}</div>
       </div>
       <div class="tp-ver-dur" id="tpvdur-${i}">—</div>
-      <div class="tp-ver-star${starred?' starred':''}" title="Star this version" onclick="toggleStar(event,'${v.fileId}')">𓅃</div>
+      <div class="tp-ver-star${starred?' starred':''}" title="Star this version" onclick="toggleStar(event,'${v.fileId}')">★</div>
+      ${S.tp.isEgg ? `<div class="tp-ver-promote" title="Promote to track" onclick="event.stopPropagation();openPromoteModal('${v.fileId}','${v.fileName}')">+</div>` : ''}
       <div class="tp-ver-play">▶</div>`;
     row.onclick = () => selectVersion(i);
     body.appendChild(row);
@@ -1710,17 +1756,19 @@ function tpNotesChanged() {
   clearTimeout(S.tp.notesSaveTimer);
   S.tp.notesSaveTimer = setTimeout(saveSongNotes, 1500);
 }
+async function saveSongsJson() {
+  const metaId = S.folders['_meta'];
+  const files  = await Drive.list(metaId, { filesOnly: true });
+  const f      = files.find(f => f.name === 'songs.json');
+  await Drive.writeJson(f?.id, S.songs, 'songs.json', metaId);
+}
+
 async function saveSongNotes() {
   const text = $('tp-lyrics-text').value;
   const idx  = S.songs.findIndex(s => s.name === S.tp.songName);
   if (idx < 0) return;
   S.songs[idx].notes = text;
-  try {
-    const metaId = S.folders['_meta'];
-    const files  = await Drive.list(metaId, { filesOnly: true });
-    const f      = files.find(f => f.name === 'songs.json');
-    await Drive.writeJson(f?.id, S.songs, 'songs.json', metaId);
-  } catch(e) { console.warn('Notes save failed:', e); }
+  try { await saveSongsJson(); } catch(e) { console.warn('Notes save failed:', e); }
 }
 
 /* ══════════════════════════════════════════════════════
@@ -2195,12 +2243,89 @@ async function toggleStar(e, fileId){
   const i=songEntry.starredVersions.indexOf(fileId);
   if(i>=0) songEntry.starredVersions.splice(i,1); else songEntry.starredVersions.push(fileId);
   const star=e.currentTarget; star.classList.toggle('starred', songEntry.starredVersions.includes(fileId));
-  try{
-    const metaId=S.folders['_meta'];
-    const files=await Drive.list(metaId,{filesOnly:true});
-    const f=files.find(f=>f.name==='songs.json');
-    await Drive.writeJson(f?.id,S.songs,'songs.json',metaId);
-  }catch(ex){ console.warn('Star save failed',ex); }
+  try{ await saveSongsJson(); }catch(ex){ console.warn('Star save failed',ex); }
+}
+
+/* ══════════════════════════════════════════════════════
+   TITLE EDITING
+══════════════════════════════════════════════════════ */
+function tpEditTitle() {
+  const titleEl = $('tp-title');
+  if (titleEl.contentEditable === 'true') return;
+  const current = S.tp.songName;
+  titleEl.contentEditable = 'true';
+  titleEl.focus();
+  const range = document.createRange();
+  range.selectNodeContents(titleEl);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  titleEl.onkeydown = e => {
+    if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); }
+    if (e.key === 'Escape') { titleEl.textContent = current; titleEl.blur(); }
+  };
+  titleEl.onblur = async () => {
+    titleEl.contentEditable = 'false';
+    titleEl.onblur = null; titleEl.onkeydown = null;
+    const newName = titleEl.textContent.trim() || current;
+    titleEl.textContent = newName;
+    if (newName !== current) {
+      const idx = S.songs.findIndex(s => s.name === current);
+      if (idx >= 0) {
+        S.songs[idx].name = newName;
+        S.tp.songName = newName;
+        S.trackIndexLoaded = false;
+        sessionStorage.removeItem('bandapp_trackIndex');
+        try { await saveSongsJson(); showToast('Renamed to ' + newName); } catch(e) { console.warn(e); }
+      }
+    }
+  };
+}
+
+/* ══════════════════════════════════════════════════════
+   PROMOTE EGG
+══════════════════════════════════════════════════════ */
+function openPromoteModal(fileId, fileName) {
+  const sel = $('promote-song-select');
+  sel.innerHTML = '<option value="">— pick existing song —</option>';
+  S.songs.filter(s => s.type !== 'egg').forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.name; opt.textContent = s.name;
+    sel.appendChild(opt);
+  });
+  $('promote-new-name').value = '';
+  $('promote-fileid').value = fileId;
+  $('promote-filename').value = fileName;
+  $('promote-modal').style.display = 'flex';
+}
+
+async function confirmPromote() {
+  const fileId   = $('promote-fileid').value;
+  const selected = $('promote-song-select').value;
+  const newSong  = selected || $('promote-new-name').value.trim();
+  if (!newSong) { showToast('Pick or type a song name'); return; }
+
+  await ensureTrackIndex();
+  const existing    = S.trackIndex[newSong.toLowerCase()] || [];
+  const nextVer     = existing.length + 1;
+  const newFileName = existing.length === 0 ? `${newSong}.mp3` : `${newSong} - ${nextVer}.mp3`;
+
+  showLoading('Promoting…');
+  try {
+    await Drive.renameFile(fileId, newFileName);
+    if (!selected) S.songs.push({ name: newSong, notes: '', starredVersions: [] });
+    S.trackIndexLoaded = false;
+    sessionStorage.removeItem('bandapp_trackIndex');
+    await saveSongsJson();
+    $('promote-modal').style.display = 'none';
+    hideLoading();
+    showToast(`Promoted to "${newSong}"`);
+    backToTracks();
+  } catch(e) {
+    hideLoading();
+    showToast('Promote failed: ' + e.message);
+  }
 }
 
 /* ══════════════════════════════════════════════════════
@@ -2589,6 +2714,23 @@ window.onload = () => {
   buildNamePicker();
 };
 </script>
+
+<!-- Promote egg modal -->
+<div id="promote-modal">
+  <div class="promote-sheet">
+    <h3>𓅤 Promote egg to track</h3>
+    <input type="hidden" id="promote-fileid">
+    <input type="hidden" id="promote-filename">
+    <select id="promote-song-select">
+      <option value="">— pick existing song —</option>
+    </select>
+    <input type="text" id="promote-new-name" placeholder="Or type a new song name…">
+    <div class="promote-actions">
+      <button class="btn btn-primary" onclick="confirmPromote()">Promote</button>
+      <button class="btn btn-ghost" onclick="$('promote-modal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <!-- Load Google libraries ONCE, each with its own init callback -->
 <script src="https://apis.google.com/js/api.js" onload="initGapi()"></script>
