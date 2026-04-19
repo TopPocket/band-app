@@ -44,7 +44,7 @@ header {
   border-bottom: 1px solid var(--c-border); flex-shrink: 0; height: 50px;
 }
 .logo { font-family: var(--f-display); font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 9px; }
-.logo-birds { font-size: 14px; letter-spacing: 1px; color: var(--c-amber-lt); opacity: 0.85; }
+.logo-birds { font-size: 15px; letter-spacing: 0; white-space: nowrap; color: var(--c-amber-lt); opacity: 0.85; }
 .user-chip {
   display: flex; align-items: center; gap: 8px;
   font-family: var(--f-mono); font-size: 11px; color: var(--c-teal-pale); cursor: pointer;
@@ -143,7 +143,7 @@ header {
 .session-date-block { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 44px; }
 .session-day { font-family: var(--f-display); font-size: 22px; font-weight: 700; line-height: 1; }
 .session-month { font-family: var(--f-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--c-teal-pale); }
-.session-year { font-family: var(--f-mono); font-size: 9px; color: var(--c-teal-pale); }
+.session-year { font-family: var(--f-mono); font-size: 9px; color: #6B8E8C; }
 .session-divider { width: 1px; background: var(--c-border); align-self: stretch; flex-shrink: 0; }
 .session-info { flex: 1; min-width: 0; overflow: hidden; display: flex; flex-direction: column; gap: 3px; }
 .session-track-count { font-family: var(--f-mono); font-size: 11px; color: var(--c-teal-pale); }
@@ -471,8 +471,8 @@ header {
 /* ══ VERSION STAR ══ */
 .tp-ver-star { font-size:13px; cursor:pointer; flex-shrink:0; padding:2px 4px; opacity:0.35; transition:opacity 0.15s, transform 0.15s; }
 .tp-ver-star.starred { opacity:1; transform:scale(1.2); }
-.tp-ver-promote { background:none; border:none; color:var(--c-teal-pale); font-size:20px; font-weight:300; cursor:pointer; padding:0 6px; line-height:1; flex-shrink:0; }
-.tp-ver-promote:hover { color:var(--c-amber-lt); }
+.tp-ver-promote { background:none; border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); font-size:11px; font-family:var(--f-mono); cursor:pointer; padding:3px 7px; line-height:1.4; flex-shrink:0; }
+.tp-ver-promote:hover { color:var(--c-amber-lt); border-color:var(--c-amber-lt); }
 .egg-section-sep { display:flex; align-items:center; gap:8px; padding:14px 16px 6px; font-family:var(--f-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--c-text-dim); }
 .egg-section-sep::before { content:''; flex:1; height:1px; background:var(--c-border); }
 #tp-title[contenteditable="true"] { background:var(--c-surface2); border-radius:4px; padding:2px 6px; outline:1px solid var(--c-teal); cursor:text; }
@@ -815,10 +815,30 @@ const fmtDateParts = iso => {
   };
 };
 
+const _noHistoryScreens = new Set(['screen-auth','screen-whoami']);
+let _suppressHistory = false;
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   $(id).classList.add('active');
+  if (!_suppressHistory && !_noHistoryScreens.has(id)) {
+    history.pushState({ screen: id }, '');
+  }
 }
+
+// Seed history so the first back press navigates within the app
+history.replaceState({ screen: 'screen-home' }, '');
+
+window.addEventListener('popstate', e => {
+  const target = e.state?.screen || 'screen-home';
+  const current = document.querySelector('.screen.active')?.id;
+  // Clean up current screen state before leaving
+  if (current === 'screen-track') { S.tp.audio.pause(); cancelAnimationFrame(S.tp.rafId); }
+  if (current === 'screen-session') { try { SessPlayer.stop(); } catch(_){} }
+  _suppressHistory = true;
+  showScreen(target);
+  _suppressHistory = false;
+});
 
 function showLoading(msg = 'Loading…') {
   $('loading-overlay').classList.add('visible');
@@ -1468,31 +1488,29 @@ function renderSongList() {
     });
   });
 
-  if (eggs.length > 0) {
-    const sep = document.createElement('div');
-    sep.className = 'egg-section-sep';
-    sep.textContent = '𓅤 Eggs';
-    list.appendChild(sep);
+  // Eggs — single catch-all card
+  const sep = document.createElement('div');
+  sep.className = 'egg-section-sep';
+  sep.textContent = '𓅤 Eggs';
+  list.appendChild(sep);
 
-    eggs.forEach((egg, i) => {
-      const card = document.createElement('div');
-      card.className = 'song-card egg-card';
-      card.innerHTML = `
-        <div class="song-card-icon">𓅤</div>
-        <div class="song-card-info">
-          <div class="song-card-name">${egg.name}</div>
-          <div class="song-card-sub" id="eggscard-${i}">—</div>
-        </div>
-        <div style="color:var(--c-border)">›</div>`;
-      card.onclick = () => openSong(egg.name, i, true);
-      list.appendChild(card);
-      ensureTrackIndex().then(() => {
-        const el = $(`eggscard-${i}`);
-        const n = (S.trackIndex[(egg.name||'').toLowerCase()] || []).length;
-        if (el) el.textContent = n === 1 ? '1 recording' : `${n} recordings`;
-      });
-    });
-  }
+  const eggCard = document.createElement('div');
+  eggCard.className = 'song-card egg-card';
+  eggCard.innerHTML = `
+    <div class="song-card-icon">𓅤</div>
+    <div class="song-card-info">
+      <div class="song-card-name">Unhatched Ideas</div>
+      <div class="song-card-sub" id="eggscard-count">—</div>
+    </div>
+    <div style="color:var(--c-border)">›</div>`;
+  eggCard.onclick = () => openEggs();
+  list.appendChild(eggCard);
+  ensureTrackIndex().then(() => {
+    const total = eggs.reduce((n, egg) =>
+      n + (S.trackIndex[(egg.name||'').toLowerCase()] || []).length, 0);
+    const el = $('eggscard-count');
+    if (el) el.textContent = total === 1 ? '1 recording' : `${total} recordings`;
+  });
 }
 
 /* ── BUILD TRACK INDEX ───────────────────────────────── */
@@ -1543,10 +1561,10 @@ async function ensureTrackIndex() {
 }
 
 /* ── OPEN SONG ───────────────────────────────────────── */
-async function openSong(songName, songIdx, forceEgg = false) {
+async function openSong(songName, songIdx) {
   S.tp.songName = songName;
   S.tp.songIdx  = songIdx;
-  S.tp.isEgg    = forceEgg || S.songs.find(s => s.name === songName)?.type === 'egg';
+  S.tp.isEgg    = false;
   S.tp.peaks    = null;
   S.tp.zoom     = 1.0;
   S.tp.audio.pause();
@@ -1554,16 +1572,11 @@ async function openSong(songName, songIdx, forceEgg = false) {
   showScreen('screen-track');
   $('tp-title').textContent = songName;
   const verTitle = $('tp-versions-title');
-  if (verTitle) verTitle.textContent = S.tp.isEgg ? 'Eggs' : 'Versions';
+  if (verTitle) verTitle.textContent = 'Versions';
 
   const realSongs = S.songs.filter(s => s.type !== 'egg');
-  if (S.tp.isEgg) {
-    $('tp-prev-song').disabled = true;
-    $('tp-next-song').disabled = true;
-  } else {
-    $('tp-prev-song').disabled = songIdx <= 0;
-    $('tp-next-song').disabled = songIdx >= realSongs.length - 1;
-  }
+  $('tp-prev-song').disabled = songIdx <= 0;
+  $('tp-next-song').disabled = songIdx >= realSongs.length - 1;
   $('tp-versions-body').innerHTML = '';
   $('tp-comments-body').innerHTML = '';
   clearWaveCanvas();
@@ -1590,6 +1603,52 @@ async function openSong(songName, songIdx, forceEgg = false) {
 
 function tpPrevSong() { const r = S.songs.filter(s=>s.type!=='egg'); if (S.tp.songIdx>0) openSong(r[S.tp.songIdx-1].name, S.tp.songIdx-1); }
 function tpNextSong() { const r = S.songs.filter(s=>s.type!=='egg'); if (S.tp.songIdx<r.length-1) openSong(r[S.tp.songIdx+1].name, S.tp.songIdx+1); }
+
+/* ── EGG POOL ────────────────────────────────────────── */
+function getEggPool() {
+  let pool = S.songs.find(s => s.name === '__eggs__');
+  if (!pool) { pool = { name: '__eggs__', type: 'egg_pool', eggNotes: {}, starredVersions: [] }; S.songs.push(pool); }
+  if (!pool.eggNotes) pool.eggNotes = {};
+  if (!pool.starredVersions) pool.starredVersions = [];
+  return pool;
+}
+
+async function openEggs() {
+  await ensureTrackIndex();
+  const eggs = S.songs.filter(s => s.type === 'egg');
+  // Pool all egg versions across all egg songs, tagging each with eggName
+  const allVersions = [];
+  let counter = 1;
+  eggs.forEach(egg => {
+    const vrs = S.trackIndex[(egg.name||'').toLowerCase()] || [];
+    vrs.forEach(v => allVersions.push({ ...v, version: counter++, eggName: egg.name }));
+  });
+
+  S.tp.songName    = '__eggs__';
+  S.tp.songIdx     = -1;
+  S.tp.isEgg       = true;
+  S.tp.versions    = allVersions;
+  S.tp.versionIdx  = 0;
+  S.tp.peaks       = null;
+  S.tp.zoom        = 1.0;
+  S.tp.audio.pause();
+
+  showScreen('screen-track');
+  $('tp-title').textContent = 'Unhatched Ideas';
+  const verTitle = $('tp-versions-title');
+  if (verTitle) verTitle.textContent = 'Eggs';
+  $('tp-prev-song').disabled = true;
+  $('tp-next-song').disabled = true;
+  $('tp-versions-body').innerHTML = '';
+  $('tp-comments-body').innerHTML = '';
+  clearWaveCanvas();
+
+  const pool = getEggPool();
+  $('tp-lyrics-text').value = allVersions.length ? (pool.eggNotes[allVersions[0].fileId] || '') : '';
+
+  renderVersionsList();
+  if (allVersions.length) await selectVersion(0);
+}
 
 /* ── SWIPE ───────────────────────────────────────────── */
 const _swipe = { x: null, y: null, dx: 0, locked: null };
@@ -1677,7 +1736,7 @@ function renderVersionsList() {
     const row = document.createElement('div');
     row.className = 'tp-ver-row';
     row.id = `tpver-${i}`;
-    const songEntry = S.songs.find(s => s.name === S.tp.songName);
+    const songEntry = S.tp.isEgg ? getEggPool() : S.songs.find(s => s.name === S.tp.songName);
     const starred   = (songEntry?.starredVersions || []).includes(v.fileId);
     row.innerHTML = `
       <div class="tp-ver-badge">${badge}${v.version}</div>
@@ -1687,7 +1746,7 @@ function renderVersionsList() {
       </div>
       <div class="tp-ver-dur" id="tpvdur-${i}">—</div>
       <div class="tp-ver-star${starred?' starred':''}" title="Star this version" onclick="toggleStar(event,'${v.fileId}')">★</div>
-      ${S.tp.isEgg ? `<div class="tp-ver-promote" title="Promote to track" onclick="event.stopPropagation();openPromoteModal('${v.fileId}','${v.fileName}')">+</div>` : ''}
+      ${S.tp.isEgg ? `<div class="tp-ver-promote" title="Hatch into a track" onclick="event.stopPropagation();openHatchModal('${v.fileId}','${v.fileName}')">𓅣 Hatch</div>` : ''}
       <div class="tp-ver-play">▶</div>`;
     row.onclick = () => selectVersion(i);
     body.appendChild(row);
@@ -1698,6 +1757,13 @@ async function selectVersion(idx) {
   S.tp.versionIdx = idx;
   const v = S.tp.versions[idx];
   if (!v) return;
+
+  // For eggs: update the notes textarea with this recording's notes
+  if (S.tp.isEgg) {
+    clearTimeout(S.tp.notesSaveTimer);
+    const pool = getEggPool();
+    $('tp-lyrics-text').value = pool.eggNotes?.[v.fileId] || '';
+  }
 
   document.querySelectorAll('.tp-ver-row').forEach((r,i) => r.classList.toggle('active', i===idx));
   $('tp-ctrl-play').textContent = '…';
@@ -1765,9 +1831,16 @@ async function saveSongsJson() {
 
 async function saveSongNotes() {
   const text = $('tp-lyrics-text').value;
-  const idx  = S.songs.findIndex(s => s.name === S.tp.songName);
-  if (idx < 0) return;
-  S.songs[idx].notes = text;
+  if (S.tp.isEgg) {
+    const v = S.tp.versions[S.tp.versionIdx];
+    if (!v) return;
+    const pool = getEggPool();
+    pool.eggNotes[v.fileId] = text;
+  } else {
+    const idx = S.songs.findIndex(s => s.name === S.tp.songName);
+    if (idx < 0) return;
+    S.songs[idx].notes = text;
+  }
   try { await saveSongsJson(); } catch(e) { console.warn('Notes save failed:', e); }
 }
 
@@ -2238,7 +2311,8 @@ function sessCommentBtnUp(e){
 ══════════════════════════════════════════════════════ */
 async function toggleStar(e, fileId){
   e.stopPropagation();
-  const songEntry=S.songs.find(s=>s.name===S.tp.songName); if(!songEntry) return;
+  const songEntry = S.tp.isEgg ? getEggPool() : S.songs.find(s=>s.name===S.tp.songName);
+  if(!songEntry) return;
   if(!songEntry.starredVersions) songEntry.starredVersions=[];
   const i=songEntry.starredVersions.indexOf(fileId);
   if(i>=0) songEntry.starredVersions.splice(i,1); else songEntry.starredVersions.push(fileId);
@@ -2286,10 +2360,10 @@ function tpEditTitle() {
 /* ══════════════════════════════════════════════════════
    PROMOTE EGG
 ══════════════════════════════════════════════════════ */
-function openPromoteModal(fileId, fileName) {
+function openHatchModal(fileId, fileName) {
   const sel = $('promote-song-select');
   sel.innerHTML = '<option value="">— pick existing song —</option>';
-  S.songs.filter(s => s.type !== 'egg').forEach(s => {
+  S.songs.filter(s => s.type !== 'egg' && s.name !== '__eggs__').forEach(s => {
     const opt = document.createElement('option');
     opt.value = s.name; opt.textContent = s.name;
     sel.appendChild(opt);
@@ -2300,7 +2374,7 @@ function openPromoteModal(fileId, fileName) {
   $('promote-modal').style.display = 'flex';
 }
 
-async function confirmPromote() {
+async function confirmHatch() {
   const fileId   = $('promote-fileid').value;
   const selected = $('promote-song-select').value;
   const newSong  = selected || $('promote-new-name').value.trim();
@@ -2311,20 +2385,30 @@ async function confirmPromote() {
   const nextVer     = existing.length + 1;
   const newFileName = existing.length === 0 ? `${newSong}.mp3` : `${newSong} - ${nextVer}.mp3`;
 
-  showLoading('Promoting…');
+  showLoading('Hatching…');
   try {
     await Drive.renameFile(fileId, newFileName);
-    if (!selected) S.songs.push({ name: newSong, notes: '', starredVersions: [] });
+    // Transfer egg notes to the new song's notes
+    const pool = getEggPool();
+    const eggNote = pool.eggNotes?.[fileId] || '';
+    delete pool.eggNotes[fileId];
+
+    if (selected) {
+      const songEntry = S.songs.find(s => s.name === selected);
+      if (songEntry && eggNote) songEntry.notes = (songEntry.notes ? songEntry.notes + '\n\n' + eggNote : eggNote);
+    } else {
+      S.songs.push({ name: newSong, notes: eggNote, starredVersions: [] });
+    }
     S.trackIndexLoaded = false;
     sessionStorage.removeItem('bandapp_trackIndex');
     await saveSongsJson();
     $('promote-modal').style.display = 'none';
     hideLoading();
-    showToast(`Promoted to "${newSong}"`);
+    showToast(`"${newSong}" hatched!`);
     backToTracks();
   } catch(e) {
     hideLoading();
-    showToast('Promote failed: ' + e.message);
+    showToast('Hatch failed: ' + e.message);
   }
 }
 
@@ -2718,7 +2802,7 @@ window.onload = () => {
 <!-- Promote egg modal -->
 <div id="promote-modal">
   <div class="promote-sheet">
-    <h3>𓅤 Promote egg to track</h3>
+    <h3>𓅣 Hatch into a track</h3>
     <input type="hidden" id="promote-fileid">
     <input type="hidden" id="promote-filename">
     <select id="promote-song-select">
@@ -2726,7 +2810,7 @@ window.onload = () => {
     </select>
     <input type="text" id="promote-new-name" placeholder="Or type a new song name…">
     <div class="promote-actions">
-      <button class="btn btn-primary" onclick="confirmPromote()">Promote</button>
+      <button class="btn btn-primary" onclick="confirmHatch()">Hatch</button>
       <button class="btn btn-ghost" onclick="$('promote-modal').style.display='none'">Cancel</button>
     </div>
   </div>
