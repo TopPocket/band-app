@@ -476,7 +476,7 @@ header {
 .egg-section-sep { display:flex; align-items:center; gap:8px; padding:14px 16px 6px; font-family:var(--f-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--c-text-dim); }
 .egg-section-sep::before { content:''; flex:1; height:1px; background:var(--c-border); }
 #tp-title[contenteditable="true"] { background:var(--c-surface2); border-radius:4px; padding:2px 6px; outline:1px solid var(--c-teal); cursor:text; }
-#promote-modal { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; display:none; align-items:flex-end; }
+#promote-modal { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:400; display:none; align-items:flex-end; }
 .promote-sheet { background:var(--c-surface); border-radius:14px 14px 0 0; padding:20px 16px 36px; width:100%; box-sizing:border-box; }
 .promote-sheet h3 { margin:0 0 14px; font-size:15px; color:var(--c-amber-lt); }
 .promote-sheet select, .promote-sheet input[type=text] { width:100%; box-sizing:border-box; background:var(--c-surface2); border:1px solid var(--c-border); color:var(--c-text); padding:8px 10px; border-radius:6px; font-size:13px; margin-bottom:10px; }
@@ -486,6 +486,49 @@ header {
 .perch-btn { font-family:var(--f-mono); font-size:10px; color:var(--c-border); cursor:pointer; padding:2px 6px; border:1px solid transparent; border-radius:4px; transition:all 0.15s; flex-shrink:0; display:inline-flex; align-items:center; gap:2px; }
 .perch-btn:hover { border-color:var(--c-border); }
 .perch-btn.perched { color:var(--c-text-dim); border-color:var(--c-text-dim); background:rgba(217,145,133,0.1); }
+
+/* ══ ADD NOTES PAGE ══ */
+.an-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:14px 16px; }
+.an-card { background:var(--c-surface); border:1px solid var(--c-border); border-radius:10px; padding:14px 10px; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; transition:border-color 0.15s,background 0.15s; }
+.an-card:hover { border-color:var(--c-teal); background:var(--c-surface2); }
+.an-card.soon { opacity:0.4; cursor:default; }
+.an-card.soon:hover { border-color:var(--c-border); background:var(--c-surface); }
+.an-card-icon { font-size:24px; color:var(--c-amber-lt); }
+.an-card-label { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); text-align:center; }
+.an-section-title { font-family:var(--f-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--c-text-dim); padding:10px 16px 4px; }
+.an-tab-item { display:flex; align-items:center; gap:10px; padding:10px 16px; border-bottom:1px solid var(--c-border); cursor:pointer; }
+.an-tab-item:hover { background:var(--c-surface2); }
+.an-tab-song { font-size:13px; flex:1; }
+.an-tab-meta { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); }
+.an-tab-actions { display:flex; gap:6px; }
+.an-tab-btn { background:none; border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); font-size:11px; padding:3px 8px; cursor:pointer; }
+.an-tab-btn:hover { border-color:var(--c-teal-pale); color:var(--c-text); }
+
+/* ══ TAB EDITOR ══ */
+#screen-tab { overflow:hidden; }
+#tab-portrait-msg { display:none; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:13px; text-align:center; padding:20px; }
+#tab-editor-inner { display:none; flex-direction:column; height:100%; }
+@media (orientation:portrait) { #tab-portrait-msg { display:flex; } }
+@media (orientation:landscape) { #tab-editor-inner { display:flex; } }
+#tab-top { display:flex; flex:1; min-height:0; }
+#tab-canvas-wrap { flex:1; overflow-x:auto; overflow-y:hidden; background:var(--c-bg); cursor:crosshair; scroll-behavior:smooth; }
+#tab-canvas { display:block; }
+#tab-controls-panel { width:150px; flex-shrink:0; padding:8px; background:var(--c-surface); border-left:1px solid var(--c-border); display:flex; flex-direction:column; gap:6px; overflow-y:auto; }
+#tab-fretboard-wrap { flex-shrink:0; border-top:2px solid var(--c-teal); position:relative; }
+#fret-canvas { width:100%; height:100%; display:block; cursor:pointer; touch-action:none; }
+.tab-ctrl-label { font-family:var(--f-mono); font-size:9px; color:var(--c-teal-pale); text-transform:uppercase; margin-bottom:1px; }
+#tab-song-btn { background:var(--c-surface2); border:1px solid var(--c-border); border-radius:4px; color:var(--c-text); font-size:11px; padding:5px 6px; cursor:pointer; text-align:left; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tab-author-circle { width:30px; height:30px; border-radius:50%; background:var(--c-amber); color:var(--c-text); display:flex; align-items:center; justify-content:center; font-family:var(--f-display); font-weight:700; font-size:13px; cursor:pointer; border:none; flex-shrink:0; }
+#tab-nav-row { display:flex; gap:4px; align-items:center; }
+#tab-cursor-label { font-family:var(--f-mono); font-size:11px; color:var(--c-amber-lt); flex:1; text-align:center; }
+.tab-nav-btn { flex:1; background:var(--c-surface2); border:1px solid var(--c-border); border-radius:4px; color:var(--c-text); font-size:16px; padding:4px; cursor:pointer; }
+.tab-instr-row { display:flex; gap:4px; }
+.tab-instr-btn { flex:1; background:none; border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:10px; padding:4px; cursor:pointer; }
+.tab-instr-btn.active { background:var(--c-teal); border-color:var(--c-teal); color:var(--c-text); }
+#tab-notes-input { width:100%; box-sizing:border-box; background:var(--c-surface2); border:1px solid var(--c-border); border-radius:4px; color:var(--c-text); font-size:11px; padding:4px; resize:none; height:48px; margin-top:auto; }
+#tab-save-btn { background:var(--c-accent); border:none; border-radius:6px; color:var(--c-text); font-family:var(--f-mono); font-size:12px; padding:7px; cursor:pointer; }
+#tab-save-btn:hover { opacity:0.85; }
+.tab-clear-btn { background:none; border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:10px; padding:3px 6px; cursor:pointer; }
 
 /* ══ TOAST ══ */
 .toast {
@@ -568,6 +611,14 @@ header {
         <div class="nav-card-text">
           <div class="nav-card-title">Comments</div>
           <div class="nav-card-sub">Browse and reply to feedback on tracks</div>
+        </div>
+        <div class="nav-card-arrow">›</div>
+      </div>
+      <div class="nav-card" style="margin-top:14px" onclick="goAddNotes()">
+        <div class="nav-card-icon">𓅱</div>
+        <div class="nav-card-text">
+          <div class="nav-card-title">Add Notes</div>
+          <div class="nav-card-sub">Tabs, structure, recordings, lyrics and images</div>
         </div>
         <div class="nav-card-arrow">›</div>
       </div>
@@ -696,6 +747,90 @@ header {
         <span id="sess-comments-arrow">▾</span>
       </div>
       <div class="sess-comments-body" id="sess-comments-body" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- ── ADD NOTES ── -->
+  <div class="screen" id="screen-addnotes">
+    <div class="screen-nav">
+      <button class="back-btn" onclick="showScreen('screen-home')">‹ Home</button>
+      <div class="screen-nav-title">Add Notes</div>
+    </div>
+    <div class="scroll-area">
+      <div class="an-grid" id="an-grid">
+        <div class="an-card" onclick="openTabEditor(null)">
+          <div class="an-card-icon">𝄆</div>
+          <div class="an-card-label">Add Tab</div>
+        </div>
+        <div class="an-card soon">
+          <div class="an-card-icon">⬡</div>
+          <div class="an-card-label">Structure</div>
+        </div>
+        <div class="an-card soon">
+          <div class="an-card-icon">⏺</div>
+          <div class="an-card-label">Record Sample</div>
+        </div>
+        <div class="an-card soon">
+          <div class="an-card-icon">𓅱</div>
+          <div class="an-card-label">Upload Lyrics</div>
+        </div>
+        <div class="an-card soon">
+          <div class="an-card-icon">♫</div>
+          <div class="an-card-label">Upload Audio</div>
+        </div>
+        <div class="an-card soon">
+          <div class="an-card-icon">⬜</div>
+          <div class="an-card-label">Upload Image</div>
+        </div>
+      </div>
+      <div class="an-section-title">Saved Tabs</div>
+      <div id="an-tabs-list"></div>
+    </div>
+  </div>
+
+  <!-- ── TAB EDITOR ── -->
+  <div class="screen" id="screen-tab">
+    <div id="tab-portrait-msg">
+      <div style="font-size:32px">𓅙</div>
+      <div>Rotate your device to landscape<br>to use the tab editor</div>
+      <button type="button" class="back-btn" style="margin-top:12px" onclick="showScreen('screen-addnotes')">‹ Back</button>
+    </div>
+    <div id="tab-editor-inner">
+      <!-- Top half: tab canvas + controls -->
+      <div id="tab-top">
+        <div id="tab-canvas-wrap" id="tab-canvas-wrap">
+          <canvas id="tab-canvas"></canvas>
+        </div>
+        <div id="tab-controls-panel">
+          <div class="tab-ctrl-label">Track</div>
+          <button type="button" id="tab-song-btn" onclick="tabPickSong()">No track</button>
+          <div style="display:flex;align-items:center;gap:6px">
+            <button type="button" class="tab-author-circle" id="tab-author-btn" onclick="tabPickAuthor()">?</button>
+            <div style="flex:1">
+              <div class="tab-ctrl-label">Musician</div>
+              <div id="tab-author-name" style="font-size:11px;color:var(--c-text-dim)">—</div>
+            </div>
+          </div>
+          <div class="tab-ctrl-label" style="margin-top:4px">Instrument</div>
+          <div class="tab-instr-row">
+            <button type="button" class="tab-instr-btn active" id="tab-bass-btn" onclick="tabSetInstrument('bass')">Bass</button>
+            <button type="button" class="tab-instr-btn" id="tab-guitar-btn" onclick="tabSetInstrument('guitar')">Guitar</button>
+          </div>
+          <div class="tab-ctrl-label" style="margin-top:4px">Position</div>
+          <div id="tab-nav-row">
+            <button type="button" class="tab-nav-btn" onclick="tabMoveCursor(-1)">‹</button>
+            <span id="tab-cursor-label">0</span>
+            <button type="button" class="tab-nav-btn" onclick="tabMoveCursor(1)">›</button>
+          </div>
+          <button type="button" class="tab-clear-btn" onclick="tabClearSlot()" style="margin-top:2px">Clear slot</button>
+          <textarea id="tab-notes-input" placeholder="Notes…" oninput="TE.extraNotes=this.value"></textarea>
+          <button type="button" id="tab-save-btn" onclick="tabSave()">Save</button>
+        </div>
+      </div>
+      <!-- Fretboard -->
+      <div id="tab-fretboard-wrap">
+        <canvas id="fret-canvas"></canvas>
+      </div>
     </div>
   </div>
 
@@ -1679,7 +1814,7 @@ async function openEggs() {
   $('tp-lyrics-text').value = allVersions.length ? (pool.eggNotes[allVersions[0].fileId] || '') : '';
 
   renderVersionsList();
-  if (allVersions.length) await selectVersion(0);
+  // Don't auto-play — let user choose which egg to open
 }
 
 /* ── SWIPE ───────────────────────────────────────────── */
@@ -2839,7 +2974,524 @@ async function cdSubmitReply(cid){
 window.onload = () => {
   showLoading('Starting up…');
   buildNamePicker();
+  // Tab canvas click listeners (elements exist after DOM load)
+  $('tab-canvas')?.addEventListener('click', e => {
+    const canvas = $('tab-canvas');
+    const x = e.clientX - canvas.getBoundingClientRect().left;
+    const slot = Math.floor((x - TAB_L_PAD) / TAB_SLOT_W);
+    if (slot >= 0) { TE.cursor = slot; tabRefreshControls(); renderTabCanvas(); renderFretboard(); }
+  });
+  $('fret-canvas')?.addEventListener('click',      _fretboardHit);
+  $('fret-canvas')?.addEventListener('touchstart', _fretboardHit, { passive: false });
 };
+
+/* ══════════════════════════════════════════════════════
+   ADD NOTES PAGE
+══════════════════════════════════════════════════════ */
+async function goAddNotes() {
+  showScreen('screen-addnotes');
+  await loadTabs();
+  renderAnTabsList();
+}
+
+/* ══════════════════════════════════════════════════════
+   TAB STORAGE
+══════════════════════════════════════════════════════ */
+Object.assign(S, { tabs: [], tabsLoaded: false });
+
+async function loadTabs() {
+  if (S.tabsLoaded) return;
+  try {
+    const metaId = S.folders._meta;
+    if (!metaId) { S.tabsLoaded = true; return; }
+    const files = await Drive.list(metaId, { filesOnly: true });
+    const f = files.find(f => f.name === 'tabs.json');
+    S.tabs = f ? await Drive.readJson(f.id) : [];
+  } catch(e) { S.tabs = []; }
+  S.tabsLoaded = true;
+}
+
+async function saveTabs() {
+  const metaId = S.folders._meta;
+  const files = await Drive.list(metaId, { filesOnly: true });
+  const f = files.find(f => f.name === 'tabs.json');
+  await Drive.writeJson(f?.id, S.tabs, 'tabs.json', metaId);
+}
+
+function renderAnTabsList() {
+  const el = $('an-tabs-list');
+  if (!el) return;
+  if (!S.tabs.length) { el.innerHTML = '<div style="padding:12px 16px;color:var(--c-teal-pale);font-family:var(--f-mono);font-size:12px">No tabs saved yet.</div>'; return; }
+  el.innerHTML = '';
+  [...S.tabs].reverse().forEach(tab => {
+    const row = document.createElement('div');
+    row.className = 'an-tab-item';
+    row.innerHTML = `
+      <div style="font-size:18px;color:var(--c-amber-lt)">𝄆</div>
+      <div style="flex:1;min-width:0">
+        <div class="an-tab-song">${tab.title||'Untitled tab'}</div>
+        <div class="an-tab-meta">${tab.songName||'No track'} · ${tab.instrument} · ${tab.author||'?'} · ${tab.createdAt?.slice(0,10)||''}</div>
+      </div>
+      <div class="an-tab-actions">
+        <button type="button" class="an-tab-btn" onclick="openTabEditor('${tab.id}')">Edit</button>
+        <button type="button" class="an-tab-btn" onclick="downloadTab('${tab.id}')">↓</button>
+        <button type="button" class="an-tab-btn" style="color:var(--c-accent)" onclick="deleteTab('${tab.id}')">𓅓</button>
+      </div>`;
+    el.appendChild(row);
+  });
+}
+
+async function deleteTab(id) {
+  S.tabs = S.tabs.filter(t => t.id !== id);
+  try { await saveTabs(); } catch(e) {}
+  renderAnTabsList();
+  showToast('Tab deleted');
+}
+
+/* ══════════════════════════════════════════════════════
+   TAB EDITOR STATE
+══════════════════════════════════════════════════════ */
+const TE = {
+  id: null, instrument: 'bass', cursor: 0,
+  notes: [],            // { slot, string, fret }
+  songName: null, author: null, title: '', extraNotes: '',
+  get strings() { return this.instrument === 'guitar' ? 6 : 4; },
+  get tuning()  {
+    return this.instrument === 'guitar'
+      ? ['E','A','D','G','B','e']   // index 0 = lowest
+      : ['E','A','D','G'];
+  },
+};
+
+const TAB_SLOT_W  = 44;
+const TAB_STR_H   = 34;
+const TAB_L_PAD   = 22;
+const TAB_T_PAD   = 8;
+const FRET_COUNT  = 15;
+const FRET_DOT_POS = new Set([3,5,7,9,12]);
+
+function openTabEditor(tabId) {
+  if (tabId && S.tabs) {
+    const existing = S.tabs.find(t => t.id === tabId);
+    if (existing) {
+      TE.id = existing.id;
+      TE.instrument = existing.instrument;
+      TE.cursor = 0;
+      TE.notes = existing.notes.map(n => ({...n}));
+      TE.songName = existing.songName;
+      TE.author = existing.author;
+      TE.title = existing.title;
+      TE.extraNotes = existing.extraNotes || '';
+    }
+  } else {
+    TE.id = null; TE.cursor = 0; TE.notes = [];
+    TE.songName = S.tp?.songName && S.tp.songName !== '__eggs__' ? S.tp.songName : null;
+    TE.author = S.user?.name || null;
+    TE.title = ''; TE.extraNotes = '';
+    TE.instrument = 'bass';
+  }
+  showScreen('screen-tab');
+  requestAnimationFrame(() => {
+    tabRefreshControls();
+    resizeTabCanvases();
+    renderTabCanvas();
+    renderFretboard();
+  });
+}
+
+function tabRefreshControls() {
+  const songBtn = $('tab-song-btn');
+  if (songBtn) songBtn.textContent = TE.songName || 'No track';
+  const authBtn = $('tab-author-btn');
+  if (authBtn) authBtn.textContent = (TE.author||'?')[0].toUpperCase();
+  const authName = $('tab-author-name');
+  if (authName) authName.textContent = TE.author || '—';
+  const cursor = $('tab-cursor-label');
+  if (cursor) cursor.textContent = TE.cursor;
+  const notesInput = $('tab-notes-input');
+  if (notesInput) notesInput.value = TE.extraNotes;
+  $('tab-bass-btn')?.classList.toggle('active', TE.instrument === 'bass');
+  $('tab-guitar-btn')?.classList.toggle('active', TE.instrument === 'guitar');
+}
+
+function resizeTabCanvases() {
+  const wrap = $('tab-canvas-wrap');
+  const fretWrap = $('tab-fretboard-wrap');
+  if (!wrap || !fretWrap) return;
+  const totalH = document.getElementById('tab-editor-inner').clientHeight;
+  const fretH = Math.round(totalH * 0.42);
+  fretWrap.style.height = fretH + 'px';
+  const fretC = $('fret-canvas');
+  if (fretC) { fretC.width = fretWrap.clientWidth; fretC.height = fretH; }
+}
+
+window.addEventListener('resize', () => {
+  if (document.querySelector('#screen-tab.active')) {
+    resizeTabCanvases();
+    renderTabCanvas();
+    renderFretboard();
+  }
+});
+
+/* ══════════════════════════════════════════════════════
+   TAB CANVAS
+══════════════════════════════════════════════════════ */
+function renderTabCanvas() {
+  const canvas = $('tab-canvas');
+  if (!canvas) return;
+  const strings = TE.strings;
+  const maxSlot = Math.max(16, TE.cursor + 8,
+    TE.notes.reduce((m, n) => Math.max(m, n.slot + 4), 0));
+
+  const W = TAB_L_PAD + maxSlot * TAB_SLOT_W + 40;
+  const H = TAB_T_PAD * 2 + strings * TAB_STR_H;
+  canvas.width = W; canvas.height = H;
+
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#161E1E';
+  ctx.fillRect(0, 0, W, H);
+
+  // String lines and labels
+  for (let s = 0; s < strings; s++) {
+    // Display highest string at top: s=strings-1 is highest, shown at row 0
+    const row = strings - 1 - s;
+    const y = TAB_T_PAD + row * TAB_STR_H + TAB_STR_H / 2;
+
+    ctx.fillStyle = '#83A8A6';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(TE.tuning[s], TAB_L_PAD - 4, y + 4);
+
+    ctx.strokeStyle = '#2A4240';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(TAB_L_PAD, y); ctx.lineTo(W - 10, y);
+    ctx.stroke();
+  }
+
+  // Slot position markers (every 4 slots)
+  ctx.font = '8px monospace';
+  ctx.fillStyle = '#2A4240';
+  ctx.textAlign = 'center';
+  for (let slot = 0; slot < maxSlot; slot += 4) {
+    const x = TAB_L_PAD + slot * TAB_SLOT_W + TAB_SLOT_W / 2;
+    ctx.fillText(slot, x, H - 2);
+  }
+
+  // Notes
+  ctx.font = 'bold 13px monospace';
+  TE.notes.forEach(n => {
+    const row = strings - 1 - n.string;
+    const y = TAB_T_PAD + row * TAB_STR_H + TAB_STR_H / 2;
+    const x = TAB_L_PAD + n.slot * TAB_SLOT_W + TAB_SLOT_W / 2;
+    const numStr = String(n.fret);
+    const tw = ctx.measureText(numStr).width + 6;
+    ctx.fillStyle = '#161E1E';
+    ctx.fillRect(x - tw / 2, y - 10, tw, 16);
+    ctx.fillStyle = '#EDDDD4';
+    ctx.textAlign = 'center';
+    ctx.fillText(numStr, x, y + 5);
+  });
+
+  // Cursor line
+  const cx = TAB_L_PAD + TE.cursor * TAB_SLOT_W + TAB_SLOT_W / 2;
+  ctx.strokeStyle = '#E8A96A';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, 2); ctx.lineTo(cx, H - 14);
+  ctx.stroke();
+
+  // Auto-scroll to keep cursor visible
+  const wrap = $('tab-canvas-wrap');
+  if (wrap) {
+    const local = cx - wrap.scrollLeft;
+    if (local < 50) wrap.scrollLeft = Math.max(0, cx - 60);
+    else if (local > wrap.clientWidth - 50) wrap.scrollLeft = cx - wrap.clientWidth + 80;
+  }
+}
+
+// Click on tab canvas to jump cursor
+/* ══════════════════════════════════════════════════════
+   FRETBOARD CANVAS
+══════════════════════════════════════════════════════ */
+function renderFretboard() {
+  const canvas = $('fret-canvas');
+  if (!canvas || !canvas.width) return;
+  const strings = TE.strings;
+  const W = canvas.width, H = canvas.height;
+  const LABEL_W = 22;
+  const NUM_H   = 16;
+  const cellW   = (W - LABEL_W) / FRET_COUNT;
+  const cellH   = (H - NUM_H) / strings;
+
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#111A1A';
+  ctx.fillRect(0, 0, W, H);
+
+  // Nut
+  ctx.fillStyle = '#83A8A6';
+  ctx.fillRect(LABEL_W, 0, 3, H - NUM_H);
+
+  // Fret lines
+  for (let f = 1; f <= FRET_COUNT; f++) {
+    const x = LABEL_W + f * cellW;
+    ctx.strokeStyle = '#32403E';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H - NUM_H); ctx.stroke();
+  }
+
+  // Fret dot markers
+  FRET_DOT_POS.forEach(f => {
+    if (f >= FRET_COUNT) return;
+    const x = LABEL_W + (f - 0.5) * cellW;
+    const y = H - NUM_H - 6;
+    ctx.fillStyle = '#32403E';
+    ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+    if (f === 12) {
+      ctx.beginPath(); ctx.arc(x - 10, y, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x + 10, y, 4, 0, Math.PI * 2); ctx.fill();
+    }
+  });
+
+  // String lines and labels
+  for (let s = 0; s < strings; s++) {
+    const row = strings - 1 - s; // high string at top
+    const y = row * cellH + cellH / 2;
+    ctx.fillStyle = '#83A8A6';
+    ctx.font = '11px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(TE.tuning[s], LABEL_W / 2, y + 4);
+    ctx.strokeStyle = '#4A6A68';
+    ctx.lineWidth = 0.8 + (strings - 1 - row) * 0.35;
+    ctx.beginPath(); ctx.moveTo(LABEL_W, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // Fret numbers at bottom
+  ctx.font = '9px monospace';
+  ctx.fillStyle = '#4A6A68';
+  ctx.textAlign = 'center';
+  for (let f = 0; f < FRET_COUNT; f++) {
+    const x = LABEL_W + (f + 0.5) * cellW;
+    ctx.fillText(String(f), x, H - 3);
+  }
+
+  // Highlight notes at current cursor slot
+  const curNotes = TE.notes.filter(n => n.slot === TE.cursor);
+  curNotes.forEach(n => {
+    const row = strings - 1 - n.string;
+    const x = LABEL_W + n.fret * cellW;
+    const y = row * cellH;
+    ctx.fillStyle = 'rgba(232,169,106,0.35)';
+    ctx.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
+    ctx.fillStyle = '#E8A96A';
+    ctx.font = 'bold 13px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(n.fret), x + cellW / 2, y + cellH / 2 + 5);
+  });
+}
+
+function _fretboardHit(e) {
+  e.preventDefault();
+  const canvas = $('fret-canvas');
+  const rect = canvas.getBoundingClientRect();
+  const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+  const LABEL_W = 22, NUM_H = 16;
+  const strings = TE.strings;
+  const cellW = (canvas.width - LABEL_W) / FRET_COUNT;
+  const cellH = (canvas.height - NUM_H) / strings;
+  if (cx < LABEL_W) return;
+  const fret   = Math.floor((cx - LABEL_W) / cellW);
+  const row    = Math.floor(cy / cellH);
+  const string = strings - 1 - row; // convert display row → string index (0=lowest)
+  if (fret < 0 || fret >= FRET_COUNT || string < 0 || string >= strings) return;
+  const idx = TE.notes.findIndex(n => n.slot === TE.cursor && n.string === string);
+  if (idx >= 0) TE.notes.splice(idx, 1);
+  else TE.notes.push({ slot: TE.cursor, string, fret });
+  renderTabCanvas();
+  renderFretboard();
+}
+
+/* ══════════════════════════════════════════════════════
+   TAB EDITOR CONTROLS
+══════════════════════════════════════════════════════ */
+function tabMoveCursor(delta) {
+  TE.cursor = Math.max(0, TE.cursor + delta);
+  tabRefreshControls();
+  renderTabCanvas();
+  renderFretboard();
+}
+
+function tabClearSlot() {
+  TE.notes = TE.notes.filter(n => n.slot !== TE.cursor);
+  renderTabCanvas();
+  renderFretboard();
+}
+
+function tabSetInstrument(instr) {
+  TE.instrument = instr;
+  TE.notes = []; TE.cursor = 0;
+  tabRefreshControls();
+  renderTabCanvas();
+  renderFretboard();
+}
+
+async function tabPickSong() {
+  const songs = (S.songs || []).filter(s => s.type !== 'egg' && s.name !== '__eggs__');
+  if (!songs.length) { showToast('No tracks loaded yet'); return; }
+  const picked = await _simplePickerModal('Assign to track', songs.map(s => s.name), TE.songName);
+  if (picked !== null) {
+    TE.songName = picked;
+    const btn = $('tab-song-btn');
+    if (btn) btn.textContent = picked || 'No track';
+  }
+}
+
+async function tabPickAuthor() {
+  const options = [...new Set(Object.values(CONFIG.EMAIL_MAP || {}))].filter(Boolean);
+  const picked = await _simplePickerModal('Musician', options, TE.author);
+  if (picked !== null) {
+    TE.author = picked;
+    const btn = $('tab-author-btn');
+    if (btn) btn.textContent = (picked||'?')[0].toUpperCase();
+    const name = $('tab-author-name');
+    if (name) name.textContent = picked || '—';
+  }
+}
+
+// Simple inline picker — shows a small overlay list
+function _simplePickerModal(title, options, current) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;display:flex;align-items:flex-end';
+    const sheet = document.createElement('div');
+    sheet.style.cssText = 'background:var(--c-surface);border-radius:14px 14px 0 0;padding:16px;width:100%;box-sizing:border-box;max-height:60vh;overflow-y:auto';
+    sheet.innerHTML = `<div style="font-family:var(--f-mono);font-size:12px;color:var(--c-teal-pale);margin-bottom:10px">${title}</div>`;
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.style.cssText = `display:block;width:100%;text-align:left;background:${opt===current?'var(--c-teal)':'none'};border:none;border-bottom:1px solid var(--c-border);color:var(--c-text);padding:10px 6px;font-size:14px;cursor:pointer`;
+      btn.textContent = opt;
+      btn.onclick = () => { document.body.removeChild(overlay); resolve(opt); };
+      sheet.appendChild(btn);
+    });
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.style.cssText = 'display:block;width:100%;text-align:center;background:none;border:none;color:var(--c-teal-pale);padding:12px;font-family:var(--f-mono);font-size:12px;cursor:pointer;margin-top:4px';
+    cancel.textContent = 'Cancel';
+    cancel.onclick = () => { document.body.removeChild(overlay); resolve(null); };
+    sheet.appendChild(cancel);
+    overlay.appendChild(sheet);
+    document.body.appendChild(overlay);
+  });
+}
+
+async function tabSave() {
+  // Prompt for title
+  const titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.placeholder = 'Tab title (e.g. Verse riff)';
+  titleInput.value = TE.title || '';
+  titleInput.style.cssText = 'width:100%;box-sizing:border-box;background:var(--c-surface2);border:1px solid var(--c-border);border-radius:6px;color:var(--c-text);padding:8px;font-size:14px;margin-top:4px';
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
+  const sheet = document.createElement('div');
+  sheet.style.cssText = 'background:var(--c-surface);border-radius:12px;padding:20px;width:100%;max-width:360px;box-sizing:border-box';
+  sheet.innerHTML = `<div style="font-family:var(--f-mono);font-size:12px;color:var(--c-teal-pale);margin-bottom:8px">Save tab</div>`;
+  sheet.appendChild(titleInput);
+  const actions = document.createElement('div');
+  actions.style.cssText = 'display:flex;gap:8px;margin-top:12px';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.textContent = 'Save';
+  saveBtn.style.cssText = 'flex:1;background:var(--c-accent);border:none;border-radius:6px;color:var(--c-text);padding:9px;cursor:pointer;font-family:var(--f-mono)';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.style.cssText = 'flex:1;background:none;border:1px solid var(--c-border);border-radius:6px;color:var(--c-teal-pale);padding:9px;cursor:pointer;font-family:var(--f-mono)';
+
+  actions.appendChild(saveBtn); actions.appendChild(cancelBtn);
+  sheet.appendChild(actions);
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+  titleInput.focus();
+
+  await new Promise(resolve => {
+    const doSave = async () => {
+      TE.title = titleInput.value.trim() || 'Untitled tab';
+      document.body.removeChild(overlay);
+      showLoading('Saving tab…');
+      try {
+        await loadTabs();
+        const tabData = {
+          id:          TE.id || ('tab_' + Date.now()),
+          instrument:  TE.instrument,
+          title:       TE.title,
+          songName:    TE.songName,
+          author:      TE.author,
+          notes:       TE.notes.map(n => ({...n})),
+          extraNotes:  TE.extraNotes,
+          createdAt:   new Date().toISOString(),
+        };
+        const idx = S.tabs.findIndex(t => t.id === tabData.id);
+        if (idx >= 0) S.tabs[idx] = tabData; else S.tabs.push(tabData);
+        TE.id = tabData.id;
+        await saveTabs();
+        hideLoading();
+        showToast('Tab saved!');
+        showScreen('screen-addnotes');
+        renderAnTabsList();
+      } catch(e) { hideLoading(); showToast('Save failed: ' + (e?.message||e)); }
+      resolve();
+    };
+    saveBtn.onclick = doSave;
+    cancelBtn.onclick = () => { document.body.removeChild(overlay); resolve(); };
+    titleInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSave(); });
+  });
+}
+
+function downloadTab(id) {
+  const tab = S.tabs?.find(t => t.id === id);
+  if (!tab) return;
+  // Render tab as ASCII text
+  const strings = tab.instrument === 'guitar' ? 6 : 4;
+  const tuning  = tab.instrument === 'guitar' ? ['E','A','D','G','B','e'] : ['E','A','D','G'];
+  const maxSlot = tab.notes.reduce((m, n) => Math.max(m, n.slot), 0);
+  const lines = [];
+  for (let s = strings - 1; s >= 0; s--) {
+    let line = tuning[s] + '|';
+    for (let slot = 0; slot <= maxSlot; slot++) {
+      const note = tab.notes.find(n => n.slot === slot && n.string === s);
+      if (note) {
+        const num = String(note.fret);
+        line += num + '-'.repeat(Math.max(0, 3 - num.length));
+      } else {
+        line += '---';
+      }
+    }
+    line += '|';
+    lines.push(line);
+  }
+  const text = [
+    tab.title || 'Untitled',
+    tab.songName ? 'Song: ' + tab.songName : '',
+    tab.author ? 'By: ' + tab.author : '',
+    '',
+    ...lines,
+    '',
+    tab.extraNotes || '',
+  ].filter((l, i) => i < 4 || l !== '').join('\n');
+
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = (tab.title || 'tab') + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 </script>
 
 <!-- Promote egg modal -->
