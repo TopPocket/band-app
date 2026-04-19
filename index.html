@@ -417,13 +417,15 @@ header {
 .cd-people { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; overflow-x:auto; }
 .cd-filter-quick { font-family:var(--f-mono); font-size:10px; padding:4px 10px; border:1px solid var(--c-border); border-radius:5px; background:transparent; color:var(--c-teal-pale); cursor:pointer; transition:all 0.15s; white-space:nowrap; flex-shrink:0; }
 .cd-filter-quick.on { border-color:var(--c-amber); color:var(--c-amber-lt); background:rgba(192,120,64,0.15); }
-.cd-person-circle { width:28px; height:28px; border-radius:50%; font-family:var(--f-mono); font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; border:1px solid var(--c-border); background:transparent; color:var(--c-teal-pale); cursor:pointer; transition:all 0.15s; flex-shrink:0; }
+.cd-person-circle { width:24px; height:29px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; font-family:var(--f-mono); font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; border:1px solid var(--c-border); background:transparent; color:var(--c-teal-pale); cursor:pointer; transition:all 0.15s; flex-shrink:0; }
 .cd-person-circle.on { background:rgba(25,114,120,0.25); border-color:var(--c-teal); color:var(--c-text); }
 /* inline directed-to circles on comment cards */
-.cd-circle { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; border:1px solid var(--c-border); font-family:var(--f-mono); font-size:9px; font-weight:600; color:var(--c-teal-pale); flex-shrink:0; }
+.cd-circle { display:inline-flex; align-items:center; justify-content:center; width:18px; height:22px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; border:1px solid var(--c-border); font-family:var(--f-mono); font-size:9px; font-weight:600; color:var(--c-teal-pale); flex-shrink:0; }
 .cd-circle-author { border-color:var(--c-amber); color:var(--c-amber-lt); }
 .cd-card-directed-row { display:flex; align-items:center; gap:3px; flex-shrink:0; }
-.cd-directed-arrow { font-family:var(--f-mono); font-size:10px; color:var(--c-border); padding:0 1px; }
+.cd-directed-arrow { font-family:var(--f-mono); font-size:10px; color:var(--c-amber-lt); padding:0 2px; }
+/* nest icon sizing in buttons */
+.perch-btn svg, .cd-action-btn svg { vertical-align:middle; display:inline-block; flex-shrink:0; }
 .cd-song-select { background:var(--c-bg); border:1px solid var(--c-border); border-radius:6px; color:var(--c-text); font-family:var(--f-mono); font-size:11px; padding:7px 10px; width:100%; outline:none; }
 .cd-song-select:focus { border-color:var(--c-teal); }
 .cd-comment-list { display:flex; flex-direction:column; gap:8px; padding:12px 14px; }
@@ -1916,7 +1918,7 @@ function renderComments() {
         <div class="tp-comment-time">${timeStr}</div>
         <div class="tp-comment-text">${c.text}</div>
         <div class="tp-comment-meta">${c.author}<br>${toStr}</div>
-        <div class="perch-btn${iPerched?' perched':''}" onclick="tpTogglePerch(event,'${c.id}')" title="Egg this comment">𓅤 ${perches.length||''}</div>`;
+        <div class="perch-btn${iPerched?' perched':''}" onclick="tpTogglePerch(event,'${c.id}')" title="Nest this comment">${NEST_SVG} ${perches.length||''}</div>`;
       el.onclick = e => { if (e.target.classList.contains('perch-btn') || e.target.closest('.perch-btn')) return; S.tp.audio.currentTime = c.startTime; if (S.tp.audio.paused) S.tp.audio.play(); };
       body.appendChild(el);
     });
@@ -1934,6 +1936,7 @@ S.tp.audio.addEventListener('timeupdate', () => {
 
 /* ── COMMENT CREATION ────────────────────────────────── */
 const MEMBER_BIRDS = { Barn:'𓅼', Christy:'𓅧', Neda:'𓅓', Pat:'𓅣', Rory:'𓅙' };
+const NEST_SVG = `<svg viewBox="0 0 20 15" width="16" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;display:inline-block;flex-shrink:0"><ellipse cx="6" cy="9" rx="2.2" ry="2.7" fill="currentColor" opacity="0.7"/><ellipse cx="14" cy="9" rx="2.2" ry="2.7" fill="currentColor" opacity="0.7"/><ellipse cx="10" cy="8" rx="2.4" ry="2.9" fill="currentColor"/><path d="M2,12 Q4,9.5 10,9.5 Q16,9.5 18,12 Q14,14.5 10,14.5 Q6,14.5 2,12Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M4.5,13.5 Q10,11.8 15.5,13.5" stroke="currentColor" stroke-width="0.9" opacity="0.5"/></svg>`;
 let _commentHoldTimer = null;
 
 function commentBtnDown(e) {
@@ -2340,7 +2343,7 @@ function buildCommentCard(c){
       <div class="cd-card-actions">
         <button class="cd-action-btn" id="cdplay-${c.id}" onclick="cdPlayComment('${c.id}')">▶&#xFE0E; Play</button>
         <button class="cd-action-btn" id="cdloop-${c.id}" onclick="cdToggleLoop('${c.id}')">⟳ Loop</button>
-        <button class="cd-action-btn${isPerched?' perched':''}" id="cdperch-${c.id}" onclick="cdTogglePerch('${c.id}')">𓅤 ${(c.perches||[]).length||''}</button>
+        <button class="cd-action-btn${isPerched?' perched':''}" id="cdperch-${c.id}" onclick="cdTogglePerch('${c.id}')">${NEST_SVG} ${(c.perches||[]).length||''}</button>
       </div>
     </div>
     <div class="cd-delete-reveal" id="cddel-${c.id}">𓅓</div>
@@ -2350,7 +2353,7 @@ function buildCommentCard(c){
       <button class="cd-del-no"  onclick="cancelDelete('${c.id}')">Keep</button>
     </div>
     <div class="cd-reply-toggle" onclick="cdToggleReplies('${c.id}')">
-      𓅤 ${replyCount} ${replyCount===1?'reply':'replies'} — tap to expand
+      ${NEST_SVG} ${replyCount} ${replyCount===1?'reply':'replies'} — tap to expand
     </div>
     <div class="cd-replies" id="cdreplies-${c.id}">
       ${(c.replies||[]).map(r=>renderReplyHTML(r)).join('')}
@@ -2474,7 +2477,7 @@ async function cdTogglePerch(cid){
   if(i>=0) c.perches.splice(i,1); else c.perches.push(me);
   const btn=$(`cdperch-${cid}`);
   btn.classList.toggle('perched',c.perches.includes(me));
-  btn.textContent=`𓅦 ${c.perches.length||''}`;
+  btn.innerHTML=`${NEST_SVG} ${c.perches.length||''}`;
   await savePerchToDrive(cid,c.perches);
 }
 
