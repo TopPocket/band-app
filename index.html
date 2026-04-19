@@ -2231,7 +2231,7 @@ async function savePerchToDrive(commentId, perches){
 /* ══════════════════════════════════════════════════════
    COMMENTS DISCOVERY
 ══════════════════════════════════════════════════════ */
-let _cdAllComments=[], _cdPeopleFilter=new Set(), _cdAudio=new Audio(), _cdPlayingId=null, _cdLooping=false;
+let _cdAllComments=[], _cdPeopleFilter=new Set(), _cdNestedOnly=false, _cdAudio=new Audio(), _cdPlayingId=null, _cdLooping=false;
 let _cdUndoBuffer=null, _cdUndoTimer=null;
 
 async function goComments(){
@@ -2254,6 +2254,13 @@ function buildCdPeopleFilter(){
   meBtn.className='cd-filter-quick'; meBtn.textContent='Only Me'; meBtn.id='cd-filter-me';
   meBtn.onclick=()=>{ _cdPeopleFilter=new Set([S.user?.name].filter(Boolean)); syncCdFilter(); renderCommentsList(); };
   el.appendChild(meBtn);
+
+  // "Nested" filter button
+  const nestBtn=document.createElement('button');
+  nestBtn.className='cd-filter-quick'+(_cdNestedOnly?' on':''); nestBtn.id='cd-filter-nested';
+  nestBtn.innerHTML=NEST_SVG;  nestBtn.title='Show nested comments only';
+  nestBtn.onclick=()=>{ _cdNestedOnly=!_cdNestedOnly; nestBtn.classList.toggle('on',_cdNestedOnly); renderCommentsList(); };
+  el.appendChild(nestBtn);
 
   // Individual letter circles
   CONFIG.BAND_MEMBERS.forEach(m=>{
@@ -2311,6 +2318,8 @@ function renderCommentsList(){
   if(_cdPeopleFilter.size>0 && _cdPeopleFilter.size<CONFIG.BAND_MEMBERS.length){
     list=list.filter(c=>(c.directedTo||[]).some(p=>_cdPeopleFilter.has(p)));
   }
+  // Nested-only filter
+  if(_cdNestedOnly) list=list.filter(c=>(c.perches||[]).length>0);
   // Newest first
   list.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
 
