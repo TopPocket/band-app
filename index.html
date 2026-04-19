@@ -1559,6 +1559,29 @@ async function ensureTrackIndex() {
   Object.values(index).forEach(arr =>
     arr.sort((a,b) => { const d = b.sessionDate.localeCompare(a.sessionDate); return d||a.version-b.version; })
   );
+
+  // Apply hatch mappings: move hatched fileIds to their target song key
+  const pool = S.songs.find(s => s.name === '__eggs__');
+  if (pool?.hatchedTo) {
+    Object.entries(pool.hatchedTo).forEach(([fileId, songName]) => {
+      const targetKey = songName.toLowerCase();
+      for (const [srcKey, vrs] of Object.entries(index)) {
+        const i = vrs.findIndex(v => v.fileId === fileId);
+        if (i >= 0) {
+          const [v] = vrs.splice(i, 1);
+          if (!index[targetKey]) index[targetKey] = [];
+          index[targetKey].push(v);
+          if (vrs.length === 0) delete index[srcKey];
+          break;
+        }
+      }
+    });
+    // Re-sort after moves
+    Object.values(index).forEach(arr =>
+      arr.sort((a,b) => { const d = b.sessionDate.localeCompare(a.sessionDate); return d||a.version-b.version; })
+    );
+  }
+
   S.trackIndex = index;
   S.trackIndexLoaded = true;
   try { sessionStorage.setItem('bandapp_trackIndex', JSON.stringify(index)); } catch(e) {}
@@ -2402,16 +2425,14 @@ async function confirmHatch() {
   const newSong  = selected || $('promote-new-name').value.trim();
   if (!newSong) { showToast('Pick or type a song name'); return; }
 
-  await ensureTrackIndex();
-  const existing    = S.trackIndex[newSong.toLowerCase()] || [];
-  const nextVer     = existing.length + 1;
-  const newFileName = existing.length === 0 ? `${newSong}.mp3` : `${newSong} - ${nextVer}.mp3`;
-
   showLoading('Hatching…');
   try {
-    await Drive.renameFile(fileId, newFileName);
-    // Transfer egg notes to the new song's notes
+    // Store mapping in songs.json — no file rename needed
     const pool = getEggPool();
+    if (!pool.hatchedTo) pool.hatchedTo = {};
+    pool.hatchedTo[fileId] = newSong;
+
+    // Transfer notes
     const eggNote = pool.eggNotes?.[fileId] || '';
     delete pool.eggNotes[fileId];
 
@@ -2421,6 +2442,7 @@ async function confirmHatch() {
     } else {
       S.songs.push({ name: newSong, notes: eggNote, starredVersions: [] });
     }
+
     S.trackIndexLoaded = false;
     sessionStorage.removeItem('bandapp_trackIndex');
     await saveSongsJson();
@@ -2431,6 +2453,7 @@ async function confirmHatch() {
   } catch(e) {
     hideLoading();
     showToast('Hatch failed: ' + e.message);
+    console.error('confirmHatch error:', e);
   }
 }
 
@@ -2832,8 +2855,8 @@ window.onload = () => {
     </select>
     <input type="text" id="promote-new-name" placeholder="Or type a new song name…">
     <div class="promote-actions">
-      <button class="btn btn-primary" onclick="confirmHatch()">Hatch</button>
-      <button class="btn btn-ghost" onclick="$('promote-modal').style.display='none'">Cancel</button>
+      <button type="button" class="btn btn-primary" onclick="confirmHatch()">Hatch</button>
+      <button type="button" class="btn btn-ghost" onclick="$('promote-modal').style.display='none'">Cancel</button>
     </div>
   </div>
 </div>
