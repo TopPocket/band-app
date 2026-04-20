@@ -540,6 +540,34 @@ body.tab-view #tab-view-close { display:flex; }
 #tab-notenames-btn { position:absolute; bottom:6px; right:6px; background:rgba(17,26,26,0.88); border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:10px; padding:4px 9px; cursor:pointer; z-index:5; }
 #tab-notenames-btn.active { border-color:var(--c-amber-lt); color:var(--c-amber-lt); }
 
+/* ══ STRUCTURE EDITOR ══ */
+#screen-struct { display:none; flex-direction:column; overflow:hidden; }
+#screen-struct.active { display:flex; }
+#struct-song-bar { flex-shrink:0; display:flex; align-items:center; gap:8px; padding:7px 14px; border-bottom:1px solid var(--c-border); background:var(--c-surface); }
+#se-song-btn { flex:1; background:var(--c-surface2); border:1px solid var(--c-border); border-radius:4px; color:var(--c-text); font-size:11px; padding:5px 8px; cursor:pointer; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#struct-wrap { flex:1; overflow-x:auto; overflow-y:hidden; display:flex; align-items:center; background:var(--c-bg); }
+#struct-bar { display:flex; align-items:flex-end; padding:12px 16px 0; min-height:70px; }
+.struct-section { display:flex; flex-direction:column; align-items:center; border-left:2px solid var(--c-border); padding:0 4px; }
+.struct-section:first-child { border-left:none; }
+.struct-dots-row { display:flex; align-items:center; gap:5px; padding:4px 2px 6px; }
+.struct-dot { width:13px; height:13px; border-radius:50%; cursor:pointer; flex-shrink:0; transition:transform 0.08s; }
+.struct-dot:active { transform:scale(0.85); }
+.struct-cursor-el { width:2px; height:20px; background:var(--c-text); border-radius:1px; flex-shrink:0; animation:se-blink 1s step-end infinite; }
+@keyframes se-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.struct-label { font-family:var(--f-mono); font-size:9px; color:var(--c-teal-pale); text-align:center; min-width:14px; padding-bottom:8px; line-height:1; }
+.struct-keyboard { flex-shrink:0; display:flex; gap:5px; padding:10px 12px; background:var(--c-surface); border-top:1px solid var(--c-border); }
+.struct-key { flex:1; padding:13px 2px; border:1px solid var(--c-border); border-radius:6px; font-family:var(--f-mono); font-size:15px; font-weight:700; cursor:pointer; text-align:center; background:var(--c-surface2); color:var(--c-text); -webkit-user-select:none; user-select:none; }
+.struct-key:active { filter:brightness(1.3); transform:scale(0.95); }
+.struct-key-del { flex:1; padding:13px 2px; border:1px solid var(--c-border); border-radius:6px; font-size:17px; cursor:pointer; text-align:center; background:var(--c-surface2); color:var(--c-accent); -webkit-user-select:none; user-select:none; }
+.struct-key-del:active { transform:scale(0.95); }
+.an-struct-item { display:flex; align-items:center; gap:10px; padding:10px 16px; border-bottom:1px solid var(--c-border); }
+.an-struct-preview { flex:1; overflow-x:auto; }
+.an-struct-mini { display:flex; align-items:center; gap:0; }
+.an-struct-mini-section { display:flex; gap:3px; padding:0 3px; border-left:1px solid var(--c-border); }
+.an-struct-mini-section:first-child { border-left:none; }
+.an-struct-mini-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.an-struct-meta { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); margin-top:3px; }
+
 /* ══ TOAST ══ */
 .toast {
   position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
@@ -772,7 +800,7 @@ body.tab-view #tab-view-close { display:flex; }
           <div class="an-card-icon">𝄆</div>
           <div class="an-card-label">Add Tab</div>
         </div>
-        <div class="an-card soon">
+        <div class="an-card" onclick="structNewEditor()">
           <div class="an-card-icon">⬡</div>
           <div class="an-card-label">Structure</div>
         </div>
@@ -795,6 +823,33 @@ body.tab-view #tab-view-close { display:flex; }
       </div>
       <div class="an-section-title">Saved Tabs</div>
       <div id="an-tabs-list"></div>
+      <div class="an-section-title">Saved Structures</div>
+      <div id="an-struct-list"></div>
+    </div>
+  </div>
+
+  <!-- ── STRUCTURE EDITOR ── -->
+  <div class="screen" id="screen-struct">
+    <div class="screen-nav">
+      <button class="back-btn" onclick="showScreen('screen-addnotes')">‹ Back</button>
+      <div class="screen-nav-title" id="se-nav-title">Structure</div>
+      <button type="button" style="background:var(--c-accent);border:none;border-radius:5px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;padding:6px 12px;cursor:pointer" onclick="structSave()">Save</button>
+    </div>
+    <div id="struct-song-bar">
+      <span style="font-family:var(--f-mono);font-size:9px;color:var(--c-teal-pale);text-transform:uppercase;flex-shrink:0">Track</span>
+      <button type="button" id="se-song-btn" onclick="sePickSong()">No track</button>
+    </div>
+    <div id="struct-wrap">
+      <div id="struct-bar"></div>
+    </div>
+    <div class="struct-keyboard">
+      <button class="struct-key" style="border-color:#4A9AA8;color:#4A9AA8" onclick="sePressKey('I')">I</button>
+      <button class="struct-key" style="border-color:#C07840;color:#C07840" onclick="sePressKey('V')">V</button>
+      <button class="struct-key" style="border-color:#D04848;color:#D04848" onclick="sePressKey('C')">C</button>
+      <button class="struct-key" style="border-color:#5A9868;color:#5A9868" onclick="sePressKey('B')">B</button>
+      <button class="struct-key" style="border-color:#7A90B8;color:#7A90B8" onclick="sePressKey('O')">O</button>
+      <button class="struct-key" style="border-color:#9070A8;color:#9070A8" onclick="sePressKey('X')">X</button>
+      <button class="struct-key-del" onclick="seDeleteBar()">⌫</button>
     </div>
   </div>
 
@@ -3045,8 +3100,245 @@ window.onload = () => {
 ══════════════════════════════════════════════════════ */
 async function goAddNotes() {
   showScreen('screen-addnotes');
-  await loadTabs();
+  await Promise.all([loadTabs(), loadStructures()]);
   renderAnTabsList();
+  renderStructList();
+}
+
+/* ══════════════════════════════════════════════════════
+   STRUCTURE EDITOR
+══════════════════════════════════════════════════════ */
+const STRUCT_COLORS = {
+  I:'#4A9AA8', V:'#C07840', C:'#D04848',
+  B:'#5A9868', O:'#7A90B8', X:'#9070A8',
+};
+
+const SE = {
+  id: null, bars: [], cursor: 0, songName: null, author: null,
+};
+
+Object.assign(S, { structures: [], structuresLoaded: false });
+
+async function loadStructures() {
+  if (S.structuresLoaded) return;
+  try {
+    const metaId = S.folders._meta;
+    if (!metaId) return;
+    const files = await Drive.list(metaId, { filesOnly: true });
+    const f = files.find(f => f.name === 'structures.json');
+    S.structures = f ? await Drive.readJson(f.id) : [];
+    S.structuresLoaded = true;
+  } catch(e) { S.structures = []; }
+}
+
+async function saveStructures() {
+  const metaId = S.folders._meta;
+  const files = await Drive.list(metaId, { filesOnly: true });
+  const f = files.find(f => f.name === 'structures.json');
+  await Drive.writeJson(f?.id, S.structures, 'structures.json', metaId);
+}
+
+function deriveSections(bars) {
+  if (!bars.length) return [];
+  const secs = [{ type: bars[0], bars: 1 }];
+  for (let i = 1; i < bars.length; i++) {
+    if (bars[i] === secs[secs.length-1].type) secs[secs.length-1].bars++;
+    else secs.push({ type: bars[i], bars: 1 });
+  }
+  return secs;
+}
+
+function getLabels(sections) {
+  const totals = {};
+  sections.forEach(s => { totals[s.type] = (totals[s.type]||0) + 1; });
+  const idx = {};
+  return sections.map(s => {
+    if (totals[s.type] === 1) return s.type;
+    idx[s.type] = (idx[s.type]||0) + 1;
+    return s.type + idx[s.type];
+  });
+}
+
+function renderStructure() {
+  const container = $('struct-bar');
+  if (!container) return;
+  container.innerHTML = '';
+  const bars = SE.bars;
+
+  if (!bars.length) {
+    const cur = document.createElement('span');
+    cur.className = 'struct-cursor-el';
+    container.appendChild(cur);
+    return;
+  }
+
+  const sections = deriveSections(bars);
+  const labels   = getLabels(sections);
+  let globalIdx  = 0;
+
+  sections.forEach((sec, si) => {
+    const isLast = si === sections.length - 1;
+    const secEl  = document.createElement('div');
+    secEl.className = 'struct-section';
+
+    const dotsRow = document.createElement('div');
+    dotsRow.className = 'struct-dots-row';
+
+    for (let b = 0; b < sec.bars; b++) {
+      if (globalIdx === SE.cursor) dotsRow.appendChild(_makeCursorEl());
+      const dot = document.createElement('span');
+      dot.className = 'struct-dot';
+      dot.style.background = STRUCT_COLORS[sec.type] || '#888';
+      const ci = globalIdx + 1;
+      dot.addEventListener('click', () => { SE.cursor = ci; renderStructure(); });
+      dotsRow.appendChild(dot);
+      globalIdx++;
+    }
+    if (isLast && globalIdx === SE.cursor) dotsRow.appendChild(_makeCursorEl());
+
+    const labelEl = document.createElement('div');
+    labelEl.className = 'struct-label';
+    labelEl.textContent = labels[si];
+
+    secEl.appendChild(dotsRow);
+    secEl.appendChild(labelEl);
+    container.appendChild(secEl);
+  });
+
+  // Auto-scroll cursor into view
+  const curEl = container.querySelector('.struct-cursor-el');
+  if (curEl) curEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+function _makeCursorEl() {
+  const el = document.createElement('span');
+  el.className = 'struct-cursor-el';
+  return el;
+}
+
+function sePressKey(type) {
+  SE.bars.splice(SE.cursor, 0, type);
+  SE.cursor++;
+  renderStructure();
+}
+
+function seDeleteBar() {
+  if (SE.cursor === 0) return;
+  SE.bars.splice(SE.cursor - 1, 1);
+  SE.cursor--;
+  renderStructure();
+}
+
+async function sePickSong() {
+  if (!S.songs?.length) { showLoading('Loading…'); await loadSongs(); hideLoading(); }
+  const songs = S.songs.filter(s => s.type !== 'egg' && s.name !== '__eggs__');
+  const picked = await _simplePickerModal('Assign to track', songs.map(s => s.name), SE.songName);
+  if (picked !== null) {
+    SE.songName = picked || null;
+    const btn = $('se-song-btn');
+    if (btn) btn.textContent = SE.songName || 'No track';
+  }
+}
+
+function structNewEditor() {
+  SE.id = null; SE.bars = []; SE.cursor = 0;
+  SE.songName = S.tp?.songName && S.tp.songName !== '__eggs__' ? S.tp.songName : null;
+  SE.author = S.user?.name || null;
+  const btn = $('se-song-btn');
+  if (btn) btn.textContent = SE.songName || 'No track';
+  $('se-nav-title').textContent = 'Structure';
+  showScreen('screen-struct');
+  renderStructure();
+}
+
+function structOpenEditor(id) {
+  const s = S.structures?.find(s => s.id === id);
+  if (!s) return;
+  SE.id = s.id; SE.bars = [...s.bars]; SE.cursor = SE.bars.length;
+  SE.songName = s.songName; SE.author = s.author;
+  const btn = $('se-song-btn');
+  if (btn) btn.textContent = SE.songName || 'No track';
+  $('se-nav-title').textContent = s.songName || 'Structure';
+  showScreen('screen-struct');
+  renderStructure();
+}
+
+async function structSave() {
+  if (!SE.bars.length) { showToast('Add some bars first'); return; }
+  showLoading('Saving…');
+  try {
+    await loadStructures();
+    const entry = {
+      id:        SE.id || ('st_' + Date.now()),
+      bars:      [...SE.bars],
+      songName:  SE.songName,
+      author:    SE.author,
+      createdAt: new Date().toISOString(),
+    };
+    SE.id = entry.id;
+    const idx = S.structures.findIndex(s => s.id === entry.id);
+    if (idx >= 0) S.structures[idx] = entry; else S.structures.push(entry);
+    await saveStructures();
+    hideLoading();
+    showToast('Structure saved!');
+    showScreen('screen-addnotes');
+    renderStructList();
+  } catch(e) { hideLoading(); showToast('Save failed: ' + (e?.message||e)); }
+}
+
+async function structDelete(id) {
+  S.structures = S.structures.filter(s => s.id !== id);
+  try { await saveStructures(); } catch(e) {}
+  renderStructList();
+  showToast('Deleted');
+}
+
+function renderStructList() {
+  const el = $('an-struct-list');
+  if (!el) return;
+  if (!S.structures?.length) {
+    el.innerHTML = '<div style="padding:12px 16px;color:var(--c-teal-pale);font-family:var(--f-mono);font-size:12px">No structures saved yet.</div>';
+    return;
+  }
+  el.innerHTML = '';
+  [...S.structures].reverse().forEach(s => {
+    const secs = deriveSections(s.bars);
+    const labels = getLabels(secs);
+    const row = document.createElement('div');
+    row.className = 'an-struct-item';
+
+    // Mini preview
+    const miniWrap = document.createElement('div');
+    miniWrap.className = 'an-struct-preview';
+    const mini = document.createElement('div');
+    mini.className = 'an-struct-mini';
+    secs.forEach((sec, si) => {
+      const secEl = document.createElement('div');
+      secEl.className = 'an-struct-mini-section';
+      for (let b = 0; b < sec.bars; b++) {
+        const d = document.createElement('span');
+        d.className = 'an-struct-mini-dot';
+        d.style.background = STRUCT_COLORS[sec.type] || '#888';
+        secEl.appendChild(d);
+      }
+      mini.appendChild(secEl);
+    });
+    const metaEl = document.createElement('div');
+    metaEl.className = 'an-struct-meta';
+    metaEl.textContent = [s.songName||'No track', labels.join(' ')].filter(Boolean).join(' · ');
+    miniWrap.appendChild(mini);
+    miniWrap.appendChild(metaEl);
+
+    const actions = document.createElement('div');
+    actions.className = 'an-tab-actions';
+    actions.innerHTML = `
+      <button type="button" class="an-tab-btn" onclick="structOpenEditor('${s.id}')">Edit</button>
+      <button type="button" class="an-tab-btn" style="color:var(--c-accent)" onclick="structDelete('${s.id}')">𓅮</button>`;
+
+    row.appendChild(miniWrap);
+    row.appendChild(actions);
+    el.appendChild(row);
+  });
 }
 
 /* ══════════════════════════════════════════════════════
