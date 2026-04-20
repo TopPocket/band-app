@@ -566,7 +566,34 @@ body.tab-view #tab-view-close { display:flex; }
 .an-struct-mini-section { display:flex; gap:3px; padding:0 3px; border-left:1px solid var(--c-border); }
 .an-struct-mini-section:first-child { border-left:none; }
 .an-struct-mini-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-.an-struct-meta { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); margin-top:3px; }
+.an-struct-track-title { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); margin-bottom:4px; }
+/* Mini variant — used in Add Notes list, track panel, pinned */
+.struct-bar.mini { min-height:0; padding:0; }
+.struct-bar.mini .struct-section { border-left:1px solid var(--c-border); padding:0 2px; }
+.struct-bar.mini .struct-dots-row { gap:3px; padding:2px 2px 3px; }
+.struct-bar.mini .struct-dot { width:7px; height:7px; }
+.struct-bar.mini .struct-label { font-size:8px; padding-bottom:2px; }
+.struct-bar.mini .struct-cursor-el { height:12px; }
+/* Version row struct icon */
+.tp-ver-struct { font-size:13px; cursor:pointer; flex-shrink:0; padding:2px 3px; opacity:0.25; transition:opacity 0.15s; -webkit-user-select:none; }
+.tp-ver-struct.has-struct { opacity:0.8; color:var(--c-teal-pale); }
+.tp-ver-struct.panel-open { opacity:1; color:var(--c-amber-lt); }
+/* Track page struct panel */
+#tp-struct-panel { flex-shrink:0; border-top:1px solid var(--c-teal); background:var(--c-bg); display:none; }
+#tp-struct-bar-wrap { overflow-x:auto; padding:8px 12px 0; }
+#tp-struct-bar { display:flex; align-items:flex-end; min-height:44px; }
+.tp-struct-keyboard { display:flex; gap:4px; padding:7px 10px; background:var(--c-surface); border-top:1px solid var(--c-border); }
+.tp-struct-key { flex:1; padding:10px 1px; border:1px solid var(--c-border); border-radius:5px; font-family:var(--f-mono); font-size:13px; font-weight:700; cursor:pointer; text-align:center; background:var(--c-surface2); -webkit-user-select:none; user-select:none; }
+.tp-struct-key:active { filter:brightness(1.4); transform:scale(0.95); }
+.tp-struct-key-del { flex:1; padding:10px 1px; border:1px solid var(--c-border); border-radius:5px; font-size:15px; cursor:pointer; text-align:center; background:var(--c-surface2); color:var(--c-accent); -webkit-user-select:none; user-select:none; }
+.tp-struct-key-del:active { transform:scale(0.95); }
+#tp-struct-actions { display:flex; gap:5px; padding:7px 10px; border-top:1px solid var(--c-border); }
+.tp-struct-act { flex:1; padding:7px 2px; border:none; border-radius:5px; font-family:var(--f-mono); font-size:10px; cursor:pointer; text-align:center; }
+/* Pinned structure in lyrics/notes area */
+#tp-pinned-struct { display:none; padding:8px 12px 6px; border-bottom:1px dashed var(--c-border); }
+.tp-pinned-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
+.tp-pinned-lbl { font-family:var(--f-mono); font-size:9px; color:var(--c-teal-pale); text-transform:uppercase; letter-spacing:0.08em; }
+#tp-pinned-bar { display:flex; align-items:flex-end; overflow-x:auto; }
 
 /* ══ TOAST ══ */
 .toast {
@@ -704,6 +731,13 @@ body.tab-view #tab-view-close { display:flex; }
           <span class="tp-section-toggle" id="tp-lyrics-toggle">▾</span>
         </div>
         <div class="tp-lyrics-body">
+          <div id="tp-pinned-struct">
+            <div class="tp-pinned-hdr">
+              <span class="tp-pinned-lbl">Structure</span>
+              <button type="button" onclick="unpinStruct()" style="background:none;border:none;color:var(--c-teal-pale);font-size:11px;cursor:pointer;font-family:var(--f-mono)">unpin</button>
+            </div>
+            <div id="tp-pinned-bar" class="struct-bar mini"></div>
+          </div>
           <textarea class="tp-lyrics-text" id="tp-lyrics-text"
                     placeholder="Add lyrics, notes, chords…"
                     oninput="tpNotesChanged()"></textarea>
@@ -739,6 +773,27 @@ body.tab-view #tab-view-close { display:flex; }
                 ontouchstart="waveTouchStart(event)"
                 ontouchmove="waveTouchMove(event)"></canvas>
         <div class="tp-wave-time" id="tp-wave-time">0:00 / —:——</div>
+      </div>
+
+      <!-- structure panel (shown when tapping ⬡ on a version) -->
+      <div id="tp-struct-panel">
+        <div id="tp-struct-bar-wrap">
+          <div id="tp-struct-bar" class="struct-bar mini"></div>
+        </div>
+        <div class="tp-struct-keyboard">
+          <button class="tp-struct-key" style="border-color:#4A9AA8;color:#4A9AA8" onclick="tpSePressKey('I')">I</button>
+          <button class="tp-struct-key" style="border-color:#C07840;color:#C07840" onclick="tpSePressKey('V')">V</button>
+          <button class="tp-struct-key" style="border-color:#D04848;color:#D04848" onclick="tpSePressKey('C')">C</button>
+          <button class="tp-struct-key" style="border-color:#5A9868;color:#5A9868" onclick="tpSePressKey('B')">B</button>
+          <button class="tp-struct-key" style="border-color:#7A90B8;color:#7A90B8" onclick="tpSePressKey('O')">O</button>
+          <button class="tp-struct-key" style="border-color:#9070A8;color:#9070A8" onclick="tpSePressKey('X')">X</button>
+          <button class="tp-struct-key-del" onclick="tpSeDeleteBar()">⌫</button>
+        </div>
+        <div id="tp-struct-actions">
+          <button class="tp-struct-act" style="background:var(--c-surface2);color:var(--c-teal-pale);border:1px solid var(--c-border)" onclick="tpStructCancel()">Cancel</button>
+          <button class="tp-struct-act" style="background:var(--c-teal);color:var(--c-text)" onclick="tpStructSave(false)">Save</button>
+          <button class="tp-struct-act" style="background:var(--c-accent);color:var(--c-text)" onclick="tpStructSave(true)">Save &amp; Pin</button>
+        </div>
       </div>
 
       <!-- comments (below fold on mobile, right col on PC) -->
@@ -1805,10 +1860,11 @@ async function openSong(songName, songIdx) {
 
   showLoading('Loading…');
   try {
-    await ensureTrackIndex();
+    await Promise.all([ensureTrackIndex(), loadStructures()]);
     const key = songName.toLowerCase();
     S.tp.versions = S.trackIndex[key] || [];
     renderVersionsList();
+    renderPinnedStruct();
     await loadSongComments(songName);
     hideLoading();
     if (S.tp.versions.length) await selectVersion(0);
@@ -1969,9 +2025,9 @@ function renderVersionsList() {
       </div>
       <div class="tp-ver-dur" id="tpvdur-${i}">—</div>
       <div class="tp-ver-star${starred?' starred':''}" title="Star this version" onclick="toggleStar(event,'${v.fileId}')">★</div>
-      ${S.tp.isEgg ? `<div class="tp-ver-promote" title="Hatch into a track" onclick="openHatchModal('${v.fileId}','${v.fileName}')">𓅣 Hatch</div>` : ''}
+      ${S.tp.isEgg ? `<div class="tp-ver-promote" title="Hatch into a track" onclick="openHatchModal('${v.fileId}','${v.fileName}')">𓅣 Hatch</div>` : `<div class="tp-ver-struct${S.structures?.some(s=>s.fileId===v.fileId)?' has-struct':''}" title="Structure" onclick="tpToggleStruct(event,'${v.fileId}')">⬡</div>`}
       <div class="tp-ver-play">▶</div>`;
-    row.onclick = e => { if (e.target.closest('.tp-ver-promote,.tp-ver-star')) return; selectVersion(i); };
+    row.onclick = e => { if (e.target.closest('.tp-ver-promote,.tp-ver-star,.tp-ver-struct')) return; selectVersion(i); };
     body.appendChild(row);
   });
 }
@@ -3159,61 +3215,142 @@ function getLabels(sections) {
   });
 }
 
-function renderStructure() {
-  const container = $('struct-bar');
-  if (!container) return;
-  container.innerHTML = '';
-  const bars = SE.bars;
-
+// Build structure DOM — shared by editor, track panel, pinned view, mini list
+function buildStructDOM(bars, { cursor = -1, onDotClick = null } = {}) {
+  const frag = document.createDocumentFragment();
   if (!bars.length) {
-    const cur = document.createElement('span');
-    cur.className = 'struct-cursor-el';
-    container.appendChild(cur);
-    return;
+    if (cursor >= 0) frag.appendChild(_makeCursorEl());
+    return frag;
   }
-
   const sections = deriveSections(bars);
   const labels   = getLabels(sections);
-  let globalIdx  = 0;
-
+  let gi = 0;
   sections.forEach((sec, si) => {
     const isLast = si === sections.length - 1;
     const secEl  = document.createElement('div');
     secEl.className = 'struct-section';
-
-    const dotsRow = document.createElement('div');
-    dotsRow.className = 'struct-dots-row';
-
+    const row = document.createElement('div');
+    row.className = 'struct-dots-row';
     for (let b = 0; b < sec.bars; b++) {
-      if (globalIdx === SE.cursor) dotsRow.appendChild(_makeCursorEl());
+      if (cursor >= 0 && gi === cursor) row.appendChild(_makeCursorEl());
       const dot = document.createElement('span');
       dot.className = 'struct-dot';
       dot.style.background = STRUCT_COLORS[sec.type] || '#888';
-      const ci = globalIdx + 1;
-      dot.addEventListener('click', () => { SE.cursor = ci; renderStructure(); });
-      dotsRow.appendChild(dot);
-      globalIdx++;
+      if (onDotClick) { const ci = gi + 1; dot.addEventListener('click', () => onDotClick(ci)); }
+      row.appendChild(dot);
+      gi++;
     }
-    if (isLast && globalIdx === SE.cursor) dotsRow.appendChild(_makeCursorEl());
-
-    const labelEl = document.createElement('div');
-    labelEl.className = 'struct-label';
-    labelEl.textContent = labels[si];
-
-    secEl.appendChild(dotsRow);
-    secEl.appendChild(labelEl);
-    container.appendChild(secEl);
+    if (isLast && cursor >= 0 && gi === cursor) row.appendChild(_makeCursorEl());
+    const lbl = document.createElement('div');
+    lbl.className = 'struct-label';
+    lbl.textContent = labels[si];
+    secEl.appendChild(row); secEl.appendChild(lbl);
+    frag.appendChild(secEl);
   });
-
-  // Auto-scroll cursor into view
-  const curEl = container.querySelector('.struct-cursor-el');
-  if (curEl) curEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  return frag;
 }
 
 function _makeCursorEl() {
-  const el = document.createElement('span');
-  el.className = 'struct-cursor-el';
-  return el;
+  const el = document.createElement('span'); el.className = 'struct-cursor-el'; return el;
+}
+
+function renderStructure() {
+  const c = $('struct-bar');
+  if (!c) return;
+  c.innerHTML = '';
+  c.appendChild(buildStructDOM(SE.bars, {
+    cursor: SE.cursor,
+    onDotClick: ci => { SE.cursor = ci; renderStructure(); }
+  }));
+  const curEl = c.querySelector('.struct-cursor-el');
+  if (curEl) curEl.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+}
+
+function renderTpStructBar() {
+  const c = $('tp-struct-bar');
+  if (!c) return;
+  c.innerHTML = '';
+  c.appendChild(buildStructDOM(SE.bars, {
+    cursor: SE.cursor,
+    onDotClick: ci => { SE.cursor = ci; renderTpStructBar(); }
+  }));
+}
+
+function renderPinnedStruct() {
+  const el = $('tp-pinned-struct');
+  const barEl = $('tp-pinned-bar');
+  if (!el || !barEl) return;
+  const songEntry = S.songs?.find(s => s.name === S.tp?.songName);
+  const pinnedId  = songEntry?.pinnedStructureId;
+  const struct    = pinnedId ? S.structures?.find(s => s.id === pinnedId) : null;
+  if (!struct) { el.style.display = 'none'; return; }
+  barEl.innerHTML = '';
+  barEl.appendChild(buildStructDOM(struct.bars));
+  el.style.display = 'block';
+}
+
+async function unpinStruct() {
+  const entry = S.songs?.find(s => s.name === S.tp?.songName);
+  if (entry) { delete entry.pinnedStructureId; await saveSongsJson(); }
+  $('tp-pinned-struct').style.display = 'none';
+}
+
+/* Track page struct panel controls */
+function tpToggleStruct(e, fileId) {
+  e.stopPropagation();
+  const panel = $('tp-struct-panel');
+  if (SE.fileId === fileId && panel.style.display !== 'none') {
+    panel.style.display = 'none'; SE.fileId = null;
+    document.querySelectorAll('.tp-ver-struct').forEach(el => el.classList.remove('panel-open'));
+    return;
+  }
+  const existing = (S.structures||[]).find(s => s.fileId === fileId);
+  SE.id = existing?.id || null;
+  SE.bars = existing ? [...existing.bars] : [];
+  SE.cursor = SE.bars.length;
+  SE.fileId = fileId;
+  SE.songName = S.tp.songName; SE.author = S.user?.name || null;
+  panel.style.display = 'block';
+  renderTpStructBar();
+  document.querySelectorAll('.tp-ver-struct').forEach(el => el.classList.remove('panel-open'));
+  e.target.closest('.tp-ver-struct').classList.add('panel-open');
+  panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function tpSePressKey(type) { SE.bars.splice(SE.cursor, 0, type); SE.cursor++; renderTpStructBar(); }
+function tpSeDeleteBar()    { if (!SE.cursor) return; SE.bars.splice(--SE.cursor, 1); renderTpStructBar(); }
+
+function tpStructCancel() {
+  $('tp-struct-panel').style.display = 'none'; SE.fileId = null;
+  document.querySelectorAll('.tp-ver-struct').forEach(el => el.classList.remove('panel-open'));
+}
+
+async function tpStructSave(pin = false) {
+  if (!SE.bars.length) { showToast('Add some bars first'); return; }
+  showLoading('Saving…');
+  try {
+    await loadStructures();
+    const entry = {
+      id: SE.id || ('st_' + Date.now()),
+      bars: [...SE.bars], songName: SE.songName, author: SE.author,
+      fileId: SE.fileId, createdAt: new Date().toISOString(),
+    };
+    SE.id = entry.id;
+    S.structures = S.structures.filter(s => s.fileId !== SE.fileId || s.id === entry.id);
+    const idx = S.structures.findIndex(s => s.id === entry.id);
+    if (idx >= 0) S.structures[idx] = entry; else S.structures.push(entry);
+    if (pin) {
+      const songEntry = S.songs?.find(s => s.name === SE.songName);
+      if (songEntry) { songEntry.pinnedStructureId = entry.id; await saveSongsJson(); }
+    }
+    await saveStructures();
+    hideLoading();
+    showToast(pin ? 'Saved & pinned to track!' : 'Structure saved!');
+    $('tp-struct-panel').style.display = 'none'; SE.fileId = null;
+    document.querySelectorAll('.tp-ver-struct').forEach(el => el.classList.remove('panel-open'));
+    renderVersionsList();
+    if (pin) renderPinnedStruct();
+  } catch(e) { hideLoading(); showToast('Save failed: ' + (e?.message||e)); }
 }
 
 function sePressKey(type) {
@@ -3302,32 +3439,22 @@ function renderStructList() {
   }
   el.innerHTML = '';
   [...S.structures].reverse().forEach(s => {
-    const secs = deriveSections(s.bars);
-    const labels = getLabels(secs);
     const row = document.createElement('div');
     row.className = 'an-struct-item';
 
-    // Mini preview
+    // Mini preview using shared buildStructDOM
     const miniWrap = document.createElement('div');
     miniWrap.className = 'an-struct-preview';
+    if (s.songName) {
+      const titleEl = document.createElement('div');
+      titleEl.className = 'an-struct-track-title';
+      titleEl.textContent = s.songName;
+      miniWrap.appendChild(titleEl);
+    }
     const mini = document.createElement('div');
-    mini.className = 'an-struct-mini';
-    secs.forEach((sec, si) => {
-      const secEl = document.createElement('div');
-      secEl.className = 'an-struct-mini-section';
-      for (let b = 0; b < sec.bars; b++) {
-        const d = document.createElement('span');
-        d.className = 'an-struct-mini-dot';
-        d.style.background = STRUCT_COLORS[sec.type] || '#888';
-        secEl.appendChild(d);
-      }
-      mini.appendChild(secEl);
-    });
-    const metaEl = document.createElement('div');
-    metaEl.className = 'an-struct-meta';
-    metaEl.textContent = [s.songName||'No track', labels.join(' ')].filter(Boolean).join(' · ');
+    mini.className = 'struct-bar mini';
+    mini.appendChild(buildStructDOM(s.bars));
     miniWrap.appendChild(mini);
-    miniWrap.appendChild(metaEl);
 
     const actions = document.createElement('div');
     actions.className = 'an-tab-actions';
