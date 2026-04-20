@@ -512,27 +512,22 @@ body.tab-fs #main-header { display:none; }
 @media (orientation:portrait) { #tab-portrait-msg { display:flex; } }
 @media (orientation:landscape) { #tab-editor-inner { display:flex; } }
 #tab-top { display:flex; flex:1; min-height:0; }
-#tab-canvas-wrap { flex:1; overflow-x:auto; overflow-y:hidden; background:var(--c-bg); cursor:crosshair; scroll-behavior:smooth; }
+#tab-canvas-wrap { flex:7; overflow-x:auto; overflow-y:hidden; background:var(--c-bg); cursor:crosshair; scroll-behavior:smooth; }
 #tab-canvas { display:block; }
-#tab-controls-panel { width:130px; flex-shrink:0; padding:8px; background:var(--c-surface); border-left:1px solid var(--c-border); display:flex; flex-direction:column; gap:5px; overflow-y:auto; }
+/* Controls: 3-column strip — ‹ | mid | › */
+#tab-controls-panel { flex:3; display:flex; flex-direction:row; background:var(--c-surface); border-left:1px solid var(--c-border); }
+.tab-nav-col { flex:1; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--c-text); cursor:pointer; background:var(--c-surface2); border:none; user-select:none; -webkit-user-select:none; }
+.tab-nav-col:active { background:var(--c-teal-lt); }
+.tab-mid-col { flex:2; display:flex; flex-direction:column; align-items:center; justify-content:space-around; padding:6px 4px; }
+#tab-cursor-label { font-family:var(--f-mono); font-size:13px; color:var(--c-amber-lt); }
+#tab-clear-btn { background:none; border:none; color:var(--c-accent); font-size:20px; cursor:pointer; padding:0; line-height:1; }
+#tab-save-btn { background:var(--c-accent); border:none; border-radius:5px; color:var(--c-text); font-family:var(--f-mono); font-size:11px; padding:5px 8px; cursor:pointer; width:100%; }
+#tab-save-btn:active { opacity:0.85; }
+/* Fretboard */
 #tab-fretboard-wrap { flex-shrink:0; border-top:2px solid var(--c-teal); position:relative; }
-#fret-canvas { width:100%; height:100%; display:block; cursor:pointer; touch-action:none; }
-.tab-ctrl-label { font-family:var(--f-mono); font-size:9px; color:var(--c-teal-pale); text-transform:uppercase; margin-bottom:1px; }
-#tab-song-btn { background:var(--c-surface2); border:1px solid var(--c-border); border-radius:4px; color:var(--c-text); font-size:11px; padding:5px 6px; cursor:pointer; text-align:left; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.tab-author-row { display:flex; align-items:center; gap:5px; min-width:0; }
-.tab-author-circle { width:26px; height:26px; border-radius:50%; background:var(--c-amber); color:var(--c-text); display:flex; align-items:center; justify-content:center; font-family:var(--f-display); font-weight:700; font-size:12px; cursor:pointer; border:none; flex-shrink:0; }
-.tab-author-name { font-size:11px; color:var(--c-text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
-#tab-nav-row { display:flex; gap:3px; align-items:center; }
-#tab-cursor-label { font-family:var(--f-mono); font-size:11px; color:var(--c-amber-lt); flex:1; text-align:center; }
-.tab-nav-btn { flex:1; background:var(--c-surface2); border:1px solid var(--c-border); border-radius:4px; color:var(--c-text); font-size:16px; padding:10px 4px; cursor:pointer; }
-#tab-clear-btn { background:none; border:none; color:var(--c-accent); font-size:18px; cursor:pointer; padding:2px 8px; }
-.tab-instr-row { display:flex; gap:4px; }
-.tab-instr-btn { flex:1; background:none; border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:10px; padding:4px; cursor:pointer; }
-.tab-instr-btn.active { background:var(--c-teal); border-color:var(--c-teal); color:var(--c-text); }
-#tab-notenames-btn { background:none; border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:9px; padding:4px 6px; cursor:pointer; width:100%; text-align:center; }
-#tab-notenames-btn.active { background:var(--c-surface2); border-color:var(--c-teal-pale); color:var(--c-amber-lt); }
-#tab-save-btn { background:var(--c-accent); border:none; border-radius:6px; color:var(--c-text); font-family:var(--f-mono); font-size:12px; padding:7px; cursor:pointer; margin-top:auto; }
-#tab-save-btn:hover { opacity:0.85; }
+#fret-canvas { width:100%; height:100%; display:block; touch-action:none; }
+#tab-notenames-btn { position:absolute; bottom:6px; right:6px; background:rgba(17,26,26,0.88); border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:10px; padding:4px 9px; cursor:pointer; z-index:5; }
+#tab-notenames-btn.active { border-color:var(--c-amber-lt); color:var(--c-amber-lt); }
 
 /* ══ TOAST ══ */
 .toast {
@@ -762,7 +757,7 @@ body.tab-fs #main-header { display:none; }
     </div>
     <div class="scroll-area">
       <div class="an-grid" id="an-grid">
-        <div class="an-card" onclick="openTabEditor(null)">
+        <div class="an-card" onclick="tabNewTab()">
           <div class="an-card-icon">𝄆</div>
           <div class="an-card-label">Add Tab</div>
         </div>
@@ -806,33 +801,19 @@ body.tab-fs #main-header { display:none; }
           <canvas id="tab-canvas"></canvas>
         </div>
         <div id="tab-controls-panel">
-          <div class="tab-ctrl-label">Track</div>
-          <button type="button" id="tab-song-btn" onclick="tabPickSong()">No track</button>
-          <div class="tab-author-row">
-            <button type="button" class="tab-author-circle" id="tab-author-btn" onclick="tabPickAuthor()">?</button>
-            <span class="tab-author-name" id="tab-author-name">—</span>
-          </div>
-          <div class="tab-ctrl-label" style="margin-top:2px">Instrument</div>
-          <div class="tab-instr-row">
-            <button type="button" class="tab-instr-btn active" id="tab-bass-btn" onclick="tabSetInstrument('bass')">Bass</button>
-            <button type="button" class="tab-instr-btn" id="tab-guitar-btn" onclick="tabSetInstrument('guitar')">Guitar</button>
-          </div>
-          <div class="tab-ctrl-label" style="margin-top:2px">Position</div>
-          <div id="tab-nav-row">
-            <button type="button" class="tab-nav-btn" onclick="tabMoveCursor(-1)">‹</button>
+          <div class="tab-nav-col" onclick="tabMoveCursor(-1)">‹</div>
+          <div class="tab-mid-col">
             <span id="tab-cursor-label">0</span>
-            <button type="button" class="tab-nav-btn" onclick="tabMoveCursor(1)">›</button>
-          </div>
-          <div style="display:flex;justify-content:center">
             <button type="button" id="tab-clear-btn" onclick="tabClearSlot()" title="Clear slot">𓅮</button>
+            <button type="button" id="tab-save-btn" onclick="tabSave()">Save</button>
           </div>
-          <button type="button" id="tab-notenames-btn" onclick="tabToggleNoteNames()">Note names</button>
-          <button type="button" id="tab-save-btn" onclick="tabSave()">Save</button>
+          <div class="tab-nav-col" onclick="tabMoveCursor(1)">›</div>
         </div>
       </div>
       <!-- Fretboard -->
       <div id="tab-fretboard-wrap">
         <canvas id="fret-canvas"></canvas>
+        <button type="button" id="tab-notenames-btn" onclick="tabToggleNoteNames()">fret</button>
       </div>
     </div>
   </div>
@@ -2999,16 +2980,18 @@ window.onload = () => {
     if (slot >= 0) { TE.cursor = slot; tabRefreshControls(); renderTabCanvas(); renderFretboard(); }
   });
 
-  // Fretboard touch: distinguish tap (toggle note) from drag (scroll frets)
-  let _ftStart = null, _ftDragging = false;
+  // Fretboard touch: quick tap = toggle note, hold (250ms) then drag = scroll neck
+  let _ftStart = null, _ftDragging = false, _ftDragReady = false, _ftTimer = null;
   $('fret-canvas')?.addEventListener('touchstart', e => {
-    _ftStart = { x: e.touches[0].clientX, y: e.touches[0].clientY, offset: TE.fretOffset };
-    _ftDragging = false;
+    const t = e.touches[0];
+    _ftStart = { x: t.clientX, y: t.clientY, offset: TE.fretOffset };
+    _ftDragging = false; _ftDragReady = false;
+    _ftTimer = setTimeout(() => { _ftDragReady = true; }, 250);
   }, { passive: true });
   $('fret-canvas')?.addEventListener('touchmove', e => {
-    if (!_ftStart) return;
+    if (!_ftStart || !_ftDragReady) return;
     const dx = e.touches[0].clientX - _ftStart.x;
-    if (!_ftDragging && Math.abs(dx) > 8) _ftDragging = true;
+    if (Math.abs(dx) > 6) _ftDragging = true;
     if (_ftDragging) {
       const canvas = $('fret-canvas');
       const cellW = (canvas.width - 24) / VISIBLE_FRETS;
@@ -3018,11 +3001,9 @@ window.onload = () => {
     }
   }, { passive: true });
   $('fret-canvas')?.addEventListener('touchend', e => {
-    if (!_ftDragging && _ftStart) {
-      const t = e.changedTouches[0];
-      _fretboardHit(t.clientX, t.clientY);
-    }
-    _ftStart = null; _ftDragging = false;
+    clearTimeout(_ftTimer);
+    if (!_ftDragging && _ftStart) _fretboardHit(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    _ftStart = null; _ftDragging = false; _ftDragReady = false;
   });
   // Mouse click on fretboard
   $('fret-canvas')?.addEventListener('click', e => _fretboardHit(e.clientX, e.clientY));
@@ -3122,6 +3103,34 @@ function fretToNote(stringIdx, fret) {
   return names[midi % 12] + Math.floor(midi / 12 - 1);
 }
 
+let _audioCtx = null;
+function _playFretNote(stringIdx, fret) {
+  try {
+    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const bassMidi   = [40, 45, 50, 55];
+    const guitarMidi = [40, 45, 50, 55, 59, 64];
+    const base = TE.instrument === 'guitar' ? guitarMidi : bassMidi;
+    const midi = (base[stringIdx] || 40) + fret;
+    const freq = 440 * Math.pow(2, (midi - 69) / 12);
+    const osc = _audioCtx.createOscillator();
+    const gain = _audioCtx.createGain();
+    osc.connect(gain); gain.connect(_audioCtx.destination);
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.4, _audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + 0.7);
+    osc.start(_audioCtx.currentTime);
+    osc.stop(_audioCtx.currentTime + 0.7);
+  } catch(e) {}
+}
+
+async function tabNewTab() {
+  const picked = await _simplePickerModal('Instrument', ['Bass', 'Guitar'], 'Bass');
+  if (picked === null) return;
+  TE.instrument = picked.toLowerCase();
+  openTabEditor(null);
+}
+
 function openTabEditor(tabId) {
   if (tabId && S.tabs) {
     const existing = S.tabs.find(t => t.id === tabId);
@@ -3140,7 +3149,7 @@ function openTabEditor(tabId) {
     TE.songName = S.tp?.songName && S.tp.songName !== '__eggs__' ? S.tp.songName : null;
     TE.author = S.user?.name || null;
     TE.title = ''; TE.extraNotes = '';
-    TE.instrument = 'bass';
+    // instrument already set by tabNewTab picker — don't reset
   }
   TE.fretOffset = 0;
   document.body.classList.add('tab-fs');
@@ -3154,17 +3163,13 @@ function openTabEditor(tabId) {
 }
 
 function tabRefreshControls() {
-  const songBtn = $('tab-song-btn');
-  if (songBtn) songBtn.textContent = TE.songName || 'No track';
-  const authBtn = $('tab-author-btn');
-  if (authBtn) authBtn.textContent = (TE.author||'?')[0].toUpperCase();
-  const authName = $('tab-author-name');
-  if (authName) authName.textContent = TE.author || '—';
   const cursor = $('tab-cursor-label');
   if (cursor) cursor.textContent = TE.cursor;
-  $('tab-bass-btn')?.classList.toggle('active', TE.instrument === 'bass');
-  $('tab-guitar-btn')?.classList.toggle('active', TE.instrument === 'guitar');
-  $('tab-notenames-btn')?.classList.toggle('active', TE.showNoteNames);
+  const noteBtn = $('tab-notenames-btn');
+  if (noteBtn) {
+    noteBtn.textContent = TE.showNoteNames ? 'note' : 'fret';
+    noteBtn.classList.toggle('active', TE.showNoteNames);
+  }
 }
 
 function tabToggleNoteNames() {
@@ -3178,7 +3183,7 @@ function resizeTabCanvases() {
   const fretWrap = $('tab-fretboard-wrap');
   if (!wrap || !fretWrap) return;
   const totalH = document.getElementById('tab-editor-inner').clientHeight;
-  const fretH = Math.round(totalH * 0.50);
+  const fretH = Math.round(totalH * 0.60);
   fretWrap.style.height = fretH + 'px';
   const fretC = $('fret-canvas');
   if (fretC) { fretC.width = fretWrap.clientWidth; fretC.height = fretH; }
@@ -3258,7 +3263,7 @@ function renderTabCanvas() {
   // Cursor line
   const cx = Math.round(TAB_L_PAD + TE.cursor * TAB_SLOT_W + TAB_SLOT_W / 2);
   ctx.strokeStyle = '#E8A96A';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(cx, 2); ctx.lineTo(cx, H - 16);
   ctx.stroke();
@@ -3305,21 +3310,8 @@ function renderFretboard() {
   }
 
   // Fret dot markers
-  FRET_DOT_POS.forEach(f => {
-    const visF = f - offset;
-    if (visF < 0 || visF >= VISIBLE_FRETS) return;
-    const x = Math.round(LABEL_W + (visF + 0.5) * cellW);
-    const y = H - NUM_H - 7;
-    ctx.fillStyle = '#32403E';
-    if (f === 12) {
-      ctx.beginPath(); ctx.arc(x - cellW * 0.2, y, 4, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(x + cellW * 0.2, y, 4, 0, Math.PI * 2); ctx.fill();
-    } else {
-      ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
-    }
-  });
-
-  // String lines and labels
+  // String lines, labels, and fret dot positions (dots drawn after strings so they overlay)
+  const stringsArea = H - NUM_H;
   for (let s = 0; s < strings; s++) {
     const row = strings - 1 - s;
     const y = Math.round(row * cellH + cellH / 2);
@@ -3328,9 +3320,24 @@ function renderFretboard() {
     ctx.textAlign = 'center';
     ctx.fillText(TE.tuning[s], LABEL_W / 2, y + 4);
     ctx.strokeStyle = '#4A6A68';
-    ctx.lineWidth = 0.8 + (strings - 1 - row) * 0.35;
+    ctx.lineWidth = 0.6 + (strings - 1 - s) * 0.4; // s=0 (E, lowest) = thickest
     ctx.beginPath(); ctx.moveTo(LABEL_W, y); ctx.lineTo(W, y); ctx.stroke();
   }
+
+  // Fret dot markers — vertically centred in strings area
+  const dotY = Math.round(stringsArea / 2);
+  FRET_DOT_POS.forEach(f => {
+    const visF = f - offset;
+    if (visF < 0 || visF >= VISIBLE_FRETS) return;
+    const x = Math.round(LABEL_W + (visF + 0.5) * cellW);
+    ctx.fillStyle = '#243630';
+    if (f === 12) {
+      ctx.beginPath(); ctx.arc(x - cellW * 0.2, dotY, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x + cellW * 0.2, dotY, 5, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.beginPath(); ctx.arc(x, dotY, 5, 0, Math.PI * 2); ctx.fill();
+    }
+  });
 
   // Fret numbers at bottom
   ctx.font = '11px monospace';
@@ -3348,17 +3355,17 @@ function renderFretboard() {
     const visF = n.fret - offset;
     if (visF < 0 || visF >= VISIBLE_FRETS) return;
     const row = strings - 1 - n.string;
-    const cx  = Math.round(LABEL_W + (visF + 0.5) * cellW);
-    const cy  = Math.round(row * cellH + cellH / 2);
-    const r   = Math.min(cellW, cellH) / 2 - 2;
-    ctx.fillStyle = '#C07840';
-    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    const ncx = Math.round(LABEL_W + (visF + 0.5) * cellW);
+    const ncy = Math.round(row * cellH + cellH / 2);
+    const r   = Math.round(Math.min(cellW, cellH) / 2 - 1);
+    ctx.fillStyle = '#D4882A';
+    ctx.beginPath(); ctx.arc(ncx, ncy, r, 0, Math.PI * 2); ctx.fill();
     const label = TE.showNoteNames ? fretToNote(n.string, n.fret) : String(n.fret);
-    const fs = TE.showNoteNames ? Math.max(7, Math.round(r * 0.9)) : 12;
-    ctx.fillStyle = '#1A2E2C';
+    const fs = TE.showNoteNames ? Math.max(7, Math.round(r * 1.1)) : Math.round(r * 1.3);
+    ctx.fillStyle = '#0A1510';
     ctx.font = `bold ${fs}px monospace`;
     ctx.textAlign = 'center';
-    ctx.fillText(label, cx, cy + Math.round(fs * 0.38));
+    ctx.fillText(label, ncx, ncy + Math.round(fs * 0.36));
   });
 }
 
@@ -3378,8 +3385,8 @@ function _fretboardHit(clientX, clientY) {
   const string = strings - 1 - row;
   if (visF < 0 || visF >= VISIBLE_FRETS || fret >= FRET_TOTAL || string < 0 || string >= strings) return;
   const idx = TE.notes.findIndex(n => n.slot === TE.cursor && n.string === string);
-  if (idx >= 0) TE.notes.splice(idx, 1);
-  else TE.notes.push({ slot: TE.cursor, string, fret });
+  if (idx >= 0) { TE.notes.splice(idx, 1); }
+  else { TE.notes.push({ slot: TE.cursor, string, fret }); _playFretNote(string, fret); }
   renderTabCanvas();
   renderFretboard();
 }
@@ -3459,39 +3466,41 @@ function _simplePickerModal(title, options, current) {
 }
 
 async function tabSave() {
-  // Prompt for title
+  const songs = (S.songs || []).filter(s => s.type !== 'egg' && s.name !== '__eggs__');
+  const iS = 'width:100%;box-sizing:border-box;background:var(--c-surface2);border:1px solid var(--c-border);border-radius:6px;color:var(--c-text);padding:8px;font-size:13px;margin-top:4px;font-family:var(--f-sans)';
+
   const titleInput = document.createElement('input');
-  titleInput.type = 'text';
-  titleInput.placeholder = 'Tab title (e.g. Verse riff)';
-  titleInput.value = TE.title || '';
-  titleInput.style.cssText = 'width:100%;box-sizing:border-box;background:var(--c-surface2);border:1px solid var(--c-border);border-radius:6px;color:var(--c-text);padding:8px;font-size:14px;margin-top:4px';
+  titleInput.type = 'text'; titleInput.placeholder = 'Tab name (e.g. Verse riff)';
+  titleInput.value = TE.title || ''; titleInput.style.cssText = iS;
+
+  const trackSel = document.createElement('select');
+  trackSel.style.cssText = iS;
+  trackSel.innerHTML = `<option value="">— No track —</option>` +
+    songs.map(s => `<option value="${s.name}"${s.name === TE.songName ? ' selected' : ''}>${s.name}</option>`).join('');
+
+  const notesInput = document.createElement('textarea');
+  notesInput.placeholder = 'Notes (optional)'; notesInput.value = TE.extraNotes || '';
+  notesInput.rows = 3; notesInput.style.cssText = iS + ';resize:none';
 
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
   const sheet = document.createElement('div');
-  sheet.style.cssText = 'background:var(--c-surface);border-radius:12px;padding:20px;width:100%;max-width:360px;box-sizing:border-box';
-  const notesInput = document.createElement('textarea');
-  notesInput.placeholder = 'Notes (optional)';
-  notesInput.value = TE.extraNotes || '';
-  notesInput.rows = 3;
-  notesInput.style.cssText = 'width:100%;box-sizing:border-box;background:var(--c-surface2);border:1px solid var(--c-border);border-radius:6px;color:var(--c-text);padding:8px;font-size:13px;margin-top:8px;resize:none;font-family:var(--f-sans)';
+  sheet.style.cssText = 'background:var(--c-surface);border-radius:12px;padding:20px;width:100%;max-width:360px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px';
 
-  sheet.innerHTML = `<div style="font-family:var(--f-mono);font-size:12px;color:var(--c-teal-pale);margin-bottom:8px">Save tab</div>`;
-  sheet.appendChild(titleInput);
-  sheet.appendChild(notesInput);
+  const label = (t) => { const d = document.createElement('div'); d.style.cssText = 'font-family:var(--f-mono);font-size:9px;color:var(--c-teal-pale);text-transform:uppercase;margin-top:6px'; d.textContent = t; return d; };
+  sheet.appendChild(Object.assign(document.createElement('div'), { style: 'font-family:var(--f-mono);font-size:13px;color:var(--c-text);margin-bottom:4px', textContent: 'Save tab' }));
+  sheet.appendChild(label('Name')); sheet.appendChild(titleInput);
+  sheet.appendChild(label('Track')); sheet.appendChild(trackSel);
+  sheet.appendChild(label('Notes')); sheet.appendChild(notesInput);
+
   const actions = document.createElement('div');
   actions.style.cssText = 'display:flex;gap:8px;margin-top:12px';
-
   const saveBtn = document.createElement('button');
-  saveBtn.type = 'button';
-  saveBtn.textContent = 'Save';
-  saveBtn.style.cssText = 'flex:1;background:var(--c-accent);border:none;border-radius:6px;color:var(--c-text);padding:9px;cursor:pointer;font-family:var(--f-mono)';
-
+  saveBtn.type = 'button'; saveBtn.textContent = 'Save';
+  saveBtn.style.cssText = 'flex:1;background:var(--c-accent);border:none;border-radius:6px;color:var(--c-text);padding:10px;cursor:pointer;font-family:var(--f-mono)';
   const cancelBtn = document.createElement('button');
-  cancelBtn.type = 'button';
-  cancelBtn.textContent = 'Cancel';
-  cancelBtn.style.cssText = 'flex:1;background:none;border:1px solid var(--c-border);border-radius:6px;color:var(--c-teal-pale);padding:9px;cursor:pointer;font-family:var(--f-mono)';
-
+  cancelBtn.type = 'button'; cancelBtn.textContent = 'Cancel';
+  cancelBtn.style.cssText = 'flex:1;background:none;border:1px solid var(--c-border);border-radius:6px;color:var(--c-teal-pale);padding:10px;cursor:pointer;font-family:var(--f-mono)';
   actions.appendChild(saveBtn); actions.appendChild(cancelBtn);
   sheet.appendChild(actions);
   overlay.appendChild(sheet);
@@ -3501,6 +3510,7 @@ async function tabSave() {
   await new Promise(resolve => {
     const doSave = async () => {
       TE.title = titleInput.value.trim() || 'Untitled tab';
+      TE.songName = trackSel.value || null;
       TE.extraNotes = notesInput.value;
       document.body.removeChild(overlay);
       showLoading('Saving tab…');
