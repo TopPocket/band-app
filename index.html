@@ -523,6 +523,16 @@ body.tab-fs #main-header { display:none; }
 #tab-clear-btn { background:none; border:none; color:var(--c-accent); font-size:20px; cursor:pointer; padding:0; line-height:1; }
 #tab-save-btn { background:var(--c-accent); border:none; border-radius:5px; color:var(--c-text); font-family:var(--f-mono); font-size:11px; padding:5px 8px; cursor:pointer; width:100%; }
 #tab-save-btn:active { opacity:0.85; }
+/* View-only mode */
+body.tab-view #tab-controls-panel { display:none; }
+body.tab-view #tab-fretboard-wrap { display:none; }
+body.tab-view #tab-canvas-wrap { cursor:default; }
+body.tab-view #tab-view-close { display:flex; }
+#tab-view-close { display:none; position:absolute; top:8px; right:8px; z-index:10;
+  background:rgba(17,26,26,0.85); border:1px solid var(--c-border); border-radius:6px;
+  color:var(--c-teal-pale); font-family:var(--f-mono); font-size:11px;
+  padding:5px 10px; cursor:pointer; align-items:center; gap:5px; }
+#tab-view-close:hover { color:var(--c-text); }
 /* Fretboard */
 #tab-fretboard-wrap { flex-shrink:0; border-top:2px solid var(--c-teal); position:relative; }
 #fret-canvas { width:100%; height:100%; display:block; touch-action:none; }
@@ -796,10 +806,11 @@ body.tab-fs #main-header { display:none; }
     </div>
     <div id="tab-editor-inner">
       <!-- Top half: tab canvas + controls -->
-      <div id="tab-top">
+      <div id="tab-top" style="position:relative">
         <div id="tab-canvas-wrap" id="tab-canvas-wrap">
           <canvas id="tab-canvas"></canvas>
         </div>
+        <button type="button" id="tab-view-close" onclick="showScreen('screen-addnotes')">✕ Close</button>
         <div id="tab-controls-panel">
           <div class="tab-nav-col" onclick="tabMoveCursor(-1)">‹</div>
           <div class="tab-mid-col">
@@ -940,7 +951,7 @@ let _suppressHistory = false;
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   $(id).classList.add('active');
-  if (id !== 'screen-tab') document.body.classList.remove('tab-fs');
+  if (id !== 'screen-tab') { document.body.classList.remove('tab-fs'); document.body.classList.remove('tab-view'); }
   if (!_suppressHistory && !_noHistoryScreens.has(id)) {
     history.pushState({ screen: id }, '');
   }
@@ -3072,9 +3083,10 @@ function renderAnTabsList() {
         <div class="an-tab-meta">${tab.songName||'No track'} · ${tab.instrument} · ${tab.author||'?'} · ${tab.createdAt?.slice(0,10)||''}</div>
       </div>
       <div class="an-tab-actions">
+        <button type="button" class="an-tab-btn" onclick="tabViewTab('${tab.id}')">View</button>
         <button type="button" class="an-tab-btn" onclick="openTabEditor('${tab.id}')">Edit</button>
         <button type="button" class="an-tab-btn" onclick="downloadTab('${tab.id}')">↓</button>
-        <button type="button" class="an-tab-btn" style="color:var(--c-accent)" onclick="deleteTab('${tab.id}')">𓅓</button>
+        <button type="button" class="an-tab-btn" style="color:var(--c-accent)" onclick="deleteTab('${tab.id}')">𓅮</button>
       </div>`;
     el.appendChild(row);
   });
@@ -3119,6 +3131,19 @@ function fretToNote(stringIdx, fret) {
 }
 
 let _fretScrollMode = false;
+
+function tabViewTab(tabId) {
+  const tab = S.tabs?.find(t => t.id === tabId);
+  if (!tab) return;
+  TE.id = tab.id; TE.instrument = tab.instrument;
+  TE.notes = tab.notes.map(n => ({...n}));
+  TE.songName = tab.songName; TE.title = tab.title;
+  TE.extraNotes = tab.extraNotes || '';
+  TE.cursor = -1; TE.fretOffset = 0;
+  document.body.classList.add('tab-fs', 'tab-view');
+  showScreen('screen-tab');
+  requestAnimationFrame(() => { resizeTabCanvases(); renderTabCanvas(); });
+}
 
 async function tabNewTab() {
   const picked = await _simplePickerModal('Instrument', ['Bass', 'Guitar'], 'Bass');
@@ -3256,13 +3281,15 @@ function renderTabCanvas() {
     ctx.fillText(numStr, x, y + 4);
   });
 
-  // Cursor line
-  const cx = Math.round(TAB_L_PAD + TE.cursor * TAB_SLOT_W + TAB_SLOT_W / 2);
-  ctx.strokeStyle = '#E8A96A';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(cx, 2); ctx.lineTo(cx, H - 16);
-  ctx.stroke();
+  // Cursor line (hidden in view-only mode)
+  if (TE.cursor >= 0) {
+    const cx = Math.round(TAB_L_PAD + TE.cursor * TAB_SLOT_W + TAB_SLOT_W / 2);
+    ctx.strokeStyle = '#E8A96A';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx, 2); ctx.lineTo(cx, H - 16);
+    ctx.stroke();
+  }
 
   // Auto-scroll to keep cursor visible
   if (wrap) {
