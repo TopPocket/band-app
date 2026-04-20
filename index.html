@@ -787,10 +787,12 @@ body.tab-view #tab-view-close { display:flex; }
           <button class="tp-struct-key" style="border-color:#5A9868;color:#5A9868" onclick="tpSePressKey('B')">B</button>
           <button class="tp-struct-key" style="border-color:#7A90B8;color:#7A90B8" onclick="tpSePressKey('O')">O</button>
           <button class="tp-struct-key" style="border-color:#9070A8;color:#9070A8" onclick="tpSePressKey('X')">X</button>
+          <button class="tp-struct-key" style="border-color:#C8B840;color:#C8B840" onclick="tpSePressKey('S')">S</button>
           <button class="tp-struct-key-del" onclick="tpSeDeleteBar()">⌫</button>
         </div>
         <div id="tp-struct-actions">
           <button class="tp-struct-act" style="background:var(--c-surface2);color:var(--c-teal-pale);border:1px solid var(--c-border)" onclick="tpStructCancel()">Cancel</button>
+          <button class="tp-struct-act" id="tp-struct-del-btn" style="background:var(--c-accent-dk);color:var(--c-accent);border:1px solid var(--c-accent);display:none" onclick="tpStructDelete()">Delete</button>
           <button class="tp-struct-act" style="background:var(--c-teal);color:var(--c-text)" onclick="tpStructSave(false)">Save</button>
           <button class="tp-struct-act" style="background:var(--c-accent);color:var(--c-text)" onclick="tpStructSave(true)">Save &amp; Pin</button>
         </div>
@@ -888,7 +890,10 @@ body.tab-view #tab-view-close { display:flex; }
     <div class="screen-nav">
       <button class="back-btn" onclick="showScreen('screen-addnotes')">‹ Back</button>
       <div class="screen-nav-title" id="se-nav-title">Structure</div>
-      <button type="button" style="background:var(--c-accent);border:none;border-radius:5px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;padding:6px 12px;cursor:pointer" onclick="structSave()">Save</button>
+      <div style="display:flex;gap:4px">
+        <button type="button" style="background:var(--c-teal);border:none;border-radius:5px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;padding:6px 10px;cursor:pointer" onclick="structSave()">Save</button>
+        <button type="button" style="background:var(--c-accent);border:none;border-radius:5px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;padding:6px 10px;cursor:pointer" onclick="structSaveAndPin()">Save &amp; Pin</button>
+      </div>
     </div>
     <div id="struct-song-bar">
       <span style="font-family:var(--f-mono);font-size:9px;color:var(--c-teal-pale);text-transform:uppercase;flex-shrink:0">Track</span>
@@ -904,6 +909,7 @@ body.tab-view #tab-view-close { display:flex; }
       <button class="struct-key" style="border-color:#5A9868;color:#5A9868" onclick="sePressKey('B')">B</button>
       <button class="struct-key" style="border-color:#7A90B8;color:#7A90B8" onclick="sePressKey('O')">O</button>
       <button class="struct-key" style="border-color:#9070A8;color:#9070A8" onclick="sePressKey('X')">X</button>
+      <button class="struct-key" style="border-color:#C8B840;color:#C8B840" onclick="sePressKey('S')">S</button>
       <button class="struct-key-del" onclick="seDeleteBar()">⌫</button>
     </div>
   </div>
@@ -3166,7 +3172,7 @@ async function goAddNotes() {
 ══════════════════════════════════════════════════════ */
 const STRUCT_COLORS = {
   I:'#4A9AA8', V:'#C07840', C:'#D04848',
-  B:'#5A9868', O:'#7A90B8', X:'#9070A8',
+  B:'#5A9868', O:'#7A90B8', X:'#9070A8', S:'#C8B840',
 };
 
 const SE = {
@@ -3187,8 +3193,13 @@ async function loadStructures() {
   } catch(e) { S.structures = []; }
 }
 
+function _errMsg(e) {
+  return e?.message || e?.result?.error?.message || (typeof e === 'string' ? e : JSON.stringify(e));
+}
+
 async function saveStructures() {
   const metaId = S.folders._meta;
+  if (!metaId) throw new Error('_meta folder not found — run the importer first');
   const files = await Drive.list(metaId, { filesOnly: true });
   const f = files.find(f => f.name === 'structures.json');
   await Drive.writeJson(f?.id, S.structures, 'structures.json', metaId);
@@ -3274,6 +3285,8 @@ function renderTpStructBar() {
     cursor: SE.cursor,
     onDotClick: ci => { SE.cursor = ci; renderTpStructBar(); }
   }));
+  const delBtn = $('tp-struct-del-btn');
+  if (delBtn) delBtn.style.display = SE.id ? '' : 'none';
 }
 
 function renderPinnedStruct() {
@@ -3350,7 +3363,29 @@ async function tpStructSave(pin = false) {
     document.querySelectorAll('.tp-ver-struct').forEach(el => el.classList.remove('panel-open'));
     renderVersionsList();
     if (pin) renderPinnedStruct();
-  } catch(e) { hideLoading(); showToast('Save failed: ' + (e?.message||e)); }
+  } catch(e) { hideLoading(); showToast('Save failed: ' + _errMsg(e)); }
+}
+
+async function tpStructDelete() {
+  if (!SE.id) { showToast('No saved structure to delete'); return; }
+  if (!confirm('Delete this structure?')) return;
+  showLoading('Deleting…');
+  try {
+    const wasId = SE.id;
+    S.structures = S.structures.filter(s => s.id !== wasId);
+    const songEntry = S.songs?.find(s => s.name === SE.songName);
+    if (songEntry?.pinnedStructureId === wasId) {
+      delete songEntry.pinnedStructureId;
+      await saveSongsJson();
+    }
+    await saveStructures();
+    hideLoading();
+    showToast('Structure deleted');
+    $('tp-struct-panel').style.display = 'none'; SE.fileId = null; SE.id = null; SE.bars = [];
+    document.querySelectorAll('.tp-ver-struct').forEach(el => el.classList.remove('panel-open'));
+    renderVersionsList();
+    renderPinnedStruct();
+  } catch(e) { hideLoading(); showToast('Delete failed: ' + _errMsg(e)); }
 }
 
 function sePressKey(type) {
@@ -3420,14 +3455,42 @@ async function structSave() {
     showToast('Structure saved!');
     showScreen('screen-addnotes');
     renderStructList();
-  } catch(e) { hideLoading(); showToast('Save failed: ' + (e?.message||e)); }
+  } catch(e) { hideLoading(); showToast('Save failed: ' + _errMsg(e)); }
+}
+
+async function structSaveAndPin() {
+  if (!SE.bars.length) { showToast('Add some bars first'); return; }
+  if (!SE.songName) { showToast('Assign to a track first'); return; }
+  showLoading('Saving…');
+  try {
+    await loadStructures();
+    const entry = {
+      id: SE.id || ('st_' + Date.now()),
+      bars: [...SE.bars], songName: SE.songName, author: SE.author,
+      createdAt: new Date().toISOString(),
+    };
+    SE.id = entry.id;
+    const idx = S.structures.findIndex(s => s.id === entry.id);
+    if (idx >= 0) S.structures[idx] = entry; else S.structures.push(entry);
+    if (!S.songs?.length) await loadSongs();
+    const songEntry = S.songs?.find(s => s.name === SE.songName);
+    if (songEntry) { songEntry.pinnedStructureId = entry.id; await saveSongsJson(); }
+    await saveStructures();
+    hideLoading();
+    showToast('Saved & pinned to ' + SE.songName + '!');
+    showScreen('screen-addnotes');
+    renderStructList();
+  } catch(e) { hideLoading(); showToast('Save failed: ' + _errMsg(e)); }
 }
 
 async function structDelete(id) {
-  S.structures = S.structures.filter(s => s.id !== id);
-  try { await saveStructures(); } catch(e) {}
-  renderStructList();
-  showToast('Deleted');
+  if (!confirm('Delete this structure?')) return;
+  try {
+    S.structures = S.structures.filter(s => s.id !== id);
+    await saveStructures();
+    renderStructList();
+    showToast('Deleted');
+  } catch(e) { showToast('Delete failed: ' + _errMsg(e)); }
 }
 
 function renderStructList() {
