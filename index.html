@@ -275,6 +275,7 @@ header {
 .tp-ver-info  { flex: 1; display: flex; flex-direction: column; gap: 1px; }
 .tp-ver-date  { font-family: var(--f-mono); font-size: 11px; color: var(--c-text-dim); }
 .tp-ver-type  { font-family: var(--f-mono); font-size: 9px; color: var(--c-border); text-transform: uppercase; letter-spacing: 0.06em; }
+.tp-ver-type.studio { color: #4BBDD4; }
 .tp-ver-dur   { font-family: var(--f-mono); font-size: 10px; color: var(--c-border); flex-shrink: 0; }
 .tp-ver-play  { font-size: 10px; color: var(--c-teal-pale); flex-shrink: 0; opacity: 0; }
 .tp-ver-row.active .tp-ver-play { opacity: 1; }
@@ -1229,7 +1230,10 @@ function showSignOutConfirm() {
 ══════════════════════════════════════════════════════ */
 async function discoverFolders() {
   const cached = sessionStorage.getItem('bandapp_folders');
-  if (cached) { S.folders = JSON.parse(cached); return; }
+  if (cached) {
+    const parsed = JSON.parse(cached);
+    if (parsed.studio && parsed.rehearsals) { S.folders = parsed; return; }
+  }
 
   const subfolders = await Drive.list(CONFIG.ROOT_FOLDER, { foldersOnly: true });
   subfolders.forEach(f => {
@@ -1905,7 +1909,7 @@ function renderVersionsList() {
       <div class="tp-ver-badge">${badge}${v.version}</div>
       <div class="tp-ver-info">
         <div class="tp-ver-date">${fmtDate(v.sessionDate)}</div>
-        <div class="tp-ver-type">${v.sessionType}</div>
+        <div class="tp-ver-type${v.sessionType === 'studio' ? ' studio' : ''}">${v.sessionType}</div>
       </div>
       <div class="tp-ver-dur" id="tpvdur-${i}">—</div>
       <div class="tp-ver-star${starred?' starred':''}" title="Star this version" onclick="toggleStar(event,'${v.fileId}')">★</div>
