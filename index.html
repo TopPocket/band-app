@@ -518,7 +518,7 @@ body.tab-fs #main-header { display:none; }
 #tab-controls-panel { flex:3; display:flex; flex-direction:row; background:var(--c-surface); border-left:1px solid var(--c-border); }
 .tab-nav-col { flex:1; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--c-text); cursor:pointer; background:var(--c-surface2); border:none; user-select:none; -webkit-user-select:none; }
 .tab-nav-col:active { background:var(--c-teal-lt); }
-.tab-mid-col { flex:2; display:flex; flex-direction:column; align-items:center; justify-content:space-around; padding:6px 4px; }
+.tab-mid-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:space-around; padding:6px 2px; }
 #tab-cursor-label { font-family:var(--f-mono); font-size:13px; color:var(--c-amber-lt); }
 #tab-clear-btn { background:none; border:none; color:var(--c-accent); font-size:20px; cursor:pointer; padding:0; line-height:1; }
 #tab-save-btn { background:var(--c-accent); border:none; border-radius:5px; color:var(--c-text); font-family:var(--f-mono); font-size:11px; padding:5px 8px; cursor:pointer; width:100%; }
@@ -2980,18 +2980,24 @@ window.onload = () => {
     if (slot >= 0) { TE.cursor = slot; tabRefreshControls(); renderTabCanvas(); renderFretboard(); }
   });
 
-  // Fretboard touch: quick tap = toggle note, hold (250ms) then drag = scroll neck
-  let _ftStart = null, _ftDragging = false, _ftDragReady = false, _ftTimer = null;
+  // Fretboard touch: tap immediately = note, hold 600ms = scroll mode
+  let _ftStart = null, _ftDragging = false, _ftTimer = null;
+  const _ftCancel = () => { clearTimeout(_ftTimer); _ftTimer = null; };
   $('fret-canvas')?.addEventListener('touchstart', e => {
+    e.preventDefault(); // prevent ghost clicks
     const t = e.touches[0];
     _ftStart = { x: t.clientX, y: t.clientY, offset: TE.fretOffset };
-    _ftDragging = false; _ftDragReady = false;
-    _ftTimer = setTimeout(() => { _ftDragReady = true; }, 250);
-  }, { passive: true });
+    _ftDragging = false;
+    _ftCancel();
+    _ftTimer = setTimeout(() => {
+      _fretScrollMode = true;
+      renderFretboard();
+    }, 600);
+  }, { passive: false });
   $('fret-canvas')?.addEventListener('touchmove', e => {
-    if (!_ftStart || !_ftDragReady) return;
+    if (!_ftStart || !_fretScrollMode) return;
     const dx = e.touches[0].clientX - _ftStart.x;
-    if (Math.abs(dx) > 6) _ftDragging = true;
+    if (Math.abs(dx) > 4) _ftDragging = true;
     if (_ftDragging) {
       const canvas = $('fret-canvas');
       const cellW = (canvas.width - 24) / VISIBLE_FRETS;
@@ -3001,11 +3007,20 @@ window.onload = () => {
     }
   }, { passive: true });
   $('fret-canvas')?.addEventListener('touchend', e => {
-    clearTimeout(_ftTimer);
-    if (!_ftDragging && _ftStart) _fretboardHit(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-    _ftStart = null; _ftDragging = false; _ftDragReady = false;
+    _ftCancel();
+    if (!_fretScrollMode) {
+      // Fast tap — fire note immediately
+      const t = e.changedTouches[0];
+      _fretboardHit(t.clientX, t.clientY);
+    }
+    _fretScrollMode = false; _ftDragging = false; _ftStart = null;
+    renderFretboard();
   });
-  // Mouse click on fretboard
+  $('fret-canvas')?.addEventListener('touchcancel', () => {
+    _ftCancel(); _fretScrollMode = false; _ftDragging = false; _ftStart = null;
+    renderFretboard();
+  });
+  // Mouse click on fretboard (desktop)
   $('fret-canvas')?.addEventListener('click', e => _fretboardHit(e.clientX, e.clientY));
 };
 
@@ -3103,26 +3118,7 @@ function fretToNote(stringIdx, fret) {
   return names[midi % 12] + Math.floor(midi / 12 - 1);
 }
 
-let _audioCtx = null;
-function _playFretNote(stringIdx, fret) {
-  try {
-    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const bassMidi   = [40, 45, 50, 55];
-    const guitarMidi = [40, 45, 50, 55, 59, 64];
-    const base = TE.instrument === 'guitar' ? guitarMidi : bassMidi;
-    const midi = (base[stringIdx] || 40) + fret;
-    const freq = 440 * Math.pow(2, (midi - 69) / 12);
-    const osc = _audioCtx.createOscillator();
-    const gain = _audioCtx.createGain();
-    osc.connect(gain); gain.connect(_audioCtx.destination);
-    osc.type = 'triangle';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.4, _audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + 0.7);
-    osc.start(_audioCtx.currentTime);
-    osc.stop(_audioCtx.currentTime + 0.7);
-  } catch(e) {}
-}
+let _fretScrollMode = false;
 
 async function tabNewTab() {
   const picked = await _simplePickerModal('Instrument', ['Bass', 'Guitar'], 'Bass');
@@ -3367,6 +3363,16 @@ function renderFretboard() {
     ctx.textAlign = 'center';
     ctx.fillText(label, ncx, ncy + Math.round(fs * 0.36));
   });
+
+  // Scroll mode overlay
+  if (_fretScrollMode) {
+    ctx.fillStyle = 'rgba(17,26,26,0.52)';
+    ctx.fillRect(LABEL_W, 0, W - LABEL_W, H - NUM_H);
+    ctx.fillStyle = '#83A8A6';
+    ctx.font = 'bold 13px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('‹ scroll ›', Math.round((W + LABEL_W) / 2), Math.round((H - NUM_H) / 2) + 5);
+  }
 }
 
 function _fretboardHit(clientX, clientY) {
@@ -3386,7 +3392,7 @@ function _fretboardHit(clientX, clientY) {
   if (visF < 0 || visF >= VISIBLE_FRETS || fret >= FRET_TOTAL || string < 0 || string >= strings) return;
   const idx = TE.notes.findIndex(n => n.slot === TE.cursor && n.string === string);
   if (idx >= 0) { TE.notes.splice(idx, 1); }
-  else { TE.notes.push({ slot: TE.cursor, string, fret }); _playFretNote(string, fret); }
+  else { TE.notes.push({ slot: TE.cursor, string, fret }); }
   renderTabCanvas();
   renderFretboard();
 }
@@ -3466,6 +3472,7 @@ function _simplePickerModal(title, options, current) {
 }
 
 async function tabSave() {
+  if (!S.songs?.length) { showLoading('Loading tracks…'); await loadSongs(); hideLoading(); }
   const songs = (S.songs || []).filter(s => s.type !== 'egg' && s.name !== '__eggs__');
   const iS = 'width:100%;box-sizing:border-box;background:var(--c-surface2);border:1px solid var(--c-border);border-radius:6px;color:var(--c-text);padding:8px;font-size:13px;margin-top:4px;font-family:var(--f-sans)';
 
