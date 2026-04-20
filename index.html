@@ -3135,14 +3135,33 @@ let _fretScrollMode = false;
 function tabViewTab(tabId) {
   const tab = S.tabs?.find(t => t.id === tabId);
   if (!tab) return;
-  TE.id = tab.id; TE.instrument = tab.instrument;
-  TE.notes = tab.notes.map(n => ({...n}));
-  TE.songName = tab.songName; TE.title = tab.title;
-  TE.extraNotes = tab.extraNotes || '';
-  TE.cursor = -1; TE.fretOffset = 0;
-  document.body.classList.add('tab-fs', 'tab-view');
-  showScreen('screen-tab');
-  requestAnimationFrame(() => { resizeTabCanvases(); renderTabCanvas(); });
+  const strings = tab.instrument === 'guitar' ? 6 : 4;
+  const tuning  = tab.instrument === 'guitar' ? ['E','A','D','G','B','e'] : ['E','A','D','G'];
+  const maxSlot = tab.notes.reduce((m, n) => Math.max(m, n.slot), 0);
+  const lines = [];
+  for (let s = strings - 1; s >= 0; s--) {
+    let line = tuning[s] + '|';
+    for (let slot = 0; slot <= maxSlot; slot++) {
+      const note = tab.notes.find(n => n.slot === slot && n.string === s);
+      if (note) { const num = String(note.fret); line += num + '-'.repeat(Math.max(0, 3 - num.length)); }
+      else line += '---';
+    }
+    lines.push(line + '|');
+  }
+  const text = [tab.title||'Untitled', tab.songName?'Song: '+tab.songName:'', tab.author?'By: '+tab.author:'', '', ...lines, '', tab.extraNotes||'']
+    .filter((l,i) => i < 4 || l !== '').join('\n');
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;display:flex;flex-direction:column;padding:20px;box-sizing:border-box';
+  const pre = document.createElement('pre');
+  pre.style.cssText = 'flex:1;overflow:auto;background:#111;color:#e0e0e0;font-family:monospace;font-size:13px;padding:16px;border-radius:8px;margin:0;white-space:pre;line-height:1.6';
+  pre.textContent = text;
+  const close = document.createElement('button');
+  close.textContent = '✕ Close';
+  close.style.cssText = 'margin-top:12px;background:none;border:1px solid #444;border-radius:6px;color:#aaa;font-family:monospace;font-size:12px;padding:8px 20px;cursor:pointer;align-self:center';
+  close.onclick = () => document.body.removeChild(overlay);
+  overlay.appendChild(pre); overlay.appendChild(close);
+  document.body.appendChild(overlay);
 }
 
 async function tabNewTab() {
