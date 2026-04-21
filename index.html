@@ -477,6 +477,7 @@ header {
 .tp-ver-promote:hover { color:var(--c-amber-lt); border-color:var(--c-amber-lt); }
 .nest-section-sep { display:flex; align-items:center; gap:8px; padding:14px 16px 6px; font-family:var(--f-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--c-text-dim); }
 .nest-section-sep::before { content:''; flex:1; height:1px; background:var(--c-border); }
+.song-egg-icon { width:22px; height:28px; background:var(--c-amber); border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; flex-shrink:0; opacity:0.65; }
 .egg-hatch-btn { background:none; border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:10px; cursor:pointer; padding:3px 7px; flex-shrink:0; }
 .egg-hatch-btn:hover { border-color:var(--c-amber-lt); color:var(--c-amber-lt); }
 .tp-hatch-btn { background:none; border:1px solid var(--c-border); border-radius:5px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:11px; cursor:pointer; padding:4px 10px; }
@@ -1742,8 +1743,8 @@ async function loadSongs() {
 function renderSongList() {
   const list = $('song-list');
   list.innerHTML = '';
-  const realSongs = S.songs.filter(s => s.type !== 'egg' && s.name !== '__eggs__');
-  const eggs      = S.songs.filter(s => s.type === 'egg');
+  const realSongs = S.songs.filter(s => s.type !== 'egg' && s.name !== '__eggs__' && s.name);
+  const eggs      = S.songs.filter(s => s.type === 'egg' && s.name);
 
   realSongs.forEach((song, i) => {
     const card = document.createElement('div');
@@ -1781,7 +1782,7 @@ function renderSongList() {
       card.className = 'song-card';
       card.style.gap = '10px';
       card.innerHTML = `
-        <div class="song-card-icon">𓅤</div>
+        <div class="song-card-icon" style="display:flex;align-items:center;"><div class="song-egg-icon"></div></div>
         <div class="song-card-info" style="flex:1">
           <div class="song-card-name">${egg.name}</div>
           <div class="song-card-sub">${egg.sessionDate ? fmtDate(egg.sessionDate) : 'No date'}</div>
@@ -1932,7 +1933,7 @@ async function migrateEggsIfNeeded() {
   const pool = S.songs.find(s => s.name === '__eggs__');
   const eggRecordings = [];
   Object.entries(S.trackIndex).forEach(([key, vrs]) => {
-    if (!realKeys.has(key)) vrs.forEach(v => eggRecordings.push(v));
+    if (key && !realKeys.has(key)) vrs.forEach(v => eggRecordings.push(v));
   });
   // Remove old pool entries
   S.songs = S.songs.filter(s => s.name !== '__eggs__' && s.type !== 'egg_pool');
@@ -2063,7 +2064,7 @@ function renderVersionsList() {
     const row = document.createElement('div');
     row.className = 'tp-ver-row';
     row.id = `tpver-${i}`;
-    const songEntry = S.tp.isEgg ? getEggPool() : S.songs.find(s => s.name === S.tp.songName);
+    const songEntry = S.songs.find(s => s.name === S.tp.songName);
     const starred   = (songEntry?.starredVersions || []).includes(v.fileId);
     row.innerHTML = `
       <div class="tp-ver-badge">${badge}${v.version}</div>
@@ -2151,12 +2152,7 @@ async function saveSongsJson() {
 
 async function saveSongNotes() {
   const text = $('tp-lyrics-text').value;
-  if (S.tp.isEgg) {
-    const v = S.tp.versions[S.tp.versionIdx];
-    if (!v) return;
-    const pool = getEggPool();
-    pool.eggNotes[v.fileId] = text;
-  } else {
+  {
     const idx = S.songs.findIndex(s => s.name === S.tp.songName);
     if (idx < 0) return;
     S.songs[idx].notes = text;
@@ -2247,8 +2243,10 @@ function drawWave() {
     ctx.fillRect(x, (H-bh)/2, Math.max(1, barW-0.5), bh);
   }
 
-  // Comment markers
-  if (dur > 0) S.tp.comments.forEach(c => {
+  // Comment markers — current version only
+  const _curV = S.tp.versions[S.tp.versionIdx];
+  const _verComments = _curV ? S.tp.comments.filter(c => c.fileId === _curV.fileId) : [];
+  if (dur > 0) _verComments.forEach(c => {
     const cf  = c.startTime / dur;
     const ef  = c.endTime   ? c.endTime / dur : cf;
 
@@ -2632,7 +2630,7 @@ function sessCommentBtnUp(e){
 ══════════════════════════════════════════════════════ */
 async function toggleStar(e, fileId){
   e.stopPropagation();
-  const songEntry = S.tp.isEgg ? getEggPool() : S.songs.find(s=>s.name===S.tp.songName);
+  const songEntry = S.songs.find(s=>s.name===S.tp.songName);
   if(!songEntry) return;
   if(!songEntry.starredVersions) songEntry.starredVersions=[];
   const i=songEntry.starredVersions.indexOf(fileId);
@@ -4443,7 +4441,14 @@ function downloadTab(id) {
 <!-- Hatch confirm overlay -->
 <div id="hatch-confirm" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:400;align-items:center;justify-content:center;">
   <div style="background:var(--c-surface);border-radius:14px;padding:28px 22px 22px;max-width:280px;width:90%;text-align:center;border:1px solid var(--c-border);">
-    <div style="font-size:32px;margin-bottom:8px;">𓅣</div>
+    <div style="margin-bottom:8px;display:flex;justify-content:center;">
+      <svg width="48" height="58" viewBox="0 0 48 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="24" cy="32" rx="21" ry="25" fill="#C07840" opacity="0.65"/>
+        <polyline points="24,9 21,19 27,24 23,34" stroke="#1A2E2C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="23" y1="19" x2="19" y2="22" stroke="#1A2E2C" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="27" y1="24" x2="31" y2="21" stroke="#1A2E2C" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
     <div style="font-family:var(--f-mono);font-size:12px;color:var(--c-amber-lt);margin-bottom:6px;" id="hatch-confirm-name"></div>
     <div style="font-size:12px;color:var(--c-teal-pale);margin-bottom:22px;">Are you sure?</div>
     <div style="display:flex;gap:8px;justify-content:center;">
