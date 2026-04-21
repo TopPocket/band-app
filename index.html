@@ -318,7 +318,7 @@ header {
 .tp-comment-item.highlight { border-color: var(--c-teal); background: rgba(25,114,120,0.08); }
 .tp-comment-hdr  { display: flex; align-items: center; gap: 6px; }
 .tp-comment-time { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); flex-shrink: 0; }
-.tp-comment-who  { font-family: var(--f-mono); font-size: 11px; color: var(--c-text-dim); margin-left: auto; letter-spacing: 0.04em; }
+.tp-comment-hdr .cd-card-directed-row { margin-left: auto; }
 .tp-comment-text { font-size: 12px; line-height: 1.4; }
 /* song nav arrows */
 .tp-song-nav { display: flex; gap: 6px; margin-left: auto; }
@@ -2331,17 +2331,14 @@ function renderComments() {
       const el = document.createElement('div');
       el.className = 'tp-comment-item' + (isCur ? '' : ' dim');
       el.dataset.start = c.startTime;
-      const timeStr  = c.endTime ? `${fmt(c.startTime)}–${fmt(c.endTime)}` : fmt(c.startTime);
-      const authorB  = MEMBER_BIRDS[c.author] || c.author?.[0] || '?';
-      const toB      = c.directedTo?.length ? ' › ' + c.directedTo.map(m => MEMBER_BIRDS[m] || m[0]).join(' ') : '';
-      const whoStr   = authorB + toB;
-      const perches  = c.perches || [];
-      const iPerched = perches.includes(S.user?.name);
+      const timeStr    = c.endTime ? `${fmt(c.startTime)}–${fmt(c.endTime)}` : fmt(c.startTime);
+      const authorCircle = `<span class="cd-circle cd-circle-author">${(c.author||'?')[0]}</span>`;
+      const toCircles    = (c.directedTo||[]).map(p=>`<span class="cd-circle">${p[0]}</span>`).join('');
+      const dirRow       = authorCircle + (toCircles ? `<span class="cd-directed-arrow">→</span>${toCircles}` : '');
       el.innerHTML = `
         <div class="tp-comment-hdr">
           <div class="tp-comment-time">${timeStr}</div>
-          <div class="tp-comment-who">${whoStr}</div>
-          <div class="perch-btn${iPerched?' perched':''}" onclick="tpTogglePerch(event,'${c.id}')" title="Nest this comment">${NEST_SVG} ${perches.length||''}</div>
+          <div class="cd-card-directed-row">${dirRow}</div>
         </div>
         <div class="tp-comment-text">${c.text}</div>`;
       el.onclick = e => { if (e.target.classList.contains('perch-btn') || e.target.closest('.perch-btn')) return; S.tp.audio.currentTime = c.startTime; if (S.tp.audio.paused) S.tp.audio.play(); };
