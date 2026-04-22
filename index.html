@@ -222,10 +222,11 @@ header {
 /* ══ TRACK DETAIL ══ */
 #screen-track { overflow-y: auto; overflow-x: hidden; }
 .tp-body {
+  flex: 1; overflow-y: auto;
   display: flex; flex-direction: column;
-  min-height: calc(100vh - 94px);
-  min-height: calc(100dvh - 94px);
 }
+/* controls + waveform sticky at bottom on mobile */
+.tp-player-sticky { position: sticky; bottom: 0; z-index: 5; background: var(--c-bg); flex-shrink: 0; }
 /* ── tab bar ── */
 .tp-tabs-wrap { display: flex; flex-direction: column; }
 .tp-tabs-bar { flex-shrink: 0; display: flex; overflow-x: auto; background: var(--c-surface2); border-bottom: 1px solid var(--c-amber-lt); scrollbar-width: none; padding: 0 4px; }
@@ -405,6 +406,7 @@ header {
   .tp-tabs-wrap { grid-area: tabs; border-bottom: none; border-right: 1px solid var(--c-border); flex: unset; overflow: hidden; display: flex; flex-direction: column; }
   .tp-tab-panel { flex: 1; overflow-y: auto; min-height: 0; }
   .tp-tabcontent.active { display: flex; flex-direction: column; min-height: 100%; }
+  .tp-player-sticky { display: contents; }
   .tp-controls { grid-area: controls; }
   .tp-waveform-wrap { grid-area: waveform; height: auto; border-bottom: 1px solid var(--c-border); }
   .tp-comments-section { grid-area: comments; overflow-y: auto; }
@@ -524,6 +526,46 @@ header {
 .snip-knob.turning { border-color:var(--c-amber); }
 .snip-knob-pip { width:3px; height:15px; background:var(--c-teal-pale); border-radius:3px; position:absolute; top:5px; left:50%; transform:translateX(-50%); }
 .snip-knob-lbl { font-family:var(--f-mono); font-size:8px; color:var(--c-border); letter-spacing:0.06em; text-transform:uppercase; text-align:center; }
+/* metronome bar */
+.snip-metro { display:flex; align-items:center; gap:10px; padding:8px 16px; background:var(--c-surface); border-bottom:1px solid var(--c-border); flex-shrink:0; }
+.snip-metro-toggle { font-family:var(--f-mono); font-size:10px; padding:5px 12px; border:1px solid var(--c-border); border-radius:5px; background:none; color:var(--c-teal-pale); cursor:pointer; white-space:nowrap; user-select:none; }
+.snip-metro-toggle.on { border-color:var(--c-amber-lt); color:var(--c-amber-lt); background:rgba(232,169,106,0.1); }
+.snip-metro-bpm { font-family:var(--f-mono); font-size:18px; font-weight:500; color:var(--c-text); min-width:40px; text-align:center; flex-shrink:0; }
+.snip-metro-knob-wrap { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.snip-metro-knob { width:32px; height:40px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; background:var(--c-surface2); border:2px solid var(--c-border); position:relative; cursor:ns-resize; touch-action:none; user-select:none; transition:border-color 0.12s; flex-shrink:0; }
+.snip-metro-knob.turning { border-color:var(--c-amber-lt); }
+.snip-metro-label { font-family:var(--f-mono); font-size:7px; color:var(--c-border); text-transform:uppercase; }
+/* snap button in snip controls */
+.snip-snap-btn { font-family:var(--f-mono); font-size:9px; padding:5px 10px; border:1px solid var(--c-border); border-radius:5px; background:none; color:var(--c-teal-pale); cursor:pointer; user-select:none; white-space:nowrap; margin-left:auto; }
+.snip-snap-btn.on { border-color:var(--c-amber-lt); color:var(--c-amber-lt); background:rgba(232,169,106,0.1); }
+/* snippet metro playback icon */
+.tp-snip-metro-icon { font-size:13px; color:var(--c-border); cursor:pointer; flex-shrink:0; user-select:none; padding:2px; transition:color 0.15s; }
+.tp-snip-metro-icon.on { color:var(--c-amber-lt); }
+/* lyrics autoscroll */
+.tp-lyrics-wrap { display:flex; flex-direction:column; flex:1; min-height:0; }
+.tp-lyrics-view { flex:1; overflow-y:auto; padding:12px 14px; font-family:var(--f-sans); font-size:13px; line-height:1.8; color:var(--c-text); white-space:pre-wrap; display:none; }
+.tp-lyrics-view.active { display:block; }
+.tp-lyrics-text.hidden { display:none; }
+.tp-lyrics-scroll-bar { flex-shrink:0; display:none; align-items:center; gap:10px; padding:8px 14px; border-top:1px solid var(--c-border); background:var(--c-surface); }
+.tp-lyrics-scroll-bar.visible { display:flex; }
+.tp-lyrics-scroll-btn { font-family:var(--f-mono); font-size:9px; padding:4px 10px; border:1px solid var(--c-border); border-radius:5px; background:none; color:var(--c-teal-pale); cursor:pointer; white-space:nowrap; user-select:none; flex-shrink:0; }
+.tp-lyrics-scroll-btn.on { border-color:var(--c-amber-lt); color:var(--c-amber-lt); background:rgba(232,169,106,0.1); }
+.tp-lyrics-speed { flex:1; -webkit-appearance:none; height:3px; border-radius:2px; background:var(--c-border); outline:none; cursor:pointer; }
+.tp-lyrics-speed::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--c-amber); cursor:pointer; }
+/* tabs list */
+.tp-tabs-list { padding:0; }
+.tp-tab-entry { border-bottom:1px solid var(--c-border); }
+.tp-tab-entry-hdr { display:flex; align-items:center; gap:8px; padding:10px 14px; cursor:pointer; user-select:none; }
+.tp-tab-entry-hdr:hover { background:rgba(25,114,120,0.06); }
+.tp-tab-instr-badge { font-family:var(--f-mono); font-size:9px; padding:2px 8px; border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); flex-shrink:0; }
+.tp-tab-entry-title { flex:1; font-size:13px; font-weight:500; }
+.tp-tab-entry-arrow { font-family:var(--f-mono); font-size:11px; color:var(--c-border); transition:transform 0.15s; }
+.tp-tab-entry.open .tp-tab-entry-arrow { transform:rotate(180deg); }
+.tp-tab-entry-body { display:none; padding:0 14px 14px; }
+.tp-tab-entry.open .tp-tab-entry-body { display:block; }
+.tp-tab-content-text { font-family:'DM Mono', monospace; font-size:12px; line-height:1.7; color:var(--c-teal-pale); white-space:pre; overflow-x:auto; background:var(--c-bg); border:1px solid var(--c-border); border-radius:6px; padding:10px 12px; }
+.tp-add-tab-btn { display:flex; align-items:center; justify-content:center; gap:6px; width:calc(100% - 28px); margin:12px 14px; padding:10px; background:none; border:1px dashed var(--c-border); border-radius:6px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:11px; cursor:pointer; transition:border-color 0.15s, color 0.15s; }
+.tp-add-tab-btn:hover { border-color:var(--c-teal-pale); color:var(--c-text); }
 
 /* ══ ADD NOTES PAGE ══ */
 .an-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:14px 16px; }
@@ -776,9 +818,16 @@ body.tab-view #tab-view-close { display:flex; }
             <div id="tp-versions-body"></div>
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-lyrics">
-            <textarea class="tp-lyrics-text" id="tp-lyrics-text"
-                      placeholder="Add lyrics, chords…"
-                      oninput="tpNotesChanged()"></textarea>
+            <div class="tp-lyrics-wrap">
+              <div class="tp-lyrics-view" id="tp-lyrics-view"></div>
+              <textarea class="tp-lyrics-text" id="tp-lyrics-text"
+                        placeholder="Add lyrics, chords…"
+                        oninput="tpNotesChanged()"></textarea>
+              <div class="tp-lyrics-scroll-bar" id="tp-lyrics-scroll-bar">
+                <button class="tp-lyrics-scroll-btn" id="tp-lyrics-scroll-btn" onclick="tpLyricsScrollToggle()">⟳ Auto</button>
+                <input type="range" class="tp-lyrics-speed" id="tp-lyrics-speed" min="1" max="100" value="25" oninput="tpLyricsSpeedChanged()">
+              </div>
+            </div>
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-structure">
             <div id="tp-pinned-struct">
@@ -791,9 +840,8 @@ body.tab-view #tab-view-close { display:flex; }
             <div id="tp-struct-list"></div>
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-tabs">
-            <textarea class="tp-lyrics-text" id="tp-tabs-text"
-                      placeholder="Add guitar tabs, chord charts…"
-                      oninput="tpTabsChanged()"></textarea>
+            <div class="tp-tabs-list" id="tp-tabs-list"></div>
+            <button class="tp-add-tab-btn" onclick="openTabWidget()">+ Add Tab</button>
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-notes">
             <div id="tp-notes-wrap" style="flex:1;display:flex;flex-direction:column"
@@ -807,26 +855,26 @@ body.tab-view #tab-view-close { display:flex; }
         </div>
       </div>
 
-      <!-- controls -->
-      <div class="tp-controls">
-        <button class="tp-ctrl-btn comment-btn" id="tp-ctrl-comment"
-                onmousedown="commentBtnDown()" onmouseup="commentBtnUp()"
-                ontouchstart="commentBtnDown(event)" ontouchend="commentBtnUp(event)">
-          𓅦 Comment (Hold)
-        </button>
-        <button class="tp-ctrl-btn tp-ctrl-skip" onclick="tpPrevVersion()" title="Previous version">⏮&#xFE0E;</button>
-        <button class="tp-ctrl-btn play-btn" id="tp-ctrl-play" onclick="tpTogglePlay()">▶&#xFE0E;</button>
-        <button class="tp-ctrl-btn tp-ctrl-skip" onclick="tpNextVersion()" title="Next version">⏭&#xFE0E;</button>
-      </div>
-
-      <!-- waveform -->
-      <div class="tp-waveform-wrap">
-        <canvas id="tp-waveform-canvas"
-                onclick="waveSeek(event)"
-                onwheel="waveZoom(event)"
-                ontouchstart="waveTouchStart(event)"
-                ontouchmove="waveTouchMove(event)"></canvas>
-        <div class="tp-wave-time" id="tp-wave-time">0:00 / —:——</div>
+      <!-- controls + waveform: sticky at bottom on mobile -->
+      <div class="tp-player-sticky">
+        <div class="tp-controls">
+          <button class="tp-ctrl-btn comment-btn" id="tp-ctrl-comment"
+                  onmousedown="commentBtnDown()" onmouseup="commentBtnUp()"
+                  ontouchstart="commentBtnDown(event)" ontouchend="commentBtnUp(event)">
+            𓅦 Comment (Hold)
+          </button>
+          <button class="tp-ctrl-btn tp-ctrl-skip" onclick="tpPrevVersion()" title="Previous version">⏮&#xFE0E;</button>
+          <button class="tp-ctrl-btn play-btn" id="tp-ctrl-play" onclick="tpTogglePlay()">▶&#xFE0E;</button>
+          <button class="tp-ctrl-btn tp-ctrl-skip" onclick="tpNextVersion()" title="Next version">⏭&#xFE0E;</button>
+        </div>
+        <div class="tp-waveform-wrap">
+          <canvas id="tp-waveform-canvas"
+                  onclick="waveSeek(event)"
+                  onwheel="waveZoom(event)"
+                  ontouchstart="waveTouchStart(event)"
+                  ontouchmove="waveTouchMove(event)"></canvas>
+          <div class="tp-wave-time" id="tp-wave-time">0:00 / —:——</div>
+        </div>
       </div>
 
       <!-- structure panel (shown when tapping ⬡ on a version) -->
@@ -1766,6 +1814,8 @@ async function goTracks() {
 
 function backToTracks() {
   S.tp.audio.pause();
+  _stopSnipPlayMetro();
+  document.querySelectorAll('.tp-snip-metro-icon').forEach(el => el.classList.remove('on'));
   showScreen('screen-tracks');
 }
 
@@ -1924,8 +1974,8 @@ async function openSong(songName, songIdx, isEgg = false) {
   $('tp-comments-body').innerHTML = '';
   clearWaveCanvas();
 
+  if (_lyricsScrollOn) { _lyricsScrollOn = false; cancelAnimationFrame(_lyricsScrollRaf); _lyricsScrollRaf = null; $('tp-lyrics-scroll-btn')?.classList.remove('on'); $('tp-lyrics-view')?.classList.remove('active'); $('tp-lyrics-text')?.classList.remove('hidden'); }
   $('tp-lyrics-text').value = songEntry?.notes || '';
-  const tabsEl = $('tp-tabs-text'); if (tabsEl) tabsEl.value = songEntry?.tabText || '';
   const notesEl = $('tp-notes-text'); if (notesEl) notesEl.value = songEntry?.noteText || '';
   tpSwitchTab('recordings');
 
@@ -2153,8 +2203,7 @@ function renderVersionsList() {
              onblur="saveSnippetTitle('${sn.id}', this.value)"
              onkeydown="if(event.key==='Enter')this.blur()">
       <div class="tp-ver-dur">${dur}</div>
-      <div class="tp-ver-star" style="visibility:hidden">★</div>
-      <div class="tp-ver-struct" style="visibility:hidden">⬡</div>
+      ${sn.bpm ? `<div class="tp-snip-metro-icon" id="snip-mi-${sn.id}" title="Metronome (${sn.bpm} bpm)" onclick="event.stopPropagation();toggleSnipMetro('${sn.id}')">♩</div>` : ''}
       <div class="tp-ver-play">▶</div>`;
     const delReveal  = document.createElement('div'); delReveal.className = 'tp-snip-del-reveal'; delReveal.textContent = '𓅮';
     const delConfirm = document.createElement('div');
@@ -2305,11 +2354,14 @@ S.tp.audio.addEventListener('ended', () => { $('tp-ctrl-play').textContent = '\u
 
 /* ── TABS ────────────────────────────────────────────── */
 function tpSwitchTab(tab) {
+  if (_lyricsScrollOn && tab !== 'lyrics') tpLyricsScrollToggle();
   S.tp.activeTab = tab;
   document.querySelectorAll('.tp-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tp-tabcontent').forEach(d => d.classList.toggle('active', d.id === `tp-tabcontent-${tab}`));
   if (tab === 'structure') { renderPinnedStruct(); renderStructureTabList(); }
   if (tab === 'notes') _renderNoteImages();
+  if (tab === 'tabs') renderSongTabsData();
+  if (tab === 'lyrics') $('tp-lyrics-scroll-bar')?.classList.add('visible');
 }
 
 function renderStructureTabList() {
@@ -2402,6 +2454,7 @@ async function selectSnippet(snipId) {
 
 /* ── GUITAR TABS (auto-save) ─────────────────────────── */
 let _tpTabsSaveTimer = null;
+let _lyricsScrollRaf = null, _lyricsScrollOn = false;
 function tpTabsChanged() {
   clearTimeout(_tpTabsSaveTimer);
   _tpTabsSaveTimer = setTimeout(saveSongTabs, 1500);
@@ -4549,6 +4602,7 @@ const SnipR = {
   looping: false, recording: false,
   context: null, commentId: null, songName: null,
   _knob: null, _rafId: null,
+  metro: { on: false, bpm: 120, snap: false, _ctx: null, _nextBeat: 0, _schedId: null, _bpmKnob: null },
 };
 SnipR.audio.addEventListener('ended', () => {
   if (SnipR.looping) { SnipR.audio.currentTime = SnipR.trimStart; SnipR.audio.play(); }
@@ -4575,6 +4629,12 @@ function snipClose() {
   cancelAnimationFrame(SnipR._rafId); SnipR._rafId = null;
   if (SnipR.blobUrl) { URL.revokeObjectURL(SnipR.blobUrl); SnipR.blobUrl = null; }
   if (SnipR.stream) { SnipR.stream.getTracks().forEach(t => t.stop()); SnipR.stream = null; }
+  _snipMetroStop();
+  Object.assign(SnipR.metro, { on: false, _bpmKnob: null });
+  $('snip-metro-on')?.classList.remove('on');
+  if ($('snip-metro-on')) $('snip-metro-on').textContent = 'Off';
+  $('snip-snap-btn')?.classList.remove('on');
+  SnipR.metro.snap = false;
   Object.assign(SnipR, { blob: null, peaks: [], duration: 0, trimStart: 0, trimEnd: 0,
     recording: false, looping: false, _knob: null, context: null, commentId: null, songName: null });
   $('snip-rec-btn').classList.remove('recording');
@@ -4740,14 +4800,19 @@ function snipKnobDown(e, which) {
 function snipKnobMove(e) {
   if (!SnipR._knob || !SnipR.duration) return;
   e.preventDefault();
-  const dy = SnipR._knob.startY - e.touches[0].clientY; // swipe up = positive = later in track
+  const dy = SnipR._knob.startY - e.touches[0].clientY;
   const delta = (dy / 280) * SnipR.duration;
+  let val = SnipR._knob.startVal + delta;
+  if (SnipR.metro.snap && SnipR.metro.bpm > 0) {
+    const beatLen = 60 / SnipR.metro.bpm;
+    val = Math.round(val / beatLen) * beatLen;
+  }
   if (SnipR._knob.which === 's') {
-    SnipR.trimStart = Math.max(0, Math.min(SnipR.trimEnd - 0.05, SnipR._knob.startVal + delta));
+    SnipR.trimStart = Math.max(0, Math.min(SnipR.trimEnd - 0.05, val));
     if (!SnipR.audio.paused && SnipR.audio.currentTime < SnipR.trimStart)
       SnipR.audio.currentTime = SnipR.trimStart;
   } else {
-    SnipR.trimEnd = Math.max(SnipR.trimStart + 0.05, Math.min(SnipR.duration, SnipR._knob.startVal + delta));
+    SnipR.trimEnd = Math.max(SnipR.trimStart + 0.05, Math.min(SnipR.duration, val));
   }
   _snipUpdateKnob(SnipR._knob.which);
   _snipUpdateLabels();
@@ -4758,6 +4823,264 @@ function snipKnobUp() {
   if (!SnipR._knob) return;
   $((SnipR._knob.which === 's') ? 'snip-ks' : 'snip-ke').classList.remove('turning');
   SnipR._knob = null;
+}
+
+/* ── METRONOME ──────────────────────────────────────────── */
+function snipMetroToggle() {
+  const m = SnipR.metro;
+  m.on = !m.on;
+  const btn = $('snip-metro-on');
+  btn.textContent = m.on ? 'On' : 'Off';
+  btn.classList.toggle('on', m.on);
+  if (m.on) _snipMetroStart(); else _snipMetroStop();
+}
+
+function _snipMetroStart() {
+  _snipMetroStop();
+  const m = SnipR.metro;
+  try {
+    m._ctx = new (window.AudioContext || window.webkitAudioContext)();
+    m._nextBeat = m._ctx.currentTime + 0.05;
+    m._schedId = setInterval(_snipMetroSchedule, 50);
+  } catch(e) { console.warn('metro ctx:', e); }
+}
+
+function _snipMetroStop() {
+  const m = SnipR.metro;
+  clearInterval(m._schedId); m._schedId = null;
+  if (m._ctx) { try { m._ctx.close(); } catch(e) {} m._ctx = null; }
+}
+
+function _snipMetroSchedule() {
+  const m = SnipR.metro;
+  if (!m._ctx || !m.on) return;
+  const beatLen = 60 / m.bpm;
+  const lookAhead = 0.15;
+  while (m._nextBeat < m._ctx.currentTime + lookAhead) {
+    const osc = m._ctx.createOscillator();
+    const gain = m._ctx.createGain();
+    osc.connect(gain); gain.connect(m._ctx.destination);
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.5, m._nextBeat);
+    gain.gain.exponentialRampToValueAtTime(0.001, m._nextBeat + 0.05);
+    osc.start(m._nextBeat); osc.stop(m._nextBeat + 0.06);
+    m._nextBeat += beatLen;
+  }
+}
+
+function snipToggleSnap() {
+  const m = SnipR.metro;
+  m.snap = !m.snap;
+  $('snip-snap-btn')?.classList.toggle('on', m.snap);
+}
+
+/* BPM knob */
+function snipBpmKnobDown(e) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  SnipR.metro._bpmKnob = { startY: touch.clientY, startBpm: SnipR.metro.bpm };
+  $('snip-metro-knob')?.classList.add('turning');
+}
+
+function snipBpmKnobMove(e) {
+  const m = SnipR.metro;
+  if (!m._bpmKnob) return;
+  e.preventDefault();
+  const dy = m._bpmKnob.startY - e.touches[0].clientY; // up = faster
+  const newBpm = Math.max(20, Math.min(300, Math.round(m._bpmKnob.startBpm + dy * 0.8)));
+  m.bpm = newBpm;
+  if ($('snip-metro-bpm')) $('snip-metro-bpm').textContent = newBpm;
+  // update knob rotation: 20bpm=0deg, 300bpm=330deg
+  const rot = ((newBpm - 20) / 280) * 330;
+  $('snip-metro-knob').style.transform = `rotate(${rot}deg)`;
+  if (m.on && m._ctx) m._nextBeat = m._ctx.currentTime + 0.05; // re-sync
+}
+
+function snipBpmKnobUp() {
+  $('snip-metro-knob')?.classList.remove('turning');
+  SnipR.metro._bpmKnob = null;
+}
+
+/* ── SNIPPET METRO PLAYBACK ─────────────────────────────── */
+const _snipPlayMetro = { _ctx: null, _schedId: null, on: false };
+
+function toggleSnipMetro(snipId) {
+  const icon = $(`snip-mi-${snipId}`);
+  if (_snipPlayMetro.on) {
+    _stopSnipPlayMetro();
+    if (icon) { icon.classList.remove('on'); }
+    return;
+  }
+  const sn = S.snippets?.find(s => s.id === snipId);
+  if (!sn?.bpm) return;
+  icon?.classList.add('on');
+  _startSnipPlayMetro(sn.bpm);
+}
+
+function _startSnipPlayMetro(bpm) {
+  _stopSnipPlayMetro();
+  _snipPlayMetro.on = true;
+  try {
+    _snipPlayMetro._ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const beatLen = 60 / bpm;
+    const audio = S.tp.audio;
+    const startOffset = audio.currentTime % beatLen;
+    _snipPlayMetro._nextBeat = _snipPlayMetro._ctx.currentTime + (beatLen - startOffset);
+    _snipPlayMetro._bpm = bpm;
+    _snipPlayMetro._schedId = setInterval(_schedSnipPlayMetro, 50);
+  } catch(e) { console.warn('snip play metro:', e); }
+}
+
+function _schedSnipPlayMetro() {
+  const m = _snipPlayMetro;
+  if (!m._ctx || !m.on) return;
+  const beatLen = 60 / m._bpm;
+  while (m._nextBeat < m._ctx.currentTime + 0.15) {
+    const osc = m._ctx.createOscillator();
+    const gain = m._ctx.createGain();
+    osc.connect(gain); gain.connect(m._ctx.destination);
+    osc.frequency.value = 660;
+    gain.gain.setValueAtTime(0.35, m._nextBeat);
+    gain.gain.exponentialRampToValueAtTime(0.001, m._nextBeat + 0.05);
+    osc.start(m._nextBeat); osc.stop(m._nextBeat + 0.06);
+    m._nextBeat += beatLen;
+  }
+}
+
+function _stopSnipPlayMetro() {
+  clearInterval(_snipPlayMetro._schedId); _snipPlayMetro._schedId = null;
+  if (_snipPlayMetro._ctx) { try { _snipPlayMetro._ctx.close(); } catch(e) {} _snipPlayMetro._ctx = null; }
+  _snipPlayMetro.on = false;
+}
+
+/* ── LYRICS AUTOSCROLL ──────────────────────────────────── */
+function tpLyricsScrollToggle() {
+  _lyricsScrollOn = !_lyricsScrollOn;
+  const btn = $('tp-lyrics-scroll-btn');
+  const bar = $('tp-lyrics-scroll-bar');
+  const view = $('tp-lyrics-view');
+  const ta   = $('tp-lyrics-text');
+  btn?.classList.toggle('on', _lyricsScrollOn);
+  if (bar) bar.classList.toggle('visible', true); // always show bar once used
+  if (_lyricsScrollOn) {
+    view.textContent = ta.value;
+    view.classList.add('active');
+    ta.classList.add('hidden');
+    view.scrollTop = 0;
+    _lyricsScrollLoop();
+  } else {
+    cancelAnimationFrame(_lyricsScrollRaf); _lyricsScrollRaf = null;
+    view.classList.remove('active');
+    ta.classList.remove('hidden');
+  }
+}
+
+function tpLyricsSpeedChanged() {}
+
+function _lyricsScrollLoop() {
+  const view = $('tp-lyrics-view');
+  if (!view || !_lyricsScrollOn) return;
+  const speed = parseFloat($('tp-lyrics-speed')?.value || 25);
+  const pxPerFrame = speed / 600;
+  view.scrollTop += pxPerFrame;
+  if (view.scrollTop >= view.scrollHeight - view.clientHeight) {
+    _lyricsScrollOn = false;
+    $('tp-lyrics-scroll-btn')?.classList.remove('on');
+    return;
+  }
+  _lyricsScrollRaf = requestAnimationFrame(_lyricsScrollLoop);
+}
+
+/* ── TABS DATA (guitar/bass tabs) ───────────────────────── */
+function renderSongTabsData() {
+  const songEntry = S.songs.find(s => s.name === S.tp.songName);
+  const list = $('tp-tabs-list');
+  if (!list) return;
+  list.innerHTML = '';
+  const tabs = songEntry?.tabsData || [];
+  // migrate legacy tabText
+  if (!tabs.length && songEntry?.tabText) {
+    tabs.push({ id: 'legacy', title: 'Tab', instrument: 'Guitar', content: songEntry.tabText });
+  }
+  if (!tabs.length) {
+    list.innerHTML = `<div style="padding:20px 14px;color:var(--c-border);font-family:var(--f-mono);font-size:11px">No tabs yet.</div>`;
+    return;
+  }
+  tabs.forEach((t, i) => {
+    const entry = document.createElement('div');
+    entry.className = 'tp-tab-entry';
+    entry.innerHTML = `
+      <div class="tp-tab-entry-hdr" onclick="this.closest('.tp-tab-entry').classList.toggle('open')">
+        <span class="tp-tab-instr-badge">${t.instrument || 'Guitar'}</span>
+        <span class="tp-tab-entry-title">${t.title || 'Tab'}</span>
+        <span class="tp-tab-entry-arrow">▾</span>
+      </div>
+      <div class="tp-tab-entry-body">
+        <div class="tp-tab-content-text">${t.content.replace(/</g,'&lt;')}</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="tp-add-tab-btn" style="margin:0;flex:1" onclick="openTabWidget(${i})">Edit</button>
+          <button class="tp-add-tab-btn" style="margin:0;flex:1;color:var(--c-accent);border-color:var(--c-accent)" onclick="deleteTabEntry(${i})">Delete</button>
+        </div>
+      </div>`;
+    list.appendChild(entry);
+  });
+}
+
+function openTabWidget(editIdx) {
+  const songEntry = S.songs.find(s => s.name === S.tp.songName);
+  const tabs = songEntry?.tabsData || [];
+  const existing = editIdx !== undefined ? tabs[editIdx] : null;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:400;background:rgba(26,46,44,0.88);display:flex;flex-direction:column;justify-content:flex-end;backdrop-filter:blur(3px)';
+  overlay.innerHTML = `
+    <div style="background:var(--c-surface);border-radius:14px 14px 0 0;padding:20px 18px 32px;display:flex;flex-direction:column;gap:14px;max-height:80vh;overflow-y:auto">
+      <div style="font-family:var(--f-display);font-size:16px;font-weight:600">${existing ? 'Edit Tab' : 'Add Tab'}</div>
+      <div style="display:flex;gap:8px">
+        <input id="_tab-title" type="text" value="${(existing?.title||'').replace(/"/g,'&quot;')}" placeholder="Title (e.g. Verse riff)"
+          style="flex:1;background:var(--c-bg);border:1px solid var(--c-border);border-radius:6px;color:var(--c-text);font-family:var(--f-sans);font-size:13px;padding:8px 10px;outline:none">
+        <select id="_tab-instr" style="background:var(--c-bg);border:1px solid var(--c-border);border-radius:6px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;padding:8px 10px;outline:none;cursor:pointer">
+          <option value="Guitar" ${(existing?.instrument||'Guitar')==='Guitar'?'selected':''}>Guitar</option>
+          <option value="Bass"   ${existing?.instrument==='Bass'?'selected':''}>Bass</option>
+          <option value="Keys"   ${existing?.instrument==='Keys'?'selected':''}>Keys</option>
+          <option value="Other"  ${existing?.instrument==='Other'?'selected':''}>Other</option>
+        </select>
+      </div>
+      <textarea id="_tab-content" placeholder="e--0-0-0--|&#10;B-2-2-2--|&#10;G-2-2-2--|"
+        style="font-family:'DM Mono',monospace;font-size:12px;line-height:1.7;color:var(--c-teal-pale);background:var(--c-bg);border:1px solid var(--c-border);border-radius:6px;padding:10px 12px;min-height:160px;resize:vertical;outline:none;width:100%;box-sizing:border-box;overflow-x:auto;white-space:pre"
+        spellcheck="false">${(existing?.content||'').replace(/</g,'&lt;')}</textarea>
+      <div style="display:flex;gap:10px">
+        <button onclick="document.body.removeChild(this.closest('[style]'))"
+          style="flex:1;padding:10px;background:none;border:1px solid var(--c-border);border-radius:7px;color:var(--c-teal-pale);font-family:var(--f-mono);font-size:11px;cursor:pointer">Cancel</button>
+        <button id="_tab-save-btn" onclick="_saveTabEntry(${editIdx !== undefined ? editIdx : -1})"
+          style="flex:1;padding:10px;background:var(--c-teal);border:none;border-radius:7px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;cursor:pointer">Save</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById('_tab-title')?.focus(), 50);
+}
+
+async function _saveTabEntry(editIdx) {
+  const title   = document.getElementById('_tab-title')?.value.trim() || 'Tab';
+  const instr   = document.getElementById('_tab-instr')?.value || 'Guitar';
+  const content = document.getElementById('_tab-content')?.value || '';
+  const overlay = document.getElementById('_tab-save-btn')?.closest('[style]');
+  if (overlay) document.body.removeChild(overlay);
+  const idx = S.songs.findIndex(s => s.name === S.tp.songName);
+  if (idx < 0) return;
+  if (!S.songs[idx].tabsData) S.songs[idx].tabsData = [];
+  const entry = { id: editIdx >= 0 ? (S.songs[idx].tabsData[editIdx]?.id || Date.now().toString(36)) : Date.now().toString(36), title, instrument: instr, content };
+  if (editIdx >= 0) S.songs[idx].tabsData[editIdx] = entry;
+  else S.songs[idx].tabsData.push(entry);
+  try { await saveSongsJson(); showToast('Tab saved'); } catch(e) { showToast('Save failed: ' + _errMsg(e)); }
+  renderSongTabsData();
+}
+
+async function deleteTabEntry(i) {
+  const idx = S.songs.findIndex(s => s.name === S.tp.songName);
+  if (idx < 0) return;
+  S.songs[idx].tabsData?.splice(i, 1);
+  try { await saveSongsJson(); } catch(e) { showToast('Save failed: ' + _errMsg(e)); }
+  renderSongTabsData();
 }
 
 /* Trim a blob to [trimStart, trimEnd] and return a WAV blob */
@@ -4819,6 +5142,7 @@ async function snipSave() {
       driveFileId, fileName: fname, songName,
       author: S.user?.name || '', duration: trimmedDuration,
       trimStart: 0, trimEnd: trimmedDuration,
+      bpm: SnipR.metro.bpm || null,
       commentId: SnipR.commentId || null,
       createdAt: new Date().toISOString(),
     };
@@ -4989,6 +5313,17 @@ function downloadTab(id) {
     <div class="snip-nav-title" id="snip-nav-title">🎙 Snippet</div>
     <button id="snip-save-btn" onclick="snipSave()" disabled style="background:var(--c-teal);border:none;border-radius:5px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;padding:6px 12px;cursor:pointer;opacity:0.35;">Save</button>
   </div>
+  <div class="snip-metro">
+    <button class="snip-metro-toggle" id="snip-metro-on" onclick="snipMetroToggle()">Off</button>
+    <div class="snip-metro-bpm" id="snip-metro-bpm">120</div>
+    <div class="snip-metro-knob-wrap">
+      <div class="snip-metro-knob" id="snip-metro-knob"
+           ontouchstart="snipBpmKnobDown(event)" ontouchmove="snipBpmKnobMove(event)" ontouchend="snipBpmKnobUp()">
+        <div class="snip-knob-pip"></div>
+      </div>
+      <div class="snip-metro-label">bpm</div>
+    </div>
+  </div>
   <div class="snip-wave-area">
     <canvas id="snip-canvas"></canvas>
     <div class="snip-time-bar">
@@ -5015,6 +5350,7 @@ function downloadTab(id) {
       </div>
       <div class="snip-knob-lbl">End</div>
     </div>
+    <button class="snip-snap-btn" id="snip-snap-btn" onclick="snipToggleSnap()">Snap</button>
   </div>
 </div>
 
