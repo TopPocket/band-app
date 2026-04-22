@@ -1888,6 +1888,7 @@ async function loadSongs() {
     const f = files.find(f => f.name === 'songs.json');
     S.songs = f ? await Drive.readJson(f.id) : [];
     await migrateEggsIfNeeded();
+    if (_ensureTrackIds()) await saveSongsJson(); // one-time ID migration
     renderSongList();
   } catch(e) {
     showToast('Could not load songs: ' + e.message);
@@ -2132,14 +2133,10 @@ async function doHatch() {
     delete entry.type;
     entry.wasEgg = true;
     if (newName && newName !== oldName) {
-      const idx = S.trackIndex?.[oldName];
-      entry.name = newName;
-      if (S.trackIndex && idx !== undefined) {
-        S.trackIndex[newName] = idx;
-        delete S.trackIndex[oldName];
-      }
+      await renameTrack(oldName, newName); // cascades name to all JSON files + Drive filenames
+    } else {
+      await saveSongsJson(); // just persist type/wasEgg changes
     }
-    await saveSongsJson();
     hideLoading();
     showToast('𓅣 Hatched!');
     if ($('screen-track').classList.contains('active')) backToTracks();
@@ -2187,6 +2184,96 @@ async function returnToNest() {
     showToast('𓅨 Returned to nest');
     backToTracks();
   } catch(e) { hideLoading(); showToast('Failed: ' + _errMsg(e)); }
+}
+
+/* ── TRACK IDS & RENAME CASCADE ─────────────────────── */
+
+/** Assigns a stable trk_ id to any song entry that lacks one.
+ *  Returns true if anything was changed (caller should saveSongsJson). */
+function _ensureTrackIds() {
+  let changed = false;
+  const used = new Set(S.songs.map(s => s.id).filter(Boolean));
+  S.songs.forEach(s => {
+    if (!s.id) {
+      let id;
+      do { id = 'trk_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+      while (used.has(id));
+      s.id = id;
+      used.add(id);
+      changed = true;
+    }
+  });
+  return changed;
+}
+
+/** Save comments.json (extracted helper so renameTrack can use it). */
+async function saveCommentsJson() {
+  const metaId = S.folders._meta;
+  if (!metaId) return;
+  const files = await Drive.list(metaId, { filesOnly: true });
+  const f = files.find(f => f.name === 'comments.json');
+  await Drive.writeJson(f?.id, _cdAllComments, 'comments.json', metaId);
+}
+
+/** Rename a track and cascade the new name to every dependent JSON file.
+ *  Also renames recording files on Drive if we are currently on that track page. */
+async function renameTrack(oldName, newName) {
+  if (!oldName || !newName || oldName === newName) return;
+
+  // ── 1. songs.json ───────────────────────────────────
+  const songIdx = S.songs.findIndex(s => s.name === oldName);
+  if (songIdx >= 0) S.songs[songIdx].name = newName;
+  if (S.tp.songName === oldName) S.tp.songName = newName;
+
+  // ── 2. snippets.json ────────────────────────────────
+  if (!S.snippetsLoaded) await loadSnippets();
+  let snipDirty = false;
+  (S.snippets || []).forEach(s => { if (s.songName === oldName) { s.songName = newName; snipDirty = true; } });
+
+  // ── 3. structures.json ──────────────────────────────
+  if (!S.structuresLoaded) await loadStructures();
+  let structDirty = false;
+  (S.structures || []).forEach(s => { if (s.songName === oldName) { s.songName = newName; structDirty = true; } });
+
+  // ── 4. tabs.json ────────────────────────────────────
+  if (!S.tabsLoaded) await loadTabs();
+  let tabDirty = false;
+  (S.tabs || []).forEach(t => { if (t.songName === oldName) { t.songName = newName; tabDirty = true; } });
+
+  // ── 5. comments.json ────────────────────────────────
+  // Load if not already in memory
+  if (!_cdAllComments.length) {
+    const metaId = S.folders._meta;
+    if (metaId) {
+      const files = await Drive.list(metaId, { filesOnly: true });
+      const f = files.find(f => f.name === 'comments.json');
+      if (f) _cdAllComments = await Drive.readJson(f.id);
+    }
+  }
+  let commentDirty = false;
+  _cdAllComments.forEach(c => { if (c.songName === oldName) { c.songName = newName; commentDirty = true; } });
+
+  // ── 6. Drive recording filenames (only when on track page) ──
+  const versions = (S.tp.songName === newName) ? (S.tp.versions || []) : [];
+  if (versions.length) {
+    await Promise.all(versions.map(v => {
+      const base  = v.fileName.replace(/\.[^.]+$/, '');
+      const ext   = v.fileName.match(/\.[^.]+$/)?.[0] || '';
+      const parts = base.split(/\s*-\s*/);
+      parts[0] = newName;
+      return Drive.renameFile(v.fileId, parts.join(' - ') + ext).catch(() => {});
+    }));
+    S.trackIndexLoaded = false;
+    sessionStorage.removeItem('bandapp_trackIndex');
+  }
+
+  // ── 7. Persist all dirty files in parallel ──────────
+  const saves = [saveSongsJson()];
+  if (snipDirty)    saves.push(saveSnippets());
+  if (structDirty)  saves.push(saveStructures());
+  if (tabDirty)     saves.push(saveTabs());
+  if (commentDirty) saves.push(saveCommentsJson());
+  await Promise.all(saves);
 }
 
 /* ── VERSIONS LIST ───────────────────────────────────── */
@@ -3155,27 +3242,13 @@ function tpEditTitle() {
     const newName = titleEl.textContent.trim() || current;
     titleEl.textContent = newName;
     if (newName !== current) {
-      const idx = S.songs.findIndex(s => s.name === current);
-      if (idx >= 0) {
-        S.songs[idx].name = newName;
-        S.tp.songName = newName;
-        // Rename all MP3 files on Drive (filename prefix = song name)
-        const versions = S.tp.versions;
-        showLoading('Renaming files…');
-        try {
-          await Promise.all(versions.map(v => {
-            const parts = v.fileName.replace(/\.mp3$/i, '').split(/\s*-\s*/);
-            parts[0] = newName;
-            const newFileName = parts.join(' - ') + '.mp3';
-            return Drive.renameFile(v.fileId, newFileName);
-          }));
-          S.trackIndexLoaded = false;
-          sessionStorage.removeItem('bandapp_trackIndex');
-          await saveSongsJson();
-          hideLoading();
-          showToast('Renamed to ' + newName);
-        } catch(e) { hideLoading(); showToast('Rename failed: ' + e.message); console.warn(e); }
-      }
+      showLoading('Renaming…');
+      try {
+        await renameTrack(current, newName);
+        hideLoading();
+        showToast('Renamed to ' + newName);
+        renderSongList();
+      } catch(e) { hideLoading(); showToast('Rename failed: ' + _errMsg(e)); console.warn(e); }
     }
   };
 }
