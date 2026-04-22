@@ -312,6 +312,13 @@ header {
 .an-snip-del-reveal { position:absolute; right:0; top:0; bottom:0; width:60px; display:flex; align-items:center; justify-content:center; background:var(--c-accent); color:var(--c-text); font-size:20px; opacity:0; pointer-events:none; }
 .an-snip-del-confirm { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(196,69,54,0.92); color:var(--c-text); font-family:var(--f-mono); font-size:11px; gap:10px; z-index:5; opacity:0; pointer-events:none; transition:opacity 0.15s; }
 .an-snip-del-confirm.show { opacity:1; pointer-events:auto; }
+/* shared always-visible annotation bar (track page + screen-lyrics) */
+.lyr-ann-bar { display:flex; align-items:center; gap:8px; padding:8px 12px; border-top:1px solid var(--c-border); background:var(--c-surface); flex-shrink:0; }
+.lyr-ann-btn { font-family:var(--f-mono); font-size:10px; padding:5px 10px; border:1px solid var(--c-border); border-radius:5px; background:none; color:var(--c-teal-pale); cursor:pointer; white-space:nowrap; user-select:none; }
+.lyr-ann-btn:hover { border-color:var(--c-teal-pale); color:var(--c-text); }
+.lyr-ann-btn.hl { border-color:var(--c-amber); color:var(--c-amber); }
+#screen-lyrics { display:flex; flex-direction:column; }
+
 /* lyrics annotation bar */
 .tp-lyric-ann-bar { display:none; align-items:center; gap:8px; padding:8px 12px; background:var(--c-surface); border-top:1px solid var(--c-border); flex-shrink:0; }
 .tp-lyric-ann-bar.visible { display:flex; }
@@ -866,21 +873,19 @@ body.tab-view #tab-view-close { display:flex; }
                    onclick="tpLyricsViewClick(event)"></div>
               <textarea class="tp-lyrics-text" id="tp-lyrics-text"
                         placeholder="Add lyrics, chords…"
-                        oninput="tpNotesChanged()"
-                        onmouseup="tpLyricsSelChange()"
-                        ontouchend="tpLyricsSelChange()"></textarea>
-              <div class="tp-lyric-ann-bar" id="tp-lyric-ann-bar">
-                <button class="tp-lyric-ann-btn" onclick="tpLyricsAnnotate('note')">Add Note</button>
-                <button class="tp-lyric-ann-btn" onclick="tpLyricsAnnotate('snippet')">Add Snippet</button>
-                <button class="tp-lyric-ann-btn hl" onclick="tpLyricsAnnotate('highlight')">Highlight</button>
-                <button class="tp-lyric-ann-btn" style="margin-left:auto" onclick="$('tp-lyric-ann-bar').classList.remove('visible')">✕</button>
-              </div>
+                        oninput="tpNotesChanged()"></textarea>
               <div class="tp-lyric-tooltip" id="tp-lyric-tooltip"></div>
               <div class="tp-lyrics-scroll-bar" id="tp-lyrics-scroll-bar">
                 <button class="tp-lyrics-scroll-btn" id="tp-lyrics-scroll-btn" onclick="tpLyricsScrollToggle()">⟳ Auto</button>
                 <input type="range" class="tp-lyrics-speed" id="tp-lyrics-speed" min="1" max="100" value="25" oninput="tpLyricsSpeedChanged()">
                 <button class="tp-lyrics-scroll-btn" id="tp-lyrics-edit-btn" onclick="tpLyricsEditMode()" style="margin-left:auto">✏ Edit</button>
               </div>
+            </div>
+            <!-- Always-visible annotation bar for track page lyrics tab -->
+            <div class="lyr-ann-bar" id="tp-lyr-ann-bar">
+              <button class="lyr-ann-btn hl" onclick="lyrAnnotate('highlight','tp')">Highlight</button>
+              <button class="lyr-ann-btn"    onclick="lyrAnnotate('note','tp')">Add Note</button>
+              <button class="lyr-ann-btn"    onclick="lyrAnnotate('snippet','tp')">Add Snippet</button>
             </div>
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-structure">
@@ -1141,6 +1146,30 @@ body.tab-view #tab-view-close { display:flex; }
   </div>
 
 </div>
+
+  <!-- ── LYRICS SCREEN ── -->
+  <div class="screen" id="screen-lyrics">
+    <div class="screen-nav">
+      <button class="back-btn" onclick="closeLyricsScreen()">‹ Back</button>
+      <div class="screen-nav-title" id="lyr-nav-title">Lyrics</div>
+      <button class="tp-lyrics-scroll-btn" id="lyr-edit-toggle" onclick="lyrToggleEdit()" style="font-size:10px;padding:5px 10px;border:1px solid var(--c-border);border-radius:5px;background:none;cursor:pointer;color:var(--c-teal-pale)">✏ Edit</button>
+    </div>
+    <div id="lyr-content" style="flex:1;overflow-y:auto;padding:12px 14px">
+      <div id="lyr-view" onclick="lyrViewClick(event)"
+           style="font-family:var(--f-sans);font-size:13px;line-height:1.8;color:var(--c-text);white-space:pre-wrap;min-height:200px"></div>
+      <textarea id="lyr-edit-ta"
+                placeholder="Add lyrics, chords…"
+                oninput="lyrEditChanged()"
+                style="display:none;width:100%;box-sizing:border-box;min-height:300px;background:transparent;border:none;color:var(--c-text);font-family:var(--f-sans);font-size:13px;line-height:1.8;resize:none;outline:none"></textarea>
+    </div>
+    <div id="lyr-tooltip" class="tp-lyric-tooltip"></div>
+    <!-- Always-visible annotation bar -->
+    <div class="lyr-ann-bar" id="lyr-ann-bar">
+      <button class="lyr-ann-btn hl" onclick="lyrAnnotate('highlight','lyr')">Highlight</button>
+      <button class="lyr-ann-btn"    onclick="lyrAnnotate('note','lyr')">Add Note</button>
+      <button class="lyr-ann-btn"    onclick="lyrAnnotate('snippet','lyr')">Add Snippet</button>
+    </div>
+  </div>
 
 <!-- ── PLAYER BAR ── -->
 <div id="player-bar">
@@ -2536,7 +2565,7 @@ function tpSwitchTab(tab) {
   if (tab === 'structure') { renderPinnedStruct(); renderStructureTabList(); }
   if (tab === 'notes') _renderNoteImages();
   if (tab === 'tabs') renderSongTabsData();
-  if (tab === 'lyrics') { $('tp-lyrics-scroll-bar')?.classList.add('visible'); _renderLyricsAnnotated(); }
+  if (tab === 'lyrics') { $('tp-lyrics-scroll-bar')?.classList.add('visible'); _lyricsCtx.songName = S.tp.songName; _lyrRender('tp'); }
 }
 
 function renderStructureTabList() {
@@ -3881,10 +3910,7 @@ async function openLyricsWriter() {
     S.songs.push(ne);
     await saveSongsJson();
   }
-  const idx = S.songs.findIndex(s => s.name === songName);
-  if (idx < 0) return;
-  await openSong(songName, idx);
-  tpSwitchTab('lyrics');
+  openLyricsScreen(songName, 'screen-addnotes');
 }
 
 /* ── Feathers lyrics list ────────────────────────────── */
@@ -3902,7 +3928,7 @@ function renderAnLyricsList() {
     row.style.cssText = 'padding:10px 16px;border-bottom:1px solid var(--c-border)';
     row.innerHTML = `<div style="font-family:var(--f-display);font-size:14px;font-weight:600;color:var(--c-text);margin-bottom:4px">${song.name}</div>
       <div style="font-family:var(--f-sans);font-size:12px;color:var(--c-teal-pale);white-space:pre-wrap;max-height:80px;overflow:hidden;position:relative">${song.notes}</div>`;
-    row.onclick = () => { const idx = S.songs.findIndex(s => s.name === song.name); if (idx >= 0) openSong(song.name, idx); };
+    row.onclick = () => openLyricsScreen(song.name, 'screen-addnotes');
     el.appendChild(row);
   });
 }
@@ -4828,15 +4854,16 @@ SnipR.audio.addEventListener('ended', () => {
   else { $('snip-play-btn').textContent = '▶\uFE0E'; }
 });
 
-function openSnipRecorder(context, commentId) {
+function openSnipRecorder(context, commentId, explicitSongName) {
   SnipR.context = context;
   SnipR.commentId = commentId || null;
-  SnipR.songName = null;
-  if (context === 'reply' && commentId) {
+  SnipR.songName = explicitSongName || null;
+  if (!SnipR.songName && context === 'reply' && commentId) {
     const c = _cdAllComments?.find(c => c.id === commentId);
     SnipR.songName = c?.songName || null;
-  } else if (context === 'lyrics-ann') {
-    SnipR.songName = S.tp?.songName || null;
+  }
+  if (!SnipR.songName && context === 'lyrics-ann') {
+    SnipR.songName = _lyricsCtx?.songName || S.tp?.songName || null;
   }
   const title = SnipR.songName ? `🎙 ${SnipR.songName}` : '🎙 Snippet';
   $('snip-nav-title').textContent = title;
@@ -5253,91 +5280,152 @@ async function deleteTabFromTrack(id) {
   try { await saveTabs(); renderSongTabsData(); showToast('Tab deleted'); } catch(e) { showToast('Save failed: ' + _errMsg(e)); }
 }
 
-/* ── LYRICS ANNOTATIONS ─────────────────────────────────── */
-let _lyricsAnnSel = { start: 0, end: 0 };
-let _pendingAnnSnip = null; // snip annotation waiting for snippet to be saved
+/* ── LYRICS SCREEN (standalone, opened from Feathers) ───── */
+let _lyricsCtx = { songName: null, fromScreen: 'screen-addnotes', editing: false };
+let _pendingAnnSnip = null;
 
-function tpLyricsSelChange() {
-  const ta = $('tp-lyrics-text');
-  if (!ta) return;
-  const s = ta.selectionStart, e = ta.selectionEnd;
-  const bar = $('tp-lyric-ann-bar');
-  if (s !== e) {
-    _lyricsAnnSel = { start: Math.min(s,e), end: Math.max(s,e) };
-    bar?.classList.add('visible');
+function openLyricsScreen(songName, fromScreen) {
+  _lyricsCtx.songName   = songName;
+  _lyricsCtx.fromScreen = fromScreen || 'screen-addnotes';
+  _lyricsCtx.editing    = false;
+  const songEntry = S.songs.find(s => s.name === songName);
+  $('lyr-nav-title').textContent = songName;
+  $('lyr-edit-ta').value = songEntry?.notes || '';
+  $('lyr-edit-ta').style.display = 'none';
+  $('lyr-edit-toggle').textContent = '✏ Edit';
+  _lyrRender();
+  showScreen('screen-lyrics');
+}
+
+function closeLyricsScreen() {
+  if (_lyricsCtx.editing) lyrSaveEdits();
+  showScreen(_lyricsCtx.fromScreen);
+}
+
+function lyrToggleEdit() {
+  _lyricsCtx.editing = !_lyricsCtx.editing;
+  const view = $('lyr-view');
+  const ta   = $('lyr-edit-ta');
+  const btn  = $('lyr-edit-toggle');
+  if (_lyricsCtx.editing) {
+    view.style.display = 'none';
+    ta.style.display   = 'block';
+    btn.textContent    = '👁 View';
+    ta.focus();
   } else {
-    bar?.classList.remove('visible');
+    lyrSaveEdits();
+    view.style.display = '';
+    ta.style.display   = 'none';
+    btn.textContent    = '✏ Edit';
+    _lyrRender();
   }
 }
 
-function tpLyricsAnnotate(type) {
-  $('tp-lyric-ann-bar')?.classList.remove('visible');
-  const { start, end } = _lyricsAnnSel;
-  if (start === end) return;
-  if (type === 'highlight') {
-    _saveLyricsAnnotation({ type: 'highlight', start, end });
-  } else if (type === 'note') {
-    const note = prompt('Add note for this section:');
-    if (note) _saveLyricsAnnotation({ type: 'note', start, end, note });
-  } else if (type === 'snippet') {
-    _pendingAnnSnip = { start, end };
-    openSnipRecorder('lyrics-ann');
-  }
+function lyrEditChanged() {
+  // live-save debounced
+  clearTimeout(_lyricsCtx._saveTimer);
+  _lyricsCtx._saveTimer = setTimeout(lyrSaveEdits, 1500);
 }
 
-async function _saveLyricsAnnotation(ann) {
-  const idx = S.songs.findIndex(s => s.name === S.tp.songName);
+async function lyrSaveEdits() {
+  clearTimeout(_lyricsCtx._saveTimer);
+  const idx = S.songs.findIndex(s => s.name === _lyricsCtx.songName);
   if (idx < 0) return;
-  const entry = { id: 'ann_' + Date.now().toString(36), ...ann };
-  if (!S.songs[idx].lyricsAnnotations) S.songs[idx].lyricsAnnotations = [];
-  S.songs[idx].lyricsAnnotations.push(entry);
-  try { await saveSongsJson(); } catch(e) { console.warn('Ann save:', e); }
-  _renderLyricsAnnotated();
+  const val = $('lyr-edit-ta')?.value ?? '';
+  if (S.songs[idx].notes === val) return;
+  S.songs[idx].notes = val;
+  try { await saveSongsJson(); } catch(e) { console.warn('lyrSaveEdits:', e); }
 }
 
-function _renderLyricsAnnotated() {
-  const view = $('tp-lyrics-view');
-  if (!view) return;
-  const songEntry = S.songs.find(s => s.name === S.tp.songName);
-  const text = $('tp-lyrics-text')?.value || songEntry?.notes || '';
+function _lyrRender(ctx) {
+  // ctx = 'tp' (track page tab) or 'lyr' (screen-lyrics) or auto-detect
+  const isTp  = ctx === 'tp' || (!ctx && document.querySelector('#screen-track.active'));
+  const viewEl = isTp ? $('tp-lyrics-view') : $('lyr-view');
+  const taEl   = isTp ? $('tp-lyrics-text') : $('lyr-edit-ta');
+  const songName = isTp ? S.tp.songName : _lyricsCtx.songName;
+  if (!viewEl) return;
+  const songEntry = S.songs.find(s => s.name === songName);
+  const text = taEl?.value || songEntry?.notes || '';
   const anns = (songEntry?.lyricsAnnotations || []).slice().sort((a,b) => a.start - b.start);
-  if (!anns.length) {
-    view.textContent = text;
-    return;
-  }
-  // Show view with highlights; hide raw textarea
-  view.classList.add('active');
-  $('tp-lyrics-text')?.classList.add('hidden');
-  $('tp-lyrics-scroll-bar')?.classList.add('visible');
-  // Build non-overlapping segments from annotations
-  let result = '', pos = 0;
   const escaped = t => t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  // Flatten overlapping: take first annotation at each position
-  const pts = new Set();
-  anns.forEach(a => { pts.add(a.start); pts.add(a.end); });
-  const sorted = [...pts].sort((a,b) => a-b);
+  if (!anns.length) { viewEl.innerHTML = escaped(text).replace(/\n/g,'<br>'); return; }
+  let result = '', pos = 0;
+  const pts = new Set(); anns.forEach(a => { pts.add(a.start); pts.add(a.end); });
+  const sorted = [...pts].sort((a,b)=>a-b);
   for (let i = 0; i < sorted.length - 1; i++) {
     const s = sorted[i], e = sorted[i+1];
     if (pos < s) { result += escaped(text.slice(pos, s)); pos = s; }
     const covering = anns.find(a => a.start <= s && a.end >= e);
     if (covering) {
       const cls = covering.type === 'note' ? 'lyr-note' : covering.type === 'snippet' ? 'lyr-snip' : 'lyr-hl';
-      result += `<span class="${cls}" data-ann-id="${covering.id}">${escaped(text.slice(s, e))}</span>`;
+      result += `<span class="${cls}" data-ann-id="${covering.id}">${escaped(text.slice(s,e))}</span>`;
       pos = e;
     }
   }
   if (pos < text.length) result += escaped(text.slice(pos));
-  view.innerHTML = result.replace(/\n/g, '<br>');
+  viewEl.innerHTML = result.replace(/\n/g,'<br>');
+  // Show view, hide textarea (only for track page tab — screen-lyrics manages its own state)
+  if (isTp) {
+    viewEl.classList.add('active');
+    taEl?.classList.add('hidden');
+    $('tp-lyrics-scroll-bar')?.classList.add('visible');
+  }
 }
 
-function tpLyricsViewClick(e) {
+function _renderLyricsAnnotated() { _lyrRender('tp'); } // keep old name for callers
+
+/* Unified annotation entry point — ctx: 'tp' | 'lyr' */
+function lyrAnnotate(type, ctx) {
+  const isTp = ctx === 'tp';
+  const songName = isTp ? S.tp.songName : _lyricsCtx.songName;
+  if (!songName) return;
+  // Get selection from the appropriate textarea
+  const taId = isTp ? 'tp-lyrics-text' : 'lyr-edit-ta';
+  const ta = $(taId);
+  if (!ta) return;
+  // If in view mode on screen-lyrics, switch to edit first
+  if (!isTp && !_lyricsCtx.editing) {
+    lyrToggleEdit();
+    showToast('Select text then tap the button again');
+    return;
+  }
+  const start = Math.min(ta.selectionStart, ta.selectionEnd);
+  const end   = Math.max(ta.selectionStart, ta.selectionEnd);
+  if (start === end) { showToast('Select some text first'); return; }
+  if (type === 'highlight') {
+    _saveLyricsAnnotation({ type: 'highlight', start, end }, songName, ctx);
+  } else if (type === 'note') {
+    const note = prompt('Note for this section:');
+    if (note) _saveLyricsAnnotation({ type: 'note', start, end, note }, songName, ctx);
+  } else if (type === 'snippet') {
+    _pendingAnnSnip = { start, end, songName, ctx };
+    openSnipRecorder('lyrics-ann', null, songName);
+  }
+}
+
+/* Keep old name used by track page autoscroll toggle */
+function tpLyricsAnnotate(type) { lyrAnnotate(type, 'tp'); }
+
+async function _saveLyricsAnnotation(ann, songName, ctx) {
+  const name = songName || (ctx === 'tp' ? S.tp.songName : _lyricsCtx.songName);
+  const idx = S.songs.findIndex(s => s.name === name);
+  if (idx < 0) return;
+  const entry = { id: 'ann_' + Date.now().toString(36), ...ann };
+  if (!S.songs[idx].lyricsAnnotations) S.songs[idx].lyricsAnnotations = [];
+  S.songs[idx].lyricsAnnotations.push(entry);
+  try { await saveSongsJson(); } catch(e) { console.warn('Ann save:', e); }
+  _lyrRender(ctx || 'tp');
+}
+
+function tpLyricsViewClick(e)  { _lyricsHandleViewClick(e, 'tp', $('tp-lyric-tooltip')); }
+function lyrViewClick(e)        { _lyricsHandleViewClick(e, 'lyr', $('lyr-tooltip')); }
+function _lyricsHandleViewClick(e, ctx, tt) {
   const annId = e.target.dataset?.annId;
-  if (!annId) { $('tp-lyric-tooltip')?.classList.remove('visible'); return; }
-  const songEntry = S.songs.find(s => s.name === S.tp.songName);
+  if (!annId || !tt) { tt?.classList.remove('visible'); return; }
+  const songName = ctx === 'tp' ? S.tp.songName : _lyricsCtx.songName;
+  const songEntry = S.songs.find(s => s.name === songName);
   const ann = songEntry?.lyricsAnnotations?.find(a => a.id === annId);
   if (!ann) return;
-  const tt = $('tp-lyric-tooltip');
-  if (!tt) return;
   if (ann.type === 'note') {
     tt.textContent = ann.note || '';
     tt.classList.add('visible');
@@ -5346,9 +5434,7 @@ function tpLyricsViewClick(e) {
     const sn = S.snippets?.find(s => s.id === ann.snipId);
     if (sn) selectSnippet(sn.id);
     tt.classList.remove('visible');
-  } else {
-    tt.classList.remove('visible');
-  }
+  } else { tt.classList.remove('visible'); }
 }
 
 /* ── BPM TAGGER ─────────────────────────────────────────── */
@@ -5549,7 +5635,8 @@ async function snipSave() {
     hideLoading(); showToast('Snippet saved!');
     // If this was a lyrics annotation, wire it up
     if (SnipR.context === 'lyrics-ann' && _pendingAnnSnip) {
-      _saveLyricsAnnotation({ type: 'snippet', start: _pendingAnnSnip.start, end: _pendingAnnSnip.end, snipId: entry.id });
+      const { start, end, songName: annSong, ctx: annCtx } = _pendingAnnSnip;
+      _saveLyricsAnnotation({ type: 'snippet', start, end, snipId: entry.id }, annSong, annCtx);
       _pendingAnnSnip = null;
     }
     snipClose();
