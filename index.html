@@ -307,6 +307,36 @@ header {
 .an-snip-del-reveal { position:absolute; right:0; top:0; bottom:0; width:60px; display:flex; align-items:center; justify-content:center; background:var(--c-accent); color:var(--c-text); font-size:20px; opacity:0; pointer-events:none; }
 .an-snip-del-confirm { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(196,69,54,0.92); color:var(--c-text); font-family:var(--f-mono); font-size:11px; gap:10px; z-index:5; opacity:0; pointer-events:none; transition:opacity 0.15s; }
 .an-snip-del-confirm.show { opacity:1; pointer-events:auto; }
+/* lyrics annotation bar */
+.tp-lyric-ann-bar { display:none; align-items:center; gap:8px; padding:8px 12px; background:var(--c-surface); border-top:1px solid var(--c-border); flex-shrink:0; }
+.tp-lyric-ann-bar.visible { display:flex; }
+.tp-lyric-ann-btn { font-family:var(--f-mono); font-size:10px; padding:5px 10px; border:1px solid var(--c-border); border-radius:5px; background:none; color:var(--c-teal-pale); cursor:pointer; white-space:nowrap; user-select:none; }
+.tp-lyric-ann-btn:hover { border-color:var(--c-teal-pale); color:var(--c-text); }
+.tp-lyric-ann-btn.hl { border-color:var(--c-amber); color:var(--c-amber); }
+/* lyrics view annotations */
+.lyr-hl  { color:var(--c-amber-lt); cursor:pointer; border-bottom:1px solid rgba(232,169,106,0.4); }
+.lyr-note { color:var(--c-amber-lt); cursor:pointer; border-bottom:2px solid var(--c-amber); }
+.lyr-snip { color:var(--c-amber-lt); cursor:pointer; border-bottom:2px solid var(--c-teal); }
+/* annotation tooltip at bottom */
+.tp-lyric-tooltip { display:none; position:absolute; bottom:0; left:0; right:0; background:var(--c-surface); border-top:1px solid var(--c-amber); padding:10px 14px; font-size:12px; font-family:var(--f-sans); z-index:10; }
+.tp-lyric-tooltip.visible { display:block; }
+/* BPM tag items (slim, amber) */
+.tp-bpm-tags-body { padding:0 10px 6px; }
+.tp-bpm-tag-item { display:inline-flex; align-items:center; gap:6px; margin:3px 4px 0 0; padding:3px 8px; border:1px solid var(--c-amber); border-radius:4px; background:rgba(192,120,64,0.08); font-family:var(--f-mono); font-size:10px; color:var(--c-amber-lt); cursor:pointer; }
+.tp-bpm-tag-item:hover { background:rgba(192,120,64,0.18); }
+.tp-bpm-tag-del { font-size:11px; color:var(--c-amber); opacity:0.6; cursor:pointer; margin-left:2px; }
+/* BPM tapper widget */
+.bpm-overlay { position:fixed; inset:0; z-index:350; display:none; background:rgba(26,46,44,0.7); backdrop-filter:blur(4px); flex-direction:column; align-items:center; justify-content:center; gap:20px; }
+.bpm-overlay.open { display:flex; }
+.bpm-display { font-family:var(--f-display); font-size:72px; font-weight:700; color:var(--c-text); min-width:180px; text-align:center; line-height:1; }
+.bpm-sub { font-family:var(--f-mono); font-size:11px; color:var(--c-teal-pale); text-align:center; letter-spacing:0.1em; }
+.bpm-tap-btn { width:120px; height:148px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; background:var(--c-surface2); border:2px solid var(--c-amber); color:var(--c-amber-lt); font-family:var(--f-mono); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; user-select:none; transition:background 0.1s, transform 0.08s; -webkit-tap-highlight-color:transparent; }
+.bpm-tap-btn:active { background:rgba(192,120,64,0.2); transform:scale(0.96); }
+.bpm-actions { display:flex; gap:10px; }
+.bpm-action-btn { font-family:var(--f-mono); font-size:11px; padding:8px 20px; border-radius:6px; cursor:pointer; }
+/* BPM ctrl button */
+.tp-bpm-ctrl-btn { font-family:var(--f-mono); font-size:10px; padding:4px 8px; border:1px solid var(--c-border); border-radius:5px; background:none; color:var(--c-border); cursor:pointer; white-space:nowrap; user-select:none; flex-shrink:0; }
+.tp-bpm-ctrl-btn:hover { border-color:var(--c-amber); color:var(--c-amber); }
 /* controls */
 .tp-controls {
   flex-shrink: 0; display: flex; align-items: center; gap: 6px;
@@ -818,11 +848,21 @@ body.tab-view #tab-view-close { display:flex; }
             <div id="tp-versions-body"></div>
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-lyrics">
-            <div class="tp-lyrics-wrap">
-              <div class="tp-lyrics-view" id="tp-lyrics-view"></div>
+            <div class="tp-lyrics-wrap" style="position:relative">
+              <div class="tp-lyrics-view" id="tp-lyrics-view"
+                   onclick="tpLyricsViewClick(event)"></div>
               <textarea class="tp-lyrics-text" id="tp-lyrics-text"
                         placeholder="Add lyrics, chords…"
-                        oninput="tpNotesChanged()"></textarea>
+                        oninput="tpNotesChanged()"
+                        onmouseup="tpLyricsSelChange()"
+                        ontouchend="tpLyricsSelChange()"></textarea>
+              <div class="tp-lyric-ann-bar" id="tp-lyric-ann-bar">
+                <button class="tp-lyric-ann-btn" onclick="tpLyricsAnnotate('note')">Add Note</button>
+                <button class="tp-lyric-ann-btn" onclick="tpLyricsAnnotate('snippet')">Add Snippet</button>
+                <button class="tp-lyric-ann-btn hl" onclick="tpLyricsAnnotate('highlight')">H</button>
+                <button class="tp-lyric-ann-btn" style="margin-left:auto" onclick="$('tp-lyric-ann-bar').classList.remove('visible')">✕</button>
+              </div>
+              <div class="tp-lyric-tooltip" id="tp-lyric-tooltip"></div>
               <div class="tp-lyrics-scroll-bar" id="tp-lyrics-scroll-bar">
                 <button class="tp-lyrics-scroll-btn" id="tp-lyrics-scroll-btn" onclick="tpLyricsScrollToggle()">⟳ Auto</button>
                 <input type="range" class="tp-lyrics-speed" id="tp-lyrics-speed" min="1" max="100" value="25" oninput="tpLyricsSpeedChanged()">
@@ -866,6 +906,7 @@ body.tab-view #tab-view-close { display:flex; }
           <button class="tp-ctrl-btn tp-ctrl-skip" onclick="tpPrevVersion()" title="Previous version">⏮&#xFE0E;</button>
           <button class="tp-ctrl-btn play-btn" id="tp-ctrl-play" onclick="tpTogglePlay()">▶&#xFE0E;</button>
           <button class="tp-ctrl-btn tp-ctrl-skip" onclick="tpNextVersion()" title="Next version">⏭&#xFE0E;</button>
+          <button class="tp-bpm-ctrl-btn" onclick="openBpmTapper('track')">BPM</button>
         </div>
         <div class="tp-waveform-wrap">
           <canvas id="tp-waveform-canvas"
@@ -875,6 +916,7 @@ body.tab-view #tab-view-close { display:flex; }
                   ontouchmove="waveTouchMove(event)"></canvas>
           <div class="tp-wave-time" id="tp-wave-time">0:00 / —:——</div>
         </div>
+        <div class="tp-bpm-tags-body" id="tp-bpm-tags-body"></div>
       </div>
 
       <!-- structure panel (shown when tapping ⬡ on a version) -->
@@ -970,6 +1012,10 @@ body.tab-view #tab-view-close { display:flex; }
         <div class="an-card" onclick="openFeatherImageUpload()">
           <div class="an-card-icon">𓅱</div>
           <div class="an-card-label">Upload Image</div>
+        </div>
+        <div class="an-card" onclick="openBpmTapper('feathers')">
+          <div class="an-card-icon">♩</div>
+          <div class="an-card-label">Tap BPM</div>
         </div>
         <div class="an-card soon">
           <div class="an-card-icon">♫</div>
@@ -2335,6 +2381,7 @@ async function selectVersion(idx) {
     }, { once: true });
 
     renderComments(); // re-highlight for current version
+    renderBpmTags();
   } catch(e) {
     hideLoading();
     showToast('Could not load: ' + e.message);
@@ -2361,7 +2408,7 @@ function tpSwitchTab(tab) {
   if (tab === 'structure') { renderPinnedStruct(); renderStructureTabList(); }
   if (tab === 'notes') _renderNoteImages();
   if (tab === 'tabs') renderSongTabsData();
-  if (tab === 'lyrics') $('tp-lyrics-scroll-bar')?.classList.add('visible');
+  if (tab === 'lyrics') { $('tp-lyrics-scroll-bar')?.classList.add('visible'); _renderLyricsAnnotated(); }
 }
 
 function renderStructureTabList() {
@@ -2682,6 +2729,19 @@ function drawWave() {
       ctx.fillStyle = 'rgba(196,122,53,0.85)';
       ctx.fillRect(cx-1, 0, 2, H);
       ctx.beginPath(); ctx.arc(cx, 5, 3, 0, Math.PI*2); ctx.fill();
+    }
+  });
+
+  // BPM tag markers — slim amber lines at the bottom third
+  const _curVBpm = S.tp.versions[S.tp.versionIdx];
+  const _bpmTags = _curVBpm ? (S.songs.find(s=>s.name===S.tp.songName)?.bpmTags||[]).filter(t=>t.fileId===_curVBpm.fileId) : [];
+  if (dur > 0) _bpmTags.forEach(t => {
+    const tf = t.time / dur;
+    if (tf >= viewStart && tf <= viewEnd) {
+      const tx = ((tf - viewStart) / visFrac) * W;
+      ctx.fillStyle = 'rgba(192,120,64,0.9)';
+      ctx.fillRect(tx-1, H*0.55, 2, H*0.45);
+      ctx.beginPath(); ctx.arc(tx, H-4, 3, 0, Math.PI*2); ctx.fill();
     }
   });
 
@@ -4963,7 +5023,7 @@ function tpLyricsScrollToggle() {
   btn?.classList.toggle('on', _lyricsScrollOn);
   if (bar) bar.classList.toggle('visible', true); // always show bar once used
   if (_lyricsScrollOn) {
-    view.textContent = ta.value;
+    _renderLyricsAnnotated();
     view.classList.add('active');
     ta.classList.add('hidden');
     view.scrollTop = 0;
@@ -5083,6 +5143,182 @@ async function deleteTabEntry(i) {
   renderSongTabsData();
 }
 
+/* ── LYRICS ANNOTATIONS ─────────────────────────────────── */
+let _lyricsAnnSel = { start: 0, end: 0 };
+let _pendingAnnSnip = null; // snip annotation waiting for snippet to be saved
+
+function tpLyricsSelChange() {
+  const ta = $('tp-lyrics-text');
+  if (!ta) return;
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  const bar = $('tp-lyric-ann-bar');
+  if (s !== e) {
+    _lyricsAnnSel = { start: Math.min(s,e), end: Math.max(s,e) };
+    bar?.classList.add('visible');
+  } else {
+    bar?.classList.remove('visible');
+  }
+}
+
+function tpLyricsAnnotate(type) {
+  $('tp-lyric-ann-bar')?.classList.remove('visible');
+  const { start, end } = _lyricsAnnSel;
+  if (start === end) return;
+  if (type === 'highlight') {
+    _saveLyricsAnnotation({ type: 'highlight', start, end });
+  } else if (type === 'note') {
+    const note = prompt('Add note for this section:');
+    if (note) _saveLyricsAnnotation({ type: 'note', start, end, note });
+  } else if (type === 'snippet') {
+    _pendingAnnSnip = { start, end };
+    openSnipRecorder('lyrics-ann');
+  }
+}
+
+async function _saveLyricsAnnotation(ann) {
+  const idx = S.songs.findIndex(s => s.name === S.tp.songName);
+  if (idx < 0) return;
+  const entry = { id: 'ann_' + Date.now().toString(36), ...ann };
+  if (!S.songs[idx].lyricsAnnotations) S.songs[idx].lyricsAnnotations = [];
+  S.songs[idx].lyricsAnnotations.push(entry);
+  try { await saveSongsJson(); } catch(e) { console.warn('Ann save:', e); }
+  _renderLyricsAnnotated();
+}
+
+function _renderLyricsAnnotated() {
+  const view = $('tp-lyrics-view');
+  if (!view) return;
+  const songEntry = S.songs.find(s => s.name === S.tp.songName);
+  const text = $('tp-lyrics-text')?.value || songEntry?.notes || '';
+  const anns = (songEntry?.lyricsAnnotations || []).slice().sort((a,b) => a.start - b.start);
+  if (!anns.length) {
+    view.textContent = text;
+    return;
+  }
+  // Build non-overlapping segments from annotations
+  let result = '', pos = 0;
+  const escaped = t => t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Flatten overlapping: take first annotation at each position
+  const pts = new Set();
+  anns.forEach(a => { pts.add(a.start); pts.add(a.end); });
+  const sorted = [...pts].sort((a,b) => a-b);
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const s = sorted[i], e = sorted[i+1];
+    if (pos < s) { result += escaped(text.slice(pos, s)); pos = s; }
+    const covering = anns.find(a => a.start <= s && a.end >= e);
+    if (covering) {
+      const cls = covering.type === 'note' ? 'lyr-note' : covering.type === 'snippet' ? 'lyr-snip' : 'lyr-hl';
+      result += `<span class="${cls}" data-ann-id="${covering.id}">${escaped(text.slice(s, e))}</span>`;
+      pos = e;
+    }
+  }
+  if (pos < text.length) result += escaped(text.slice(pos));
+  view.innerHTML = result.replace(/\n/g, '<br>');
+}
+
+function tpLyricsViewClick(e) {
+  const annId = e.target.dataset?.annId;
+  if (!annId) { $('tp-lyric-tooltip')?.classList.remove('visible'); return; }
+  const songEntry = S.songs.find(s => s.name === S.tp.songName);
+  const ann = songEntry?.lyricsAnnotations?.find(a => a.id === annId);
+  if (!ann) return;
+  const tt = $('tp-lyric-tooltip');
+  if (!tt) return;
+  if (ann.type === 'note') {
+    tt.textContent = ann.note || '';
+    tt.classList.add('visible');
+    setTimeout(() => tt.classList.remove('visible'), 3000);
+  } else if (ann.type === 'snippet') {
+    const sn = S.snippets?.find(s => s.id === ann.snipId);
+    if (sn) selectSnippet(sn.id);
+    tt.classList.remove('visible');
+  } else {
+    tt.classList.remove('visible');
+  }
+}
+
+/* ── BPM TAGGER ─────────────────────────────────────────── */
+const _bpm = { taps: [], lastTap: 0, ctx: 'feathers', _resetTimer: null };
+
+function openBpmTapper(ctx) {
+  _bpm.ctx = ctx;
+  _bpm.taps = []; _bpm.lastTap = 0;
+  $('bpm-display').textContent = '—';
+  $('bpm-sub').textContent = 'tap to the beat';
+  $('bpm-add-btn').style.display = ctx === 'track' ? '' : 'none';
+  $('bpm-overlay').classList.add('open');
+}
+
+function closeBpmTapper() { $('bpm-overlay').classList.remove('open'); }
+
+function bpmTap() {
+  const now = Date.now();
+  if (_bpm.lastTap && now - _bpm.lastTap > 3000) _bpm.taps = []; // reset if too slow
+  _bpm.lastTap = now;
+  _bpm.taps.push(now);
+  if (_bpm.taps.length > 8) _bpm.taps.shift();
+  clearTimeout(_bpm._resetTimer);
+  _bpm._resetTimer = setTimeout(bpmReset, 4000);
+  if (_bpm.taps.length < 2) { $('bpm-sub').textContent = 'keep tapping…'; return; }
+  const intervals = [];
+  for (let i = 1; i < _bpm.taps.length; i++) intervals.push(_bpm.taps[i] - _bpm.taps[i-1]);
+  const avg = intervals.reduce((a,b) => a+b, 0) / intervals.length;
+  const bpm = Math.round(60000 / avg);
+  $('bpm-display').textContent = bpm;
+  $('bpm-sub').textContent = `${_bpm.taps.length} taps`;
+}
+
+function bpmReset() {
+  _bpm.taps = []; _bpm.lastTap = 0;
+  $('bpm-display').textContent = '—';
+  $('bpm-sub').textContent = 'tap to the beat';
+}
+
+async function bpmAddToTrack() {
+  const val = parseInt($('bpm-display').textContent);
+  if (!val || isNaN(val)) { showToast('Tap a BPM first'); return; }
+  const v = S.tp.versions[S.tp.versionIdx];
+  if (!v) { showToast('No version selected'); return; }
+  const time = S.tp.audio.currentTime || 0;
+  const idx = S.songs.findIndex(s => s.name === S.tp.songName);
+  if (idx < 0) return;
+  if (!S.songs[idx].bpmTags) S.songs[idx].bpmTags = [];
+  S.songs[idx].bpmTags.push({ id: 'bpm_' + Date.now().toString(36), fileId: v.fileId, bpm: val, time });
+  try { await saveSongsJson(); showToast(`${val} BPM tagged`); } catch(e) { showToast('Save failed: ' + _errMsg(e)); }
+  closeBpmTapper();
+  renderBpmTags();
+  drawWave();
+}
+
+function renderBpmTags() {
+  const body = $('tp-bpm-tags-body');
+  if (!body) return;
+  const v = S.tp.versions[S.tp.versionIdx];
+  if (!v) { body.innerHTML = ''; return; }
+  const songEntry = S.songs.find(s => s.name === S.tp.songName);
+  const tags = (songEntry?.bpmTags || []).filter(t => t.fileId === v.fileId);
+  if (!tags.length) { body.innerHTML = ''; return; }
+  body.innerHTML = tags.map(t =>
+    `<span class="tp-bpm-tag-item" onclick="tpBpmSeek('${t.id}')">
+      ♩ ${t.bpm} bpm
+      <span class="tp-bpm-tag-del" onclick="event.stopPropagation();deleteBpmTag('${t.id}')">✕</span>
+    </span>`).join('');
+}
+
+function tpBpmSeek(tagId) {
+  const songEntry = S.songs.find(s => s.name === S.tp.songName);
+  const tag = songEntry?.bpmTags?.find(t => t.id === tagId);
+  if (tag && S.tp.audio) S.tp.audio.currentTime = tag.time;
+}
+
+async function deleteBpmTag(tagId) {
+  const idx = S.songs.findIndex(s => s.name === S.tp.songName);
+  if (idx < 0) return;
+  S.songs[idx].bpmTags = (S.songs[idx].bpmTags || []).filter(t => t.id !== tagId);
+  try { await saveSongsJson(); } catch(e) { console.warn('BPM del:', e); }
+  renderBpmTags(); drawWave();
+}
+
 /* Trim a blob to [trimStart, trimEnd] and return a WAV blob */
 async function _trimBlobToWav(blob, trimStart, trimEnd) {
   const arr = await blob.arrayBuffer();
@@ -5153,6 +5389,11 @@ async function snipSave() {
     if (eg) { eg.eggFileId = driveFileId; eg.eggFileName = fname; }
     await saveSongsJson();
     hideLoading(); showToast('Snippet saved!');
+    // If this was a lyrics annotation, wire it up
+    if (SnipR.context === 'lyrics-ann' && _pendingAnnSnip) {
+      _saveLyricsAnnotation({ type: 'snippet', start: _pendingAnnSnip.start, end: _pendingAnnSnip.end, snipId: entry.id });
+      _pendingAnnSnip = null;
+    }
     snipClose();
   } catch(e) { hideLoading(); showToast('Save failed: ' + _errMsg(e)); }
 }
@@ -5351,6 +5592,21 @@ function downloadTab(id) {
       <div class="snip-knob-lbl">End</div>
     </div>
     <button class="snip-snap-btn" id="snip-snap-btn" onclick="snipToggleSnap()">Snap</button>
+  </div>
+</div>
+
+<!-- BPM Tapper Overlay -->
+<div class="bpm-overlay" id="bpm-overlay">
+  <div class="bpm-display" id="bpm-display">—</div>
+  <div class="bpm-sub" id="bpm-sub">tap to the beat</div>
+  <button class="bpm-tap-btn" onclick="bpmTap()" ontouchstart="bpmTap();event.preventDefault()">TAP</button>
+  <div class="bpm-actions">
+    <button class="bpm-action-btn" style="background:none;border:1px solid var(--c-border);color:var(--c-teal-pale)"
+            onclick="bpmReset()">Reset</button>
+    <button class="bpm-action-btn" id="bpm-add-btn" style="display:none;background:var(--c-amber);border:none;color:var(--c-bg)"
+            onclick="bpmAddToTrack()">Add BPM</button>
+    <button class="bpm-action-btn" style="background:none;border:1px solid var(--c-border);color:var(--c-teal-pale)"
+            onclick="closeBpmTapper()">Close</button>
   </div>
 </div>
 
