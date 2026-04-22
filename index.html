@@ -348,8 +348,8 @@ header {
 .bpm-actions { display:flex; gap:10px; }
 .bpm-action-btn { font-family:var(--f-mono); font-size:11px; padding:8px 20px; border-radius:6px; cursor:pointer; }
 /* BPM ctrl button */
-.tp-bpm-ctrl-btn { font-family:var(--f-mono); font-size:10px; padding:4px 8px; border:1px solid var(--c-border); border-radius:5px; background:none; color:var(--c-border); cursor:pointer; white-space:nowrap; user-select:none; flex-shrink:0; }
-.tp-bpm-ctrl-btn:hover { border-color:var(--c-amber); color:var(--c-amber); }
+.tp-bpm-ctrl-btn { font-family:var(--f-mono); font-size:11px; padding:4px 10px; border:1px solid var(--c-border); border-radius:8px; background:transparent; color:var(--c-teal-pale); cursor:pointer; white-space:nowrap; user-select:none; flex-shrink:0; }
+.tp-bpm-ctrl-btn:hover { border-color:var(--c-teal-pale); color:var(--c-text); }
 /* controls */
 .tp-controls {
   flex-shrink: 0; display: flex; align-items: center; gap: 6px;
@@ -369,7 +369,7 @@ header {
 /* waveform */
 .tp-waveform-wrap {
   flex-shrink: 0; height: 72px; position: relative;
-  background: var(--c-bg); overflow: hidden; border-bottom: 1px solid var(--c-border); touch-action: none;
+  background: var(--c-bg); overflow: hidden; border-bottom: 1px solid var(--c-border); touch-action: pan-y;
 }
 #tp-waveform-canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
 .tp-wave-time {
