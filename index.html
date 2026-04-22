@@ -227,15 +227,15 @@ header {
   min-height: calc(100dvh - 94px);
 }
 /* ── tab bar ── */
-.tp-tabs-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; border-bottom: 1px solid var(--c-border); }
-.tp-tabs-bar { flex-shrink: 0; display: flex; overflow-x: auto; background: var(--c-surface2); border-bottom: 1px solid var(--c-border); scrollbar-width: none; }
+.tp-tabs-wrap { display: flex; flex-direction: column; }
+.tp-tabs-bar { flex-shrink: 0; display: flex; overflow-x: auto; background: var(--c-surface2); border-bottom: 1px solid var(--c-amber-lt); scrollbar-width: none; padding: 0 4px; }
 .tp-tabs-bar::-webkit-scrollbar { display: none; }
-.tp-tab { font-family: var(--f-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; padding: 9px 12px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--c-border); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: color 0.15s; }
-.tp-tab:hover { color: var(--c-teal-pale); }
-.tp-tab.active { color: var(--c-amber-lt); border-bottom-color: var(--c-amber-lt); }
-.tp-tab-panel { flex: 1; overflow-y: auto; min-height: 0; }
-.tp-tabcontent { display: none; flex-direction: column; min-height: 100%; }
-.tp-tabcontent.active { display: flex; }
+.tp-tab { position: relative; font-family: var(--f-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; padding: 9px 12px; background: transparent; border: 1px solid transparent; border-bottom: none; margin-bottom: -1px; color: var(--c-amber-lt); opacity: 0.45; cursor: pointer; white-space: nowrap; flex-shrink: 0; z-index: 1; transition: opacity 0.15s, background 0.15s; }
+.tp-tab:hover { opacity: 0.75; }
+.tp-tab.active { opacity: 1; background: var(--c-bg); border-color: var(--c-amber-lt); }
+.tp-tab-panel { border-bottom: 1px solid var(--c-border); }
+.tp-tabcontent { display: none; }
+.tp-tabcontent.active { display: block; }
 .tp-lyrics-text {
   width: 100%; flex: 1; min-height: 120px;
   background: transparent; border: none; resize: none; outline: none;
@@ -280,12 +280,15 @@ header {
 .tp-snip-del-confirm.show { opacity:1; pointer-events:auto; }
 .tp-snip-del-yes { background:var(--c-accent); border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:5px; padding:5px 14px; font-family:var(--f-mono); font-size:11px; cursor:pointer; }
 .tp-snip-del-no  { background:transparent; border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:5px; padding:5px 14px; font-family:var(--f-mono); font-size:11px; cursor:pointer; }
+.tp-ver-del-reveal { position:absolute; right:0; top:0; bottom:0; width:60px; display:flex; align-items:center; justify-content:center; background:var(--c-accent); color:var(--c-text); font-size:20px; opacity:0; pointer-events:none; }
+.tp-ver-del-confirm { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(196,69,54,0.92); color:var(--c-text); font-family:var(--f-mono); font-size:11px; gap:10px; z-index:5; opacity:0; pointer-events:none; transition:opacity 0.15s; }
+.tp-ver-del-confirm.show { opacity:1; pointer-events:auto; }
 /* Feathers page tabs */
-.an-tab-bar { display:flex; overflow-x:auto; background:var(--c-surface2); border-top:1px solid var(--c-border); border-bottom:1px solid var(--c-border); scrollbar-width:none; }
+.an-tab-bar { display:flex; overflow-x:auto; background:var(--c-surface2); border-bottom:1px solid var(--c-amber-lt); scrollbar-width:none; padding:0 4px; }
 .an-tab-bar::-webkit-scrollbar { display:none; }
-.an-tab { font-family:var(--f-mono); font-size:9px; text-transform:uppercase; letter-spacing:0.08em; padding:9px 12px; background:none; border:none; border-bottom:2px solid transparent; color:var(--c-border); cursor:pointer; white-space:nowrap; flex-shrink:0; transition:color 0.15s; }
-.an-tab:hover { color:var(--c-teal-pale); }
-.an-tab.active { color:var(--c-amber-lt); border-bottom-color:var(--c-amber-lt); }
+.an-tab { position:relative; font-family:var(--f-mono); font-size:9px; text-transform:uppercase; letter-spacing:0.08em; padding:9px 12px; background:transparent; border:1px solid transparent; border-bottom:none; margin-bottom:-1px; color:var(--c-amber-lt); opacity:0.45; cursor:pointer; white-space:nowrap; flex-shrink:0; z-index:1; transition:opacity 0.15s, background 0.15s; }
+.an-tab:hover { opacity:0.75; }
+.an-tab.active { opacity:1; background:var(--c-bg); border-color:var(--c-amber-lt); }
 .an-tabcontent { display:none; }
 .an-tabcontent.active { display:block; }
 /* Feathers images */
@@ -316,7 +319,8 @@ header {
 }
 .tp-ctrl-btn:hover { background: rgba(255,255,255,0.06); }
 .tp-ctrl-btn.play-btn { flex: 2; }
-.tp-ctrl-btn.comment-btn { flex: 2; font-size: 11px; color: var(--c-teal-pale); font-family: var(--f-mono); padding: 10px 4px; }
+.tp-ctrl-btn.comment-btn { flex: 2; font-size: 11px; color: var(--c-teal-pale); font-family: var(--f-mono); padding: 10px 4px; white-space: nowrap; }
+.tp-ctrl-skip { flex: 0.7 !important; font-size: 14px; padding: 10px 2px !important; }
 .tp-ctrl-btn.recording   { background: rgba(196,69,54,0.2); border-color: var(--c-accent); color: var(--c-accent); }
 /* waveform */
 .tp-waveform-wrap {
@@ -353,18 +357,6 @@ header {
 }
 .tp-song-nav-btn:hover:not(:disabled) { border-color: var(--c-teal-pale); color: var(--c-text); }
 .tp-song-nav-btn:disabled { opacity: 0.2; cursor: default; }
-/* swipe ghost */
-.tp-swipe-ghost {
-  position: fixed; top: 50%; transform: translateY(-50%);
-  pointer-events: none; z-index: 10;
-  font-family: var(--f-display); font-size: 16px;
-  color: var(--c-teal-pale); background: var(--c-surface);
-  padding: 10px 16px; border-radius: 8px; border: 1px solid var(--c-border);
-  max-width: 55vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  opacity: 0;
-}
-.tp-swipe-ghost.ghost-prev { left: 10px; }
-.tp-swipe-ghost.ghost-next { right: 10px; }
 /* comment creation panel */
 .comment-panel {
   position: fixed; inset: 0; z-index: 250;
@@ -410,7 +402,9 @@ header {
       "tabs comments";
     overflow: hidden;
   }
-  .tp-tabs-wrap { grid-area: tabs; border-bottom: none; border-right: 1px solid var(--c-border); flex: unset; overflow: hidden; }
+  .tp-tabs-wrap { grid-area: tabs; border-bottom: none; border-right: 1px solid var(--c-border); flex: unset; overflow: hidden; display: flex; flex-direction: column; }
+  .tp-tab-panel { flex: 1; overflow-y: auto; min-height: 0; }
+  .tp-tabcontent.active { display: flex; flex-direction: column; min-height: 100%; }
   .tp-controls { grid-area: controls; }
   .tp-waveform-wrap { grid-area: waveform; height: auto; border-bottom: 1px solid var(--c-border); }
   .tp-comments-section { grid-area: comments; overflow-y: auto; }
@@ -756,18 +750,17 @@ body.tab-view #tab-view-close { display:flex; }
 
   <!-- ── TRACK DETAIL ── -->
   <div class="screen" id="screen-track">
-    <div id="tp-swipe-ghost" class="tp-swipe-ghost"></div>
     <div class="screen-nav">
       <button class="back-btn" onclick="backToTracks()">‹ Tracks</button>
       <div class="screen-nav-title" id="tp-title" onclick="tpEditTitle()" title="Tap to rename" style="cursor:pointer">—</div>
       <div class="tp-song-nav">
         <button class="tp-hatch-btn" id="tp-hatch-btn" style="display:none" onclick="openHatchConfirm()">𓅣 Hatch</button>
+        <button class="tp-hatch-btn" id="tp-nest-btn" style="display:none" onclick="returnToNest()">𓅨 Nest</button>
         <button class="tp-song-nav-btn" id="tp-prev-song" onclick="tpPrevSong()">‹</button>
         <button class="tp-song-nav-btn" id="tp-next-song" onclick="tpNextSong()">›</button>
       </div>
     </div>
-    <div class="tp-body" id="tp-body" data-expand=""
-         ontouchstart="tpSwipeStart(event)" ontouchmove="tpSwipeMove(event)" ontouchend="tpSwipeEnd(event)">
+    <div class="tp-body" id="tp-body" data-expand="">
 
       <!-- tabs: recordings / lyrics / structure / tabs / notes -->
       <div class="tp-tabs-wrap" id="tp-tabs-wrap">
@@ -819,11 +812,11 @@ body.tab-view #tab-view-close { display:flex; }
         <button class="tp-ctrl-btn comment-btn" id="tp-ctrl-comment"
                 onmousedown="commentBtnDown()" onmouseup="commentBtnUp()"
                 ontouchstart="commentBtnDown(event)" ontouchend="commentBtnUp(event)">
-          𓅦 comment (hold)
+          𓅦 Comment (Hold)
         </button>
-        <button class="tp-ctrl-btn" onclick="tpPrevVersion()" title="Previous version">⏮&#xFE0E;</button>
+        <button class="tp-ctrl-btn tp-ctrl-skip" onclick="tpPrevVersion()" title="Previous version">⏮&#xFE0E;</button>
         <button class="tp-ctrl-btn play-btn" id="tp-ctrl-play" onclick="tpTogglePlay()">▶&#xFE0E;</button>
-        <button class="tp-ctrl-btn" onclick="tpNextVersion()" title="Next version">⏭&#xFE0E;</button>
+        <button class="tp-ctrl-btn tp-ctrl-skip" onclick="tpNextVersion()" title="Next version">⏭&#xFE0E;</button>
       </div>
 
       <!-- waveform -->
@@ -1911,9 +1904,11 @@ async function openSong(songName, songIdx, isEgg = false) {
   showScreen('screen-track');
   $('tp-title').textContent = songName;
 
-  // Show hatch button for eggs, show song nav for tracks
+  // Show hatch button for eggs, nest button for hatched tracks
   const hatchBtn = $('tp-hatch-btn');
+  const nestBtn  = $('tp-nest-btn');
   if (hatchBtn) hatchBtn.style.display = isEgg ? '' : 'none';
+  if (nestBtn)  nestBtn.style.display  = (!isEgg && songEntry?.wasEgg) ? '' : 'none';
 
   const eggs = S.songs.filter(s => s.type === 'egg');
   const realSongs = S.songs.filter(s => s.type !== 'egg');
@@ -2016,13 +2011,25 @@ function openHatchConfirm(songName) {
 function cancelHatch() { $('hatch-confirm').style.display = 'none'; _hatchTarget = null; }
 async function doHatch() {
   $('hatch-confirm').style.display = 'none';
-  const name = _hatchTarget; _hatchTarget = null;
-  if (!name) return;
-  const entry = S.songs.find(s => s.name === name);
+  const oldName = _hatchTarget; _hatchTarget = null;
+  if (!oldName) return;
+  const entry = S.songs.find(s => s.name === oldName);
   if (!entry) return;
+  // Prompt for chick name
+  const newName = await _nameChickModal(oldName);
+  if (newName === null) return; // cancelled
   showLoading('Hatching…');
   try {
-    delete entry.type;  // remove 'egg' — becomes a normal track
+    delete entry.type;
+    entry.wasEgg = true;
+    if (newName && newName !== oldName) {
+      const idx = S.trackIndex?.[oldName];
+      entry.name = newName;
+      if (S.trackIndex && idx !== undefined) {
+        S.trackIndex[newName] = idx;
+        delete S.trackIndex[oldName];
+      }
+    }
     await saveSongsJson();
     hideLoading();
     showToast('𓅣 Hatched!');
@@ -2031,77 +2038,47 @@ async function doHatch() {
   } catch(e) { hideLoading(); showToast('Hatch failed: ' + _errMsg(e)); }
 }
 
-/* ── SWIPE ───────────────────────────────────────────── */
-const _swipe = { x: null, y: null, dx: 0, locked: null };
-
-function tpSwipeStart(e) {
-  if (e.touches.length !== 1) return;
-  _swipe.x = e.touches[0].clientX;
-  _swipe.y = e.touches[0].clientY;
-  _swipe.dx = 0; _swipe.locked = null;
+function _nameChickModal(defaultName) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:400;background:rgba(26,46,44,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)';
+    overlay.innerHTML = `
+      <div style="background:var(--c-surface);border:1px solid var(--c-amber-lt);border-radius:12px;padding:28px 24px;width:min(340px,90vw);display:flex;flex-direction:column;gap:16px">
+        <div style="font-family:var(--f-display);font-size:17px;font-weight:600">Name your chick</div>
+        <div style="font-family:var(--f-mono);font-size:11px;color:var(--c-teal-pale)">Give this track a proper title</div>
+        <input id="_chick-name-input" type="text" value="${defaultName.replace(/"/g,'&quot;')}"
+          style="background:var(--c-bg);border:1px solid var(--c-border);border-radius:6px;color:var(--c-text);font-family:var(--f-sans);font-size:14px;padding:10px 12px;width:100%;outline:none"
+          onfocus="this.style.borderColor='var(--c-amber-lt)'" onblur="this.style.borderColor='var(--c-border)'">
+        <div style="display:flex;gap:10px">
+          <button onclick="this.closest('div[style]')._resolve(null)"
+            style="flex:1;padding:9px;background:none;border:1px solid var(--c-border);border-radius:7px;color:var(--c-teal-pale);font-family:var(--f-mono);font-size:11px;cursor:pointer">Cancel</button>
+          <button onclick="this.closest('div[style]')._resolve(document.getElementById('_chick-name-input').value.trim()||null)"
+            style="flex:1;padding:9px;background:var(--c-accent);border:none;border-radius:7px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;cursor:pointer">𓅣 Hatch</button>
+        </div>
+      </div>`;
+    const card = overlay.querySelector('div[style]');
+    card._resolve = v => { document.body.removeChild(overlay); resolve(v === null ? null : (v || defaultName)); };
+    overlay.addEventListener('keydown', e => { if (e.key === 'Enter') card._resolve(document.getElementById('_chick-name-input').value.trim() || defaultName); if (e.key === 'Escape') card._resolve(null); });
+    document.body.appendChild(overlay);
+    setTimeout(() => document.getElementById('_chick-name-input')?.select(), 50);
+  });
 }
 
-function tpSwipeMove(e) {
-  if (_swipe.x === null || e.touches.length !== 1) return;
-  const dx = e.touches[0].clientX - _swipe.x;
-  const dy = e.touches[0].clientY - _swipe.y;
-  if (_swipe.locked === null) {
-    if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
-    _swipe.locked = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
-  }
-  if (_swipe.locked === 'v') return;
-  e.preventDefault();
-  _swipe.dx = dx;
-  const body = $('tp-body');
-  body.style.transition = 'none';
-  body.style.transform  = `translateX(${dx}px)`;
-  _updateSwipeGhost(dx);
+async function returnToNest() {
+  const name = S.tp?.songName;
+  if (!name) return;
+  const entry = S.songs.find(s => s.name === name);
+  if (!entry) return;
+  showLoading('Returning to nest…');
+  try {
+    entry.type = 'egg';
+    delete entry.wasEgg;
+    await saveSongsJson();
+    hideLoading();
+    showToast('𓅨 Returned to nest');
+    backToTracks();
+  } catch(e) { hideLoading(); showToast('Failed: ' + _errMsg(e)); }
 }
-
-function tpSwipeEnd(e) {
-  if (_swipe.x === null) return;
-  const locked = _swipe.locked, dx = _swipe.dx;
-  _swipe.x = null;
-  if (locked !== 'h') return;
-  const W = window.innerWidth, threshold = W * 0.35;
-  const body = $('tp-body');
-  _hideSwipeGhost();
-  const navList = S.tp.isEgg ? S.songs.filter(s=>s.type==='egg') : S.songs.filter(s=>s.type!=='egg');
-  const canNext = S.tp.songIdx < navList.length - 1;
-  const canPrev = S.tp.songIdx > 0;
-  if (dx < -threshold && canNext) {
-    body.style.transition = 'transform 0.2s ease-out';
-    body.style.transform  = `translateX(${-W}px)`;
-    setTimeout(() => { body.style.transform = ''; body.style.transition = ''; tpNextSong(); }, 200);
-  } else if (dx > threshold && canPrev) {
-    body.style.transition = 'transform 0.2s ease-out';
-    body.style.transform  = `translateX(${W}px)`;
-    setTimeout(() => { body.style.transform = ''; body.style.transition = ''; tpPrevSong(); }, 200);
-  } else {
-    body.style.transition = 'transform 0.25s ease-out';
-    body.style.transform  = '';
-    setTimeout(() => body.style.transition = '', 250);
-  }
-}
-
-function _updateSwipeGhost(dx) {
-  const realSongs = S.tp.isEgg ? S.songs.filter(s=>s.type==='egg') : S.songs.filter(s=>s.type!=='egg');
-  const ghost = $('tp-swipe-ghost');
-  const W = window.innerWidth, threshold = W * 0.35;
-  ghost.className = 'tp-swipe-ghost';
-  let name = null;
-  if (dx > 30 && S.tp.songIdx > 0) {
-    name = '‹ ' + realSongs[S.tp.songIdx - 1].name;
-    ghost.classList.add('ghost-prev');
-  } else if (dx < -30 && S.tp.songIdx < realSongs.length - 1) {
-    name = realSongs[S.tp.songIdx + 1].name + ' ›';
-    ghost.classList.add('ghost-next');
-  }
-  ghost.textContent = name || '';
-  ghost.style.opacity = name ? Math.min(0.95, (Math.abs(dx) - 30) / (threshold - 30) * 0.95) : 0;
-}
-
-function _hideSwipeGhost() { $('tp-swipe-ghost').style.opacity = 0; }
 
 /* ── VERSIONS LIST ───────────────────────────────────── */
 function renderVersionsList() {
@@ -2110,13 +2087,17 @@ function renderVersionsList() {
   const songEntry = S.songs.find(s => s.name === S.tp.songName);
   const versionTitles = songEntry?.versionTitles || {};
 
-  if (!S.tp.versions.length) {
+  const hiddenIds = songEntry?.hiddenVersionIds || [];
+  const visibleVersions = S.tp.versions.filter(v => !hiddenIds.includes(v.fileId));
+
+  if (!visibleVersions.length && !S.tp.versions.length) {
     body.innerHTML = `<div class="empty-state"><div class="empty-bird">𓅙</div><div class="empty-text">No recordings found.</div></div>`;
   } else {
-    S.tp.versions.forEach((v, i) => {
+    visibleVersions.forEach((v, i) => {
+      const origIdx = S.tp.versions.indexOf(v);
       const row = document.createElement('div');
       row.className = 'tp-ver-row';
-      row.id = `tpver-${i}`;
+      row.id = `tpver-${origIdx}`;
       const starred = (songEntry?.starredVersions || []).includes(v.fileId);
       const badge   = S.tp.isEgg ? 'Egg' : `V${v.version}`;
       const title   = versionTitles[v.fileId] || '';
@@ -2131,11 +2112,17 @@ function renderVersionsList() {
                onclick="event.stopPropagation()"
                onblur="saveVersionTitle('${v.fileId}', this.value)"
                onkeydown="if(event.key==='Enter')this.blur()">
-        <div class="tp-ver-dur" id="tpvdur-${i}">—</div>
+        <div class="tp-ver-dur" id="tpvdur-${origIdx}">—</div>
         <div class="tp-ver-star${starred?' starred':''}" title="Star" onclick="toggleStar(event,'${v.fileId}')">★</div>
         <div class="tp-ver-struct${hasStruct?' has-struct':''}" title="Structure" onclick="tpToggleStruct(event,'${v.fileId}')">⬡</div>
         <div class="tp-ver-play">▶</div>`;
-      row.onclick = e => { if (e.target.closest('.tp-ver-star,.tp-ver-struct,.tp-ver-title')) return; selectVersion(i); };
+      const delReveal  = document.createElement('div'); delReveal.className = 'tp-ver-del-reveal'; delReveal.textContent = '𓅮';
+      const delConfirm = document.createElement('div');
+      delConfirm.className = 'tp-ver-del-confirm'; delConfirm.id = `tpverconf-${v.fileId}`;
+      delConfirm.innerHTML = `Hide version? <button class="tp-snip-del-yes" onclick="confirmHideVersion('${v.fileId}')">Hide</button> <button class="tp-snip-del-no" onclick="cancelHideVersion('${v.fileId}')">Keep</button>`;
+      row.appendChild(delReveal); row.appendChild(delConfirm);
+      row.onclick = e => { if (e.target.closest('.tp-ver-star,.tp-ver-struct,.tp-ver-title,.tp-ver-del-confirm')) return; selectVersion(origIdx); };
+      _attachVerSwipe(row, v.fileId);
       body.appendChild(row);
     });
   }
@@ -2210,6 +2197,46 @@ function _attachSnipSwipe(row, snipId, ctx) {
       $(confId)?.classList.add('show');
     }
   });
+}
+
+function _attachVerSwipe(row, fileId) {
+  let sx = null, sy = null, sdx = 0, slocked = null;
+  const reveal = row.querySelector('.tp-ver-del-reveal');
+  row.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; sdx = 0; slocked = null;
+  }, { passive: true });
+  row.addEventListener('touchmove', e => {
+    if (sx === null || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
+    if (slocked === null) { if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return; slocked = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v'; }
+    if (slocked === 'v' || dx > 0) return;
+    sdx = dx;
+    const prog = Math.min(1, Math.abs(dx) / 120);
+    row.querySelectorAll(':not(.tp-ver-del-reveal):not(.tp-ver-del-confirm)').forEach(el => { if (el.parentElement === row) el.style.transform = `translateX(${dx}px)`; });
+    if (reveal) reveal.style.opacity = prog;
+  }, { passive: true });
+  row.addEventListener('touchend', () => {
+    if (sx === null) return; sx = null;
+    const committed = slocked === 'h' && Math.abs(sdx) > 120;
+    row.querySelectorAll(':not(.tp-ver-del-reveal):not(.tp-ver-del-confirm)').forEach(el => { if (el.parentElement === row) el.style.transform = ''; });
+    if (reveal) reveal.style.opacity = 0;
+    sdx = 0; slocked = null;
+    if (committed) $(`tpverconf-${fileId}`)?.classList.add('show');
+  });
+}
+
+function cancelHideVersion(fileId) { $(`tpverconf-${fileId}`)?.classList.remove('show'); }
+
+async function confirmHideVersion(fileId) {
+  $(`tpverconf-${fileId}`)?.classList.remove('show');
+  const songEntry = S.songs.find(s => s.name === S.tp.songName);
+  if (!songEntry) return;
+  if (!songEntry.hiddenVersionIds) songEntry.hiddenVersionIds = [];
+  if (!songEntry.hiddenVersionIds.includes(fileId)) songEntry.hiddenVersionIds.push(fileId);
+  try { await saveSongsJson(); } catch(e) { console.warn('Hide version save failed', e); }
+  renderVersionsList();
+  showToast('Version hidden');
 }
 
 function cancelDeleteSnippet(snipId, ctx) {
