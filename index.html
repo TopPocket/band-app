@@ -895,7 +895,7 @@ body.tab-view #tab-view-close { display:flex; }
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-tabs">
             <div class="tp-tabs-list" id="tp-tabs-list"></div>
-            <button class="tp-add-tab-btn" onclick="openTabWidget()">+ Add Tab</button>
+            <button class="tp-add-tab-btn" onclick="tabNewTab()">+ Add Tab</button>
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-notes">
             <div id="tp-notes-wrap" style="flex:1;display:flex;flex-direction:column"
@@ -1096,7 +1096,7 @@ body.tab-view #tab-view-close { display:flex; }
     <div id="tab-portrait-msg">
       <div style="font-size:32px">𓅙</div>
       <div>Rotate your device to landscape<br>to use the tab editor</div>
-      <button type="button" class="back-btn" style="margin-top:12px" onclick="showScreen('screen-addnotes')">‹ Feathers</button>
+      <button type="button" class="back-btn" style="margin-top:12px" onclick="showScreen(TE.returnScreen||'screen-addnotes')">‹ Back</button>
     </div>
     <div id="tab-editor-inner">
       <!-- Top half: tab canvas + controls -->
@@ -1104,7 +1104,7 @@ body.tab-view #tab-view-close { display:flex; }
         <div id="tab-canvas-wrap" id="tab-canvas-wrap">
           <canvas id="tab-canvas"></canvas>
         </div>
-        <button type="button" id="tab-view-close" onclick="showScreen('screen-addnotes')">✕ Feathers</button>
+        <button type="button" id="tab-view-close" onclick="showScreen(TE.returnScreen||'screen-addnotes')">✕ Back</button>
         <div id="tab-controls-panel">
           <div class="tab-nav-col" onclick="tabMoveCursor(-1)">‹</div>
           <div class="tab-mid-col">
@@ -1409,6 +1409,11 @@ function checkBothReady() {
     try {
       S.user = JSON.parse(stored);
       // Silently request a new token (no popup if already granted)
+      // Fall back to sign-in screen if silent refresh hangs
+      S._signInTimeout = setTimeout(() => {
+        hideLoading();
+        showScreen('screen-auth');
+      }, 15000);
       S.tokenClient.requestAccessToken({ prompt: '' });
       return;
     } catch(e) {}
@@ -1419,6 +1424,7 @@ function checkBothReady() {
 }
 
 async function onToken(resp) {
+  clearTimeout(S._signInTimeout);
   if (resp.error) {
     $('auth-error').textContent = 'Sign-in failed: ' + resp.error;
     $('auth-error').style.display = 'block';
@@ -1463,6 +1469,14 @@ async function onToken(resp) {
 
 $('btn-signin').addEventListener('click', () => {
   showLoading('Signing in…');
+  // Safety: if the GIS popup is blocked or dismissed, onToken may never fire
+  // Give up after 60 s and let the user try again
+  clearTimeout(S._signInTimeout);
+  S._signInTimeout = setTimeout(() => {
+    hideLoading();
+    $('auth-error').textContent = 'Sign-in timed out. Please try again.';
+    $('auth-error').style.display = 'block';
+  }, 60000);
   S.tokenClient.requestAccessToken({ prompt: 'consent' });
 });
 
@@ -1494,7 +1508,20 @@ function buildNamePicker() {
 async function enterApp() {
   showLoading('Loading…');
   updateUserUI();
-  await discoverFolders();
+  try {
+    await discoverFolders();
+  } catch(e) {
+    console.error('discoverFolders failed:', e);
+    hideLoading();
+    const msg = (e?.result?.error?.message || e?.message || String(e));
+    const isPermission = msg.includes('403') || msg.toLowerCase().includes('forbidden') || msg.toLowerCase().includes('permission');
+    $('auth-error').textContent = isPermission
+      ? 'Drive access denied. Make sure the band folder is shared with your Google account.'
+      : 'Could not reach Drive: ' + msg;
+    $('auth-error').style.display = 'block';
+    showScreen('screen-auth');
+    return;
+  }
   showScreen('screen-home');
   hideLoading();
 }
@@ -4373,7 +4400,7 @@ async function deleteTab(id) {
 const TE = {
   id: null, instrument: 'bass', cursor: 0, fretOffset: 0, showNoteNames: false,
   notes: [],            // { slot, string, fret }
-  songName: null, author: null, title: '', extraNotes: '',
+  songName: null, author: null, title: '', extraNotes: '', returnScreen: 'screen-addnotes',
   get strings() { return this.instrument === 'guitar' ? 6 : 4; },
   get tuning()  {
     return this.instrument === 'guitar'
@@ -4459,6 +4486,8 @@ function openTabEditor(tabId) {
     TE.title = ''; TE.extraNotes = '';
     // instrument already set by tabNewTab picker — don't reset
   }
+  // Remember where to return after save
+  TE.returnScreen = document.querySelector('.screen.active')?.id || 'screen-addnotes';
   TE.fretOffset = 0;
   document.body.classList.add('tab-fs');
   showScreen('screen-tab');
@@ -5191,95 +5220,37 @@ function _lyricsScrollLoop() {
 }
 
 /* ── TABS DATA (guitar/bass tabs) ───────────────────────── */
-function renderSongTabsData() {
-  const songEntry = S.songs.find(s => s.name === S.tp.songName);
+async function renderSongTabsData() {
   const list = $('tp-tabs-list');
   if (!list) return;
   list.innerHTML = '';
-  const tabs = songEntry?.tabsData || [];
-  // migrate legacy tabText
-  if (!tabs.length && songEntry?.tabText) {
-    tabs.push({ id: 'legacy', title: 'Tab', instrument: 'Guitar', content: songEntry.tabText });
-  }
-  if (!tabs.length) {
-    list.innerHTML = `<div style="padding:20px 14px;color:var(--c-border);font-family:var(--f-mono);font-size:11px">No tabs yet.</div>`;
+  if (!S.tabsLoaded) await loadTabs();
+  const trackTabs = (S.tabs || []).filter(t => t.songName === S.tp.songName);
+  if (!trackTabs.length) {
+    list.innerHTML = `<div style="padding:20px 14px;color:var(--c-border);font-family:var(--f-mono);font-size:11px">No tabs yet. Use + Add Tab to create one.</div>`;
     return;
   }
-  tabs.forEach((t, i) => {
-    const entry = document.createElement('div');
-    entry.className = 'tp-tab-entry';
-    entry.innerHTML = `
-      <div class="tp-tab-entry-hdr" onclick="this.closest('.tp-tab-entry').classList.toggle('open')">
-        <span class="tp-tab-instr-badge">${t.instrument || 'Guitar'}</span>
-        <span class="tp-tab-entry-title">${t.title || 'Tab'}</span>
-        <span class="tp-tab-entry-arrow">▾</span>
+  trackTabs.forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'an-tab-item';
+    row.innerHTML = `
+      <div style="font-size:18px;color:var(--c-amber-lt)">𝄆</div>
+      <div style="flex:1;min-width:0">
+        <div class="an-tab-song">${t.title || 'Untitled tab'}</div>
+        <div class="an-tab-meta">${t.instrument} · ${t.author || '?'} · ${t.createdAt?.slice(0,10) || ''}</div>
       </div>
-      <div class="tp-tab-entry-body">
-        <div class="tp-tab-content-text">${t.content.replace(/</g,'&lt;')}</div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="tp-add-tab-btn" style="margin:0;flex:1" onclick="openTabWidget(${i})">Edit</button>
-          <button class="tp-add-tab-btn" style="margin:0;flex:1;color:var(--c-accent);border-color:var(--c-accent)" onclick="deleteTabEntry(${i})">Delete</button>
-        </div>
+      <div class="an-tab-actions">
+        <button type="button" class="an-tab-btn" onclick="tabViewTab('${t.id}')">View</button>
+        <button type="button" class="an-tab-btn" onclick="openTabEditor('${t.id}')">Edit</button>
+        <button type="button" class="an-tab-btn" style="color:var(--c-accent)" onclick="deleteTabFromTrack('${t.id}')">𓅮</button>
       </div>`;
-    list.appendChild(entry);
+    list.appendChild(row);
   });
 }
 
-function openTabWidget(editIdx) {
-  const songEntry = S.songs.find(s => s.name === S.tp.songName);
-  const tabs = songEntry?.tabsData || [];
-  const existing = editIdx !== undefined ? tabs[editIdx] : null;
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:400;background:rgba(26,46,44,0.88);display:flex;flex-direction:column;justify-content:flex-end;backdrop-filter:blur(3px)';
-  overlay.innerHTML = `
-    <div style="background:var(--c-surface);border-radius:14px 14px 0 0;padding:20px 18px 32px;display:flex;flex-direction:column;gap:14px;max-height:80vh;overflow-y:auto">
-      <div style="font-family:var(--f-display);font-size:16px;font-weight:600">${existing ? 'Edit Tab' : 'Add Tab'}</div>
-      <div style="display:flex;gap:8px">
-        <input id="_tab-title" type="text" value="${(existing?.title||'').replace(/"/g,'&quot;')}" placeholder="Title (e.g. Verse riff)"
-          style="flex:1;background:var(--c-bg);border:1px solid var(--c-border);border-radius:6px;color:var(--c-text);font-family:var(--f-sans);font-size:13px;padding:8px 10px;outline:none">
-        <select id="_tab-instr" style="background:var(--c-bg);border:1px solid var(--c-border);border-radius:6px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;padding:8px 10px;outline:none;cursor:pointer">
-          <option value="Guitar" ${(existing?.instrument||'Guitar')==='Guitar'?'selected':''}>Guitar</option>
-          <option value="Bass"   ${existing?.instrument==='Bass'?'selected':''}>Bass</option>
-          <option value="Keys"   ${existing?.instrument==='Keys'?'selected':''}>Keys</option>
-          <option value="Other"  ${existing?.instrument==='Other'?'selected':''}>Other</option>
-        </select>
-      </div>
-      <textarea id="_tab-content" placeholder="e--0-0-0--|&#10;B-2-2-2--|&#10;G-2-2-2--|"
-        style="font-family:'DM Mono',monospace;font-size:12px;line-height:1.7;color:var(--c-teal-pale);background:var(--c-bg);border:1px solid var(--c-border);border-radius:6px;padding:10px 12px;min-height:160px;resize:vertical;outline:none;width:100%;box-sizing:border-box;overflow-x:auto;white-space:pre"
-        spellcheck="false">${(existing?.content||'').replace(/</g,'&lt;')}</textarea>
-      <div style="display:flex;gap:10px">
-        <button onclick="document.body.removeChild(this.closest('[style]'))"
-          style="flex:1;padding:10px;background:none;border:1px solid var(--c-border);border-radius:7px;color:var(--c-teal-pale);font-family:var(--f-mono);font-size:11px;cursor:pointer">Cancel</button>
-        <button id="_tab-save-btn" onclick="_saveTabEntry(${editIdx !== undefined ? editIdx : -1})"
-          style="flex:1;padding:10px;background:var(--c-teal);border:none;border-radius:7px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;cursor:pointer">Save</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-  setTimeout(() => document.getElementById('_tab-title')?.focus(), 50);
-}
-
-async function _saveTabEntry(editIdx) {
-  const title   = document.getElementById('_tab-title')?.value.trim() || 'Tab';
-  const instr   = document.getElementById('_tab-instr')?.value || 'Guitar';
-  const content = document.getElementById('_tab-content')?.value || '';
-  const overlay = document.getElementById('_tab-save-btn')?.closest('[style]');
-  if (overlay) document.body.removeChild(overlay);
-  const idx = S.songs.findIndex(s => s.name === S.tp.songName);
-  if (idx < 0) return;
-  if (!S.songs[idx].tabsData) S.songs[idx].tabsData = [];
-  const entry = { id: editIdx >= 0 ? (S.songs[idx].tabsData[editIdx]?.id || Date.now().toString(36)) : Date.now().toString(36), title, instrument: instr, content };
-  if (editIdx >= 0) S.songs[idx].tabsData[editIdx] = entry;
-  else S.songs[idx].tabsData.push(entry);
-  try { await saveSongsJson(); showToast('Tab saved'); } catch(e) { showToast('Save failed: ' + _errMsg(e)); }
-  renderSongTabsData();
-}
-
-async function deleteTabEntry(i) {
-  const idx = S.songs.findIndex(s => s.name === S.tp.songName);
-  if (idx < 0) return;
-  S.songs[idx].tabsData?.splice(i, 1);
-  try { await saveSongsJson(); } catch(e) { showToast('Save failed: ' + _errMsg(e)); }
-  renderSongTabsData();
+async function deleteTabFromTrack(id) {
+  S.tabs = S.tabs.filter(t => t.id !== id);
+  try { await saveTabs(); renderSongTabsData(); showToast('Tab deleted'); } catch(e) { showToast('Save failed: ' + _errMsg(e)); }
 }
 
 /* ── LYRICS ANNOTATIONS ─────────────────────────────────── */
@@ -5616,7 +5587,7 @@ function _simplePickerModal(title, options, current) {
 
 async function tabSave() {
   if (!S.songs?.length) { showLoading('Loading tracks…'); await loadSongs(); hideLoading(); }
-  const songs = (S.songs || []).filter(s => s.type !== 'egg' && s.name !== '__eggs__');
+  const songs = (S.songs || []).filter(s => s.name !== '__eggs__');
   const iS = 'width:100%;box-sizing:border-box;background:var(--c-surface2);border:1px solid var(--c-border);border-radius:6px;color:var(--c-text);padding:8px;font-size:13px;margin-top:4px;font-family:var(--f-sans)';
 
   const titleInput = document.createElement('input');
@@ -5682,8 +5653,10 @@ async function tabSave() {
         await saveTabs();
         hideLoading();
         showToast('Tab saved!');
-        showScreen('screen-addnotes');
-        renderAnTabsList();
+        const ret = TE.returnScreen || 'screen-addnotes';
+        showScreen(ret);
+        if (ret === 'screen-track') renderSongTabsData();
+        else renderAnTabsList();
       } catch(e) { hideLoading(); showToast('Save failed: ' + (e?.message||e)); }
       resolve();
     };
