@@ -319,7 +319,7 @@ header {
 .tp-lyric-ann-btn:hover { border-color:var(--c-teal-pale); color:var(--c-text); }
 .tp-lyric-ann-btn.hl { border-color:var(--c-amber); color:var(--c-amber); }
 /* lyrics view annotations */
-.lyr-hl  { color:var(--c-amber-lt); cursor:pointer; border-bottom:1px solid rgba(232,169,106,0.4); }
+.lyr-hl  { background:rgba(232,169,106,0.28); color:var(--c-amber-lt); cursor:pointer; border-radius:3px; padding:0 2px; }
 .lyr-note { color:var(--c-amber-lt); cursor:pointer; border-bottom:2px solid var(--c-amber); }
 .lyr-snip { color:var(--c-amber-lt); cursor:pointer; border-bottom:2px solid var(--c-teal); }
 /* annotation tooltip at bottom */
@@ -872,13 +872,14 @@ body.tab-view #tab-view-close { display:flex; }
               <div class="tp-lyric-ann-bar" id="tp-lyric-ann-bar">
                 <button class="tp-lyric-ann-btn" onclick="tpLyricsAnnotate('note')">Add Note</button>
                 <button class="tp-lyric-ann-btn" onclick="tpLyricsAnnotate('snippet')">Add Snippet</button>
-                <button class="tp-lyric-ann-btn hl" onclick="tpLyricsAnnotate('highlight')">H</button>
+                <button class="tp-lyric-ann-btn hl" onclick="tpLyricsAnnotate('highlight')">Highlight</button>
                 <button class="tp-lyric-ann-btn" style="margin-left:auto" onclick="$('tp-lyric-ann-bar').classList.remove('visible')">✕</button>
               </div>
               <div class="tp-lyric-tooltip" id="tp-lyric-tooltip"></div>
               <div class="tp-lyrics-scroll-bar" id="tp-lyrics-scroll-bar">
                 <button class="tp-lyrics-scroll-btn" id="tp-lyrics-scroll-btn" onclick="tpLyricsScrollToggle()">⟳ Auto</button>
                 <input type="range" class="tp-lyrics-speed" id="tp-lyrics-speed" min="1" max="100" value="25" oninput="tpLyricsSpeedChanged()">
+                <button class="tp-lyrics-scroll-btn" id="tp-lyrics-edit-btn" onclick="tpLyricsEditMode()" style="margin-left:auto">✏ Edit</button>
               </div>
             </div>
           </div>
@@ -1034,9 +1035,9 @@ body.tab-view #tab-view-close { display:flex; }
           <div class="an-card-icon">♫</div>
           <div class="an-card-label">Upload Audio</div>
         </div>
-        <div class="an-card soon">
-          <div class="an-card-icon">⬜</div>
-          <div class="an-card-label">Upload Lyrics</div>
+        <div class="an-card" onclick="openLyricsWriter()">
+          <div class="an-card-icon">♫</div>
+          <div class="an-card-label">Write Lyrics</div>
         </div>
       </div>
       <!-- tab bar -->
@@ -3816,6 +3817,49 @@ async function deleteFeatherImage(id) {
   renderAnImagesList();
 }
 
+/* ── Write Lyrics from Feathers ─────────────────────────── */
+async function openLyricsWriter() {
+  if (!S.songs?.length) { showLoading('Loading…'); await loadSongs(); hideLoading(); }
+  const tracks = S.songs.filter(s => !s.type || s.type === 'track').map(s => s.name);
+  const eggs   = S.songs.filter(s => s.type === 'egg').map(s => s.name);
+  const options = [...tracks, ...eggs, '𓅣 New Egg'];
+  const picked = await _simplePickerModal('Add lyrics to…', options, null);
+  if (!picked) return;
+  let songName = picked;
+  if (picked === '𓅣 New Egg') {
+    songName = await new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:400;background:rgba(26,46,44,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)';
+      overlay.innerHTML = `<div style="background:var(--c-surface);border:1px solid var(--c-amber-lt);border-radius:12px;padding:28px 24px;width:min(340px,90vw);display:flex;flex-direction:column;gap:16px">
+        <div style="font-family:var(--f-display);font-size:17px;font-weight:600">Name your egg</div>
+        <input id="_egg-name-input" type="text" placeholder="Working title…"
+          style="background:var(--c-bg);border:1px solid var(--c-border);border-radius:6px;color:var(--c-text);font-family:var(--f-sans);font-size:14px;padding:10px 12px;width:100%;outline:none"
+          onfocus="this.style.borderColor='var(--c-amber-lt)'" onblur="this.style.borderColor='var(--c-border)'">
+        <div style="display:flex;gap:10px">
+          <button onclick="this.closest('div[style]')._resolve(null)"
+            style="flex:1;padding:9px;background:none;border:1px solid var(--c-border);border-radius:7px;color:var(--c-teal-pale);font-family:var(--f-mono);font-size:11px;cursor:pointer">Cancel</button>
+          <button onclick="this.closest('div[style]')._resolve(document.getElementById('_egg-name-input').value.trim())"
+            style="flex:1;padding:9px;background:var(--c-accent);border:none;border-radius:7px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;cursor:pointer">Create</button>
+        </div></div>`;
+      const card = overlay.querySelector('div[style]');
+      card._resolve = v => { document.body.removeChild(overlay); resolve(v); };
+      overlay.addEventListener('keydown', e => { if (e.key === 'Enter') card._resolve(document.getElementById('_egg-name-input').value.trim()); if (e.key === 'Escape') card._resolve(null); });
+      document.body.appendChild(overlay);
+      setTimeout(() => document.getElementById('_egg-name-input')?.focus(), 50);
+    });
+    if (!songName) return;
+    const n = S.songs.filter(s => s.type === 'egg').length + 1;
+    const ne = { name: songName || `Egg ${n}`, type: 'egg', eggFileId: null, eggFileName: null,
+      sessionDate: new Date().toISOString().slice(0,10), notes: '' };
+    S.songs.push(ne);
+    await saveSongsJson();
+  }
+  const idx = S.songs.findIndex(s => s.name === songName);
+  if (idx < 0) return;
+  await openSong(songName, idx);
+  tpSwitchTab('lyrics');
+}
+
 /* ── Feathers lyrics list ────────────────────────────── */
 function renderAnLyricsList() {
   const el = $('an-lyrics-list');
@@ -4762,6 +4806,8 @@ function openSnipRecorder(context, commentId) {
   if (context === 'reply' && commentId) {
     const c = _cdAllComments?.find(c => c.id === commentId);
     SnipR.songName = c?.songName || null;
+  } else if (context === 'lyrics-ann') {
+    SnipR.songName = S.tp?.songName || null;
   }
   const title = SnipR.songName ? `🎙 ${SnipR.songName}` : '🎙 Snippet';
   $('snip-nav-title').textContent = title;
@@ -5100,6 +5146,13 @@ function _stopSnipPlayMetro() {
 }
 
 /* ── LYRICS AUTOSCROLL ──────────────────────────────────── */
+function tpLyricsEditMode() {
+  if (_lyricsScrollOn) tpLyricsScrollToggle(); // turn off autoscroll first
+  $('tp-lyrics-view')?.classList.remove('active');
+  $('tp-lyrics-text')?.classList.remove('hidden');
+  $('tp-lyrics-text')?.focus();
+}
+
 function tpLyricsScrollToggle() {
   _lyricsScrollOn = !_lyricsScrollOn;
   const btn = $('tp-lyrics-scroll-btn');
@@ -5281,6 +5334,10 @@ function _renderLyricsAnnotated() {
     view.textContent = text;
     return;
   }
+  // Show view with highlights; hide raw textarea
+  view.classList.add('active');
+  $('tp-lyrics-text')?.classList.add('hidden');
+  $('tp-lyrics-scroll-bar')?.classList.add('visible');
   // Build non-overlapping segments from annotations
   let result = '', pos = 0;
   const escaped = t => t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -5509,6 +5566,7 @@ async function snipSave() {
       trimStart: 0, trimEnd: trimmedDuration,
       bpm: SnipR.metro.bpm || null,
       commentId: SnipR.commentId || null,
+      notes: SnipR.context === 'lyrics-ann' ? 'lyrics' : '',
       createdAt: new Date().toISOString(),
     };
     S.snippets.push(entry);
