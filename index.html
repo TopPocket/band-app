@@ -2657,20 +2657,7 @@ async function selectSnippet(snipId) {
 }
 
 /* ── GUITAR TABS (auto-save) ─────────────────────────── */
-let _tpTabsSaveTimer = null;
 let _lyricsScrollRaf = null, _lyricsScrollOn = false;
-function tpTabsChanged() {
-  clearTimeout(_tpTabsSaveTimer);
-  _tpTabsSaveTimer = setTimeout(saveSongTabs, 1500);
-}
-async function saveSongTabs() {
-  const text = $('tp-tabs-text')?.value;
-  if (text === undefined) return;
-  const idx = S.songs.findIndex(s => s.name === S.tp.songName);
-  if (idx < 0) return;
-  S.songs[idx].tabText = text;
-  try { await saveSongsJson(); } catch(e) { showToast('Save failed: ' + _errMsg(e)); }
-}
 
 /* ── NOTES TAB (auto-save + images) ─────────────────── */
 let _tpNotesSaveTimer = null;
@@ -5674,32 +5661,41 @@ function _simplePickerModal(title, options, current) {
 
 async function tabSave() {
   if (!S.songs?.length) { showLoading('Loading tracks…'); await loadSongs(); hideLoading(); }
-  const songs = (S.songs || []).filter(s => s.name !== '__eggs__');
   const iS = 'width:100%;box-sizing:border-box;background:var(--c-surface2);border:1px solid var(--c-border);border-radius:6px;color:var(--c-text);padding:8px;font-size:13px;margin-top:4px;font-family:var(--f-sans)';
+  const trackAlreadySet = !!TE.songName; // coming from track page — don't ask again
 
   const titleInput = document.createElement('input');
   titleInput.type = 'text'; titleInput.placeholder = 'Tab name (e.g. Verse riff)';
   titleInput.value = TE.title || ''; titleInput.style.cssText = iS;
 
-  const trackSel = document.createElement('select');
-  trackSel.style.cssText = iS;
-  trackSel.innerHTML = `<option value="">— No track —</option>` +
-    songs.map(s => `<option value="${s.name}"${s.name === TE.songName ? ' selected' : ''}>${s.name}</option>`).join('');
-
-  const notesInput = document.createElement('textarea');
-  notesInput.placeholder = 'Notes (optional)'; notesInput.value = TE.extraNotes || '';
-  notesInput.rows = 3; notesInput.style.cssText = iS + ';resize:none';
+  let trackSel = null;
+  let notesInput = null;
 
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
   const sheet = document.createElement('div');
   sheet.style.cssText = 'background:var(--c-surface);border-radius:12px;padding:20px;width:100%;max-width:360px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px';
-
   const label = (t) => { const d = document.createElement('div'); d.style.cssText = 'font-family:var(--f-mono);font-size:9px;color:var(--c-teal-pale);text-transform:uppercase;margin-top:6px'; d.textContent = t; return d; };
-  sheet.appendChild(Object.assign(document.createElement('div'), { style: 'font-family:var(--f-mono);font-size:13px;color:var(--c-text);margin-bottom:4px', textContent: 'Save tab' }));
+
+  const heading = Object.assign(document.createElement('div'), {
+    style: 'font-family:var(--f-mono);font-size:13px;color:var(--c-text);margin-bottom:4px',
+    textContent: trackAlreadySet ? `Save tab — ${TE.songName}` : 'Save tab',
+  });
+  sheet.appendChild(heading);
   sheet.appendChild(label('Name')); sheet.appendChild(titleInput);
-  sheet.appendChild(label('Track')); sheet.appendChild(trackSel);
-  sheet.appendChild(label('Notes')); sheet.appendChild(notesInput);
+
+  if (!trackAlreadySet) {
+    const songs = (S.songs || []).filter(s => s.name !== '__eggs__');
+    trackSel = document.createElement('select');
+    trackSel.style.cssText = iS;
+    trackSel.innerHTML = `<option value="">— No track —</option>` +
+      songs.map(s => `<option value="${s.name}"${s.name === TE.songName ? ' selected' : ''}>${s.name}</option>`).join('');
+    notesInput = document.createElement('textarea');
+    notesInput.placeholder = 'Notes (optional)'; notesInput.value = TE.extraNotes || '';
+    notesInput.rows = 3; notesInput.style.cssText = iS + ';resize:none';
+    sheet.appendChild(label('Track')); sheet.appendChild(trackSel);
+    sheet.appendChild(label('Notes')); sheet.appendChild(notesInput);
+  }
 
   const actions = document.createElement('div');
   actions.style.cssText = 'display:flex;gap:8px;margin-top:12px';
@@ -5718,8 +5714,7 @@ async function tabSave() {
   await new Promise(resolve => {
     const doSave = async () => {
       TE.title = titleInput.value.trim() || 'Untitled tab';
-      TE.songName = trackSel.value || null;
-      TE.extraNotes = notesInput.value;
+      if (trackSel) { TE.songName = trackSel.value || null; TE.extraNotes = notesInput?.value || ''; }
       document.body.removeChild(overlay);
       showLoading('Saving tab…');
       try {
