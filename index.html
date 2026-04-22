@@ -234,7 +234,12 @@ header {
 .tp-tab { position: relative; font-family: var(--f-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; padding: 9px 12px; background: transparent; border: 1px solid transparent; border-bottom: none; margin-bottom: -1px; color: var(--c-amber-lt); opacity: 0.45; cursor: pointer; white-space: nowrap; flex-shrink: 0; z-index: 1; transition: opacity 0.15s, background 0.15s; }
 .tp-tab:hover { opacity: 0.75; }
 .tp-tab.active { opacity: 1; background: var(--c-bg); border-color: var(--c-amber-lt); }
-.tp-tab-panel { border-bottom: 1px solid var(--c-border); }
+.tp-tab-panel {
+  border-bottom: 1px solid var(--c-border);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  max-height: calc(100dvh - 278px); /* viewport - header(50) - nav(50) - controls(56) - waveform(72) - tabs-bar(50) */
+}
 .tp-tabcontent { display: none; }
 .tp-tabcontent.active { display: block; }
 .tp-lyrics-text {
@@ -321,10 +326,18 @@ header {
 .tp-lyric-tooltip { display:none; position:absolute; bottom:0; left:0; right:0; background:var(--c-surface); border-top:1px solid var(--c-amber); padding:10px 14px; font-size:12px; font-family:var(--f-sans); z-index:10; }
 .tp-lyric-tooltip.visible { display:block; }
 /* BPM tag items (slim, amber) */
-.tp-bpm-tags-body { padding:0 10px 6px; }
-.tp-bpm-tag-item { display:inline-flex; align-items:center; gap:6px; margin:3px 4px 0 0; padding:3px 8px; border:1px solid var(--c-amber); border-radius:4px; background:rgba(192,120,64,0.08); font-family:var(--f-mono); font-size:10px; color:var(--c-amber-lt); cursor:pointer; }
-.tp-bpm-tag-item:hover { background:rgba(192,120,64,0.18); }
-.tp-bpm-tag-del { font-size:11px; color:var(--c-amber); opacity:0.6; cursor:pointer; margin-left:2px; }
+.tp-bpm-tags-body { }
+.tp-bpm-tag-row { display:flex; align-items:center; padding:5px 14px; border-top:1px solid rgba(25,114,120,0.18); position:relative; overflow:hidden; cursor:pointer; user-select:none; }
+.tp-bpm-tag-row:active { background:rgba(25,114,120,0.08); }
+.tp-bpm-tag-item { display:flex; align-items:center; gap:6px; font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); flex:1; }
+.tp-bpm-tag-note { font-size:13px; color:var(--c-teal); }
+.tp-bpm-tag-time { font-family:var(--f-mono); font-size:9px; color:var(--c-border); margin-left:auto; }
+.tp-bpm-tag-del { display:none; font-size:11px; color:var(--c-teal-pale); opacity:0.6; cursor:pointer; margin-left:8px; }
+.tp-bpm-del-reveal { position:absolute; right:0; top:0; bottom:0; width:70px; display:flex; align-items:center; justify-content:center; background:var(--c-accent); color:var(--c-text); font-size:18px; pointer-events:none; opacity:0; transition:opacity 0.1s; }
+@media (min-width: 768px) {
+  .tp-bpm-tag-del { display:inline; }
+  .tp-bpm-del-reveal { display:none; }
+}
 /* BPM tapper widget */
 .bpm-overlay { position:fixed; inset:0; z-index:350; display:none; background:rgba(26,46,44,0.7); backdrop-filter:blur(4px); flex-direction:column; align-items:center; justify-content:center; gap:20px; }
 .bpm-overlay.open { display:flex; }
@@ -434,7 +447,7 @@ header {
     overflow: hidden;
   }
   .tp-tabs-wrap { grid-area: tabs; border-bottom: none; border-right: 1px solid var(--c-border); flex: unset; overflow: hidden; display: flex; flex-direction: column; }
-  .tp-tab-panel { flex: 1; overflow-y: auto; min-height: 0; }
+  .tp-tab-panel { flex: 1; max-height: none; overflow-y: auto; min-height: 0; overscroll-behavior-y: auto; }
   .tp-tabcontent.active { display: flex; flex-direction: column; min-height: 100%; }
   .tp-player-sticky { display: contents; }
   .tp-controls { grid-area: controls; }
@@ -2732,16 +2745,16 @@ function drawWave() {
     }
   });
 
-  // BPM tag markers — slim amber lines at the bottom third
+  // BPM tag markers — slim cyan lines at the bottom third
   const _curVBpm = S.tp.versions[S.tp.versionIdx];
   const _bpmTags = _curVBpm ? (S.songs.find(s=>s.name===S.tp.songName)?.bpmTags||[]).filter(t=>t.fileId===_curVBpm.fileId) : [];
   if (dur > 0) _bpmTags.forEach(t => {
     const tf = t.time / dur;
     if (tf >= viewStart && tf <= viewEnd) {
       const tx = ((tf - viewStart) / visFrac) * W;
-      ctx.fillStyle = 'rgba(192,120,64,0.9)';
-      ctx.fillRect(tx-1, H*0.55, 2, H*0.45);
-      ctx.beginPath(); ctx.arc(tx, H-4, 3, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba(66,210,210,0.85)';
+      ctx.fillRect(Math.round(tx) - 0.5, H * 0.52, 1, H * 0.48);
+      ctx.beginPath(); ctx.arc(tx, H - 3, 2.5, 0, Math.PI * 2); ctx.fill();
     }
   });
 
@@ -5297,12 +5310,55 @@ function renderBpmTags() {
   if (!v) { body.innerHTML = ''; return; }
   const songEntry = S.songs.find(s => s.name === S.tp.songName);
   const tags = (songEntry?.bpmTags || []).filter(t => t.fileId === v.fileId);
-  if (!tags.length) { body.innerHTML = ''; return; }
-  body.innerHTML = tags.map(t =>
-    `<span class="tp-bpm-tag-item" onclick="tpBpmSeek('${t.id}')">
-      ♩ ${t.bpm} bpm
+  body.innerHTML = '';
+  if (!tags.length) return;
+  tags.forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'tp-bpm-tag-row';
+    row.id = `bpm-row-${t.id}`;
+    const timeLabel = S.tp.audio?.duration > 0 ? fmt(t.time) : '';
+    row.innerHTML = `
+      <div class="tp-bpm-tag-item">
+        <span class="tp-bpm-tag-note">♩</span> ${t.bpm} bpm
+      </div>
+      <span class="tp-bpm-tag-time">${timeLabel}</span>
       <span class="tp-bpm-tag-del" onclick="event.stopPropagation();deleteBpmTag('${t.id}')">✕</span>
-    </span>`).join('');
+      <div class="tp-bpm-del-reveal">𓅮</div>`;
+    row.onclick = () => tpBpmSeek(t.id);
+    _attachBpmSwipe(row, t.id);
+    body.appendChild(row);
+  });
+}
+
+function _attachBpmSwipe(row, tagId) {
+  let sx = null, sy = null, sdx = 0, slocked = null;
+  const reveal = row.querySelector('.tp-bpm-del-reveal');
+  row.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; sdx = 0; slocked = null;
+  }, { passive: true });
+  row.addEventListener('touchmove', e => {
+    if (sx === null || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
+    if (slocked === null) { if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return; slocked = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v'; }
+    if (slocked === 'v' || dx > 0) return;
+    sdx = dx;
+    const prog = Math.min(1, Math.abs(dx) / (window.innerWidth * 0.65));
+    row.querySelectorAll(':not(.tp-bpm-del-reveal)').forEach(el => { if (el.parentElement === row) el.style.transform = `translateX(${dx}px)`; });
+    if (reveal) reveal.style.opacity = prog;
+  }, { passive: true });
+  row.addEventListener('touchend', () => {
+    if (sx === null) return; sx = null;
+    const committed = slocked === 'h' && Math.abs(sdx) > window.innerWidth * 0.65;
+    if (committed) {
+      row.querySelectorAll(':not(.tp-bpm-del-reveal)').forEach(el => { if (el.parentElement === row) el.style.transition = 'transform 0.2s ease-out'; el.style.transform = `translateX(-${window.innerWidth}px)`; });
+      setTimeout(() => deleteBpmTag(tagId), 220);
+    } else {
+      row.querySelectorAll(':not(.tp-bpm-del-reveal)').forEach(el => { if (el.parentElement === row) el.style.transform = ''; });
+      if (reveal) reveal.style.opacity = 0;
+    }
+    sdx = 0; slocked = null;
+  });
 }
 
 function tpBpmSeek(tagId) {
