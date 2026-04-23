@@ -893,7 +893,7 @@ body.tab-view #tab-view-close { display:flex; }
             <div class="tp-lyric-tooltip" id="tp-lyric-tooltip"></div>
             <div class="lyr-scroll-bar hidden" id="tp-lyrics-scroll-bar">
               <button class="lyr-scroll-btn" id="tp-lyrics-scroll-btn" onclick="tpLyricsScrollToggle()">⟳ Auto</button>
-              <input type="range" class="lyr-speed" id="tp-lyrics-speed" min="1" max="100" value="25" oninput="tpLyricsSpeedChanged()">
+              <input type="range" class="lyr-speed" id="tp-lyrics-speed" min="1" max="100" value="50" oninput="tpLyricsSpeedChanged()">
               <button class="lyr-scroll-btn" id="tp-lyrics-edit-btn" onclick="tpLyricsEditMode()" style="margin-left:auto">✏ Edit</button>
             </div>
             <div class="lyr-ann-bar" id="tp-lyrics-ann-bar">
@@ -1173,7 +1173,7 @@ body.tab-view #tab-view-close { display:flex; }
   <div class="tp-lyric-tooltip" id="lyr-panel-tooltip"></div>
   <div class="lyr-scroll-bar hidden" id="lyr-panel-scroll-bar">
     <button class="lyr-scroll-btn" id="lyr-panel-auto-btn" onclick="lyrPanelAutoToggle()">⟳ Auto</button>
-    <input type="range" class="lyr-speed" id="lyr-panel-speed" min="1" max="100" value="25">
+    <input type="range" class="lyr-speed" id="lyr-panel-speed" min="1" max="100" value="50">
   </div>
   <div class="lyr-ann-bar" id="lyr-panel-ann-bar">
     <button class="lyr-ann-btn hl" onclick="lyrAnnotate('highlight','panel')">Highlight</button>
@@ -4850,6 +4850,9 @@ const SnipR = {
   looping: false, recording: false,
   context: null, commentId: null, songName: null,
   _knob: null, _rafId: null,
+  /* Web Audio for gapless loop */
+  _waCtx: null, _waBuf: null, _waSrc: null,
+  _waPlaying: false, _waT0: 0, _waOff: 0,
   metro: { on: false, bpm: 120, snap: false, _ctx: null, _nextBeat: 0, _schedId: null, _bpmKnob: null },
 };
 SnipR.audio.addEventListener('ended', () => {
@@ -4886,8 +4889,10 @@ function snipClose() {
   if ($('snip-metro-on')) $('snip-metro-on').textContent = 'Off';
   $('snip-snap-btn')?.classList.remove('on');
   SnipR.metro.snap = false;
+  _snipWaStop();
   Object.assign(SnipR, { blob: null, peaks: [], duration: 0, trimStart: 0, trimEnd: 0,
-    recording: false, looping: false, _knob: null, context: null, commentId: null, songName: null });
+    recording: false, looping: false, _knob: null, context: null, commentId: null, songName: null,
+    _waBuf: null, _waPlaying: false });
   $('snip-rec-btn').classList.remove('recording');
   $('snip-play-btn').textContent = '▶\uFE0E';
   $('snip-loop-btn').classList.remove('active');
@@ -4929,9 +4934,10 @@ async function snipToggleRecord() {
 async function _snipGenPeaks(blob) {
   try {
     const ab = await blob.arrayBuffer();
-    const ac = new (window.AudioContext || window.webkitAudioContext)();
-    const buf = await ac.decodeAudioData(ab);
-    ac.close();
+    if (SnipR._waCtx) { try { SnipR._waCtx.close(); } catch(e){} }
+    SnipR._waCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const buf = await SnipR._waCtx.decodeAudioData(ab.slice(0));
+    SnipR._waBuf = buf;
     const data = buf.getChannelData(0);
     const N = 300, step = Math.floor(data.length / N);
     const raw = [];
@@ -4980,8 +4986,8 @@ function _snipDrawWave() {
   ctx.fillStyle = 'rgba(192,120,64,0.9)';
   ctx.fillRect(Math.round(ts * W) - 1, 0, 2, H);
   ctx.fillRect(Math.round(te * W) - 1, 0, 2, H);
-  if (SnipR.duration > 0 && !isNaN(SnipR.audio.currentTime)) {
-    const pf = SnipR.audio.currentTime / SnipR.duration;
+  if (SnipR.duration > 0) {
+    const pf = _snipCurrentTime() / SnipR.duration;
     ctx.fillStyle = '#C44536';
     ctx.fillRect(Math.round(pf * W) - 1, 0, 2, H);
   }
@@ -4993,10 +4999,52 @@ function _snipFmt(s) {
   return `${m}:${r.padStart(4, '0')}`;
 }
 
+function _snipCurrentTime() {
+  if (SnipR._waPlaying && SnipR._waCtx) {
+    const elapsed = SnipR._waCtx.currentTime - SnipR._waT0;
+    if (SnipR.looping) {
+      const dur = SnipR.trimEnd - SnipR.trimStart;
+      return dur > 0 ? SnipR.trimStart + (elapsed % dur) : SnipR.trimStart;
+    }
+    return Math.min(SnipR._waOff + elapsed, SnipR.trimEnd);
+  }
+  return SnipR.audio.currentTime || 0;
+}
+
+function _snipWaPlay(offset) {
+  if (!SnipR._waCtx || !SnipR._waBuf) return false;
+  if (SnipR._waSrc) { try { SnipR._waSrc.stop(); } catch(e){} SnipR._waSrc = null; }
+  SnipR._waCtx.resume().then(() => {
+    const src = SnipR._waCtx.createBufferSource();
+    src.buffer = SnipR._waBuf;
+    src.loop = SnipR.looping;
+    src.loopStart = SnipR.trimStart;
+    src.loopEnd = SnipR.trimEnd;
+    src.connect(SnipR._waCtx.destination);
+    src.onended = () => {
+      if (SnipR._waSrc === src) {
+        SnipR._waPlaying = false; SnipR._waSrc = null;
+        $('snip-play-btn').textContent = '▶\uFE0E';
+      }
+    };
+    src.start(0, offset, SnipR.looping ? undefined : SnipR.trimEnd - offset);
+    SnipR._waSrc = src;
+    SnipR._waT0 = SnipR._waCtx.currentTime;
+    SnipR._waOff = offset;
+    SnipR._waPlaying = true;
+  });
+  return true;
+}
+
+function _snipWaStop() {
+  if (SnipR._waSrc) { try { SnipR._waSrc.stop(); } catch(e){} SnipR._waSrc = null; }
+  SnipR._waPlaying = false;
+}
+
 function _snipUpdateLabels() {
   $('snip-ts-lbl').textContent = _snipFmt(SnipR.trimStart);
   $('snip-te-lbl').textContent = SnipR.duration > 0 ? _snipFmt(SnipR.trimEnd) : '—';
-  $('snip-cur-lbl').textContent = _snipFmt(SnipR.audio.currentTime || 0);
+  $('snip-cur-lbl').textContent = _snipFmt(_snipCurrentTime());
 }
 
 function _snipUpdateKnob(which) {
@@ -5011,33 +5059,43 @@ function _snipStartRaf() {
   cancelAnimationFrame(SnipR._rafId);
   const loop = () => {
     _snipDrawWave(); _snipUpdateLabels();
-    if (SnipR.looping && SnipR.duration > 0 && SnipR.audio.currentTime >= SnipR.trimEnd - 0.05)
-      SnipR.audio.currentTime = SnipR.trimStart;
-    SnipR._rafId = SnipR.audio.paused ? null : requestAnimationFrame(loop);
-    if (SnipR.audio.paused) $('snip-play-btn').textContent = '▶\uFE0E';
+    const isPlaying = SnipR._waPlaying || !SnipR.audio.paused;
+    SnipR._rafId = isPlaying ? requestAnimationFrame(loop) : null;
+    if (!isPlaying) $('snip-play-btn').textContent = '▶\uFE0E';
   };
   SnipR._rafId = requestAnimationFrame(loop);
 }
 
 function snipTogglePlay() {
-  if (!SnipR.blobUrl) return;
-  if (SnipR.audio.paused) {
-    if (SnipR.audio.currentTime < SnipR.trimStart || SnipR.audio.currentTime >= SnipR.trimEnd)
-      SnipR.audio.currentTime = SnipR.trimStart;
-    SnipR.audio.play();
-    $('snip-play-btn').textContent = '⏸';
-    _snipStartRaf();
-  } else {
+  if (!SnipR.blobUrl && !SnipR._waBuf) return;
+  const isPlaying = SnipR._waPlaying || !SnipR.audio.paused;
+  if (isPlaying) {
+    _snipWaStop();
     SnipR.audio.pause();
     $('snip-play-btn').textContent = '▶\uFE0E';
     cancelAnimationFrame(SnipR._rafId); SnipR._rafId = null;
     _snipDrawWave();
+  } else {
+    const t = _snipCurrentTime();
+    const startAt = (t < SnipR.trimStart || t >= SnipR.trimEnd) ? SnipR.trimStart : t;
+    if (SnipR._waBuf) {
+      _snipWaPlay(startAt);
+    } else {
+      SnipR.audio.currentTime = startAt;
+      SnipR.audio.play();
+    }
+    $('snip-play-btn').textContent = '⏸';
+    _snipStartRaf();
   }
 }
 
 function snipToggleLoop() {
   SnipR.looping = !SnipR.looping;
   $('snip-loop-btn').classList.toggle('active', SnipR.looping);
+  if (SnipR._waPlaying && SnipR._waBuf) {
+    const t = _snipCurrentTime();
+    _snipWaPlay(t);
+  }
 }
 
 /* Knob interaction */
@@ -5060,7 +5118,7 @@ function snipKnobMove(e) {
   }
   if (SnipR._knob.which === 's') {
     SnipR.trimStart = Math.max(0, Math.min(SnipR.trimEnd - 0.05, val));
-    if (!SnipR.audio.paused && SnipR.audio.currentTime < SnipR.trimStart)
+    if ((!SnipR.audio.paused || SnipR._waPlaying) && _snipCurrentTime() < SnipR.trimStart && !SnipR._waBuf)
       SnipR.audio.currentTime = SnipR.trimStart;
   } else {
     SnipR.trimEnd = Math.max(SnipR.trimStart + 0.05, Math.min(SnipR.duration, val));
@@ -5235,7 +5293,7 @@ function tpLyricsSpeedChanged() {}
 function _lyricsScrollLoop() {
   const view = $('tp-lyrics-view');
   if (!view || !_lyricsScrollOn) return;
-  const speed = parseFloat($('tp-lyrics-speed')?.value || 25) / 10;
+  const speed = parseFloat($('tp-lyrics-speed')?.value || 50) / 40;
   view.scrollTop += speed;
   if (view.scrollTop >= view.scrollHeight - view.clientHeight) {
     _lyricsScrollOn = false; $('tp-lyrics-scroll-btn')?.classList.remove('on'); return;
@@ -5315,10 +5373,10 @@ function lyrPanelOpen(songName) {
   $('lyr-panel-title').textContent = songName;
   $('lyr-panel-ta').value = songEntry?.notes || '';
   if (_lyrPanelScrollOn) { _lyrPanelScrollOn = false; cancelAnimationFrame(_lyrPanelScrollRaf); $('lyr-panel-auto-btn')?.classList.remove('on'); }
-  _lyrSetMode('panel', 'edit');
-  $('lyr-panel-view-btn').textContent = '👁 View';
+  _lyrRender('panel');
+  _lyrSetMode('panel', 'view');
+  $('lyr-panel-view-btn').textContent = '✏ Edit';
   $('lyr-panel').classList.add('open');
-  setTimeout(() => $('lyr-panel-ta').focus(), 50);
 }
 
 function lyrPanelClose() {
@@ -5375,7 +5433,7 @@ function lyrPanelAutoToggle() {
 function _lyrPanelScrollLoop() {
   if (!_lyrPanelScrollOn) return;
   const view = $('lyr-panel-view');
-  const speed = parseFloat($('lyr-panel-speed')?.value || 25) / 10;
+  const speed = parseFloat($('lyr-panel-speed')?.value || 50) / 40;
   view.scrollTop += speed;
   if (view.scrollTop >= view.scrollHeight - view.clientHeight) {
     _lyrPanelScrollOn = false; $('lyr-panel-auto-btn')?.classList.remove('on'); return;
