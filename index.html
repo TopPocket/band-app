@@ -238,11 +238,17 @@ header {
   flex: 1; min-height: 0;
   overflow-y: auto;
   overscroll-behavior-y: contain;
+  display: flex; flex-direction: column;
 }
 .tp-tabcontent { display: none; }
-.tp-tabcontent.active { display: flex; flex-direction: column; }
+.tp-tabcontent.active { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; }
+#tp-tabcontent-lyrics.active { overflow-y: hidden; }
+.lyr-scroll-bar.hidden, .lyr-ann-bar.hidden { display: none !important; }
+:root { --kb-h: 0px; }
+#tp-tabcontent-lyrics.active { padding-bottom: var(--kb-h); }
+.lyr-panel.open { padding-bottom: var(--kb-h); }
 .tp-lyrics-text {
-  width: 100%; flex: 1; min-height: 120px;
+  width: 100%; flex: 1; min-height: 0;
   background: transparent; border: none; resize: none; outline: none;
   color: var(--c-text); font-family: var(--f-sans); font-size: 13px; line-height: 1.6;
   padding: 10px 14px;
@@ -342,7 +348,7 @@ header {
 .lyr-note { color:var(--c-amber-lt); cursor:pointer; border-bottom:2px solid var(--c-amber); }
 .lyr-snip { color:var(--c-amber-lt); cursor:pointer; border-bottom:2px solid var(--c-teal); }
 /* annotation tooltip at bottom */
-.tp-lyric-tooltip { display:none; position:absolute; bottom:0; left:0; right:0; background:var(--c-surface); border-top:1px solid var(--c-amber); padding:10px 14px; font-size:12px; font-family:var(--f-sans); z-index:10; }
+.tp-lyric-tooltip { display:none; flex-shrink:0; background:var(--c-surface); border-top:1px solid var(--c-amber); padding:10px 14px; font-size:12px; font-family:var(--f-sans); color:var(--c-amber); }
 .tp-lyric-tooltip.visible { display:block; }
 /* BPM tag items (slim, amber) */
 .tp-bpm-tags-body { }
@@ -465,7 +471,7 @@ header {
   }
   .tp-tabs-wrap { grid-area: tabs; border-bottom: none; border-right: 1px solid var(--c-border); flex: unset; overflow: hidden; display: flex; flex-direction: column; }
   .tp-tab-panel { flex: 1; max-height: none; overflow-y: auto; min-height: 0; overscroll-behavior-y: auto; }
-  .tp-tabcontent.active { display: flex; flex-direction: column; min-height: 100%; }
+  .tp-tabcontent.active { min-height: unset; }
   .tp-player-sticky { display: contents; }
   .tp-controls { grid-area: controls; overflow-y: auto; }
   .tp-waveform-wrap { grid-area: waveform; height: auto; border-bottom: 1px solid var(--c-border); }
@@ -602,7 +608,7 @@ header {
 .tp-snip-metro-icon { font-size:13px; color:var(--c-border); cursor:pointer; flex-shrink:0; user-select:none; padding:2px; transition:color 0.15s; }
 .tp-snip-metro-icon.on { color:var(--c-amber-lt); }
 /* lyrics widget (track page tab + lyr-panel) */
-.tp-lyrics-wrap { display:flex; flex-direction:column; flex:1; min-height:0; }
+.tp-lyrics-wrap { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
 .tp-lyrics-view { flex:1; overflow-y:auto; padding:12px 14px; font-family:var(--f-sans); font-size:13px; line-height:1.8; color:var(--c-text); white-space:pre-wrap; display:none; }
 .tp-lyrics-view.active { display:block; }
 .tp-lyrics-text.hidden { display:none; }
@@ -877,20 +883,20 @@ body.tab-view #tab-view-close { display:flex; }
             </div>
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-lyrics">
-            <div class="tp-lyrics-wrap" style="position:relative">
+            <div class="tp-lyrics-wrap">
               <div class="tp-lyrics-view" id="tp-lyrics-view"
                    onclick="tpLyricsViewClick(event)"></div>
               <textarea class="tp-lyrics-text" id="tp-lyrics-text"
                         placeholder="Add lyrics, chords…"
                         oninput="tpNotesChanged()"></textarea>
-              <div class="tp-lyric-tooltip" id="tp-lyric-tooltip"></div>
             </div>
-            <div class="lyr-scroll-bar" id="tp-lyrics-scroll-bar">
+            <div class="tp-lyric-tooltip" id="tp-lyric-tooltip"></div>
+            <div class="lyr-scroll-bar hidden" id="tp-lyrics-scroll-bar">
               <button class="lyr-scroll-btn" id="tp-lyrics-scroll-btn" onclick="tpLyricsScrollToggle()">⟳ Auto</button>
               <input type="range" class="lyr-speed" id="tp-lyrics-speed" min="1" max="100" value="25" oninput="tpLyricsSpeedChanged()">
               <button class="lyr-scroll-btn" id="tp-lyrics-edit-btn" onclick="tpLyricsEditMode()" style="margin-left:auto">✏ Edit</button>
             </div>
-            <div class="lyr-ann-bar">
+            <div class="lyr-ann-bar" id="tp-lyrics-ann-bar">
               <button class="lyr-ann-btn hl" onclick="lyrAnnotate('highlight','tp')">Highlight</button>
               <button class="lyr-ann-btn"    onclick="lyrAnnotate('note','tp')">Add Note</button>
               <button class="lyr-ann-btn"    onclick="lyrAnnotate('snippet','tp')">Add Snippet</button>
@@ -1160,11 +1166,11 @@ body.tab-view #tab-view-close { display:flex; }
   <textarea id="lyr-panel-ta" class="lyr-panel-ta" placeholder="Add lyrics, chords…"
             oninput="lyrPanelChanged()"></textarea>
   <div class="tp-lyric-tooltip" id="lyr-panel-tooltip"></div>
-  <div class="lyr-scroll-bar">
+  <div class="lyr-scroll-bar hidden" id="lyr-panel-scroll-bar">
     <button class="lyr-scroll-btn" id="lyr-panel-auto-btn" onclick="lyrPanelAutoToggle()">⟳ Auto</button>
     <input type="range" class="lyr-speed" id="lyr-panel-speed" min="1" max="100" value="25">
   </div>
-  <div class="lyr-ann-bar">
+  <div class="lyr-ann-bar" id="lyr-panel-ann-bar">
     <button class="lyr-ann-btn hl" onclick="lyrAnnotate('highlight','panel')">Highlight</button>
     <button class="lyr-ann-btn"    onclick="lyrAnnotate('note','panel')">Add Note</button>
     <button class="lyr-ann-btn"    onclick="lyrAnnotate('snippet','panel')">Add Snippet</button>
@@ -2091,8 +2097,9 @@ async function openSong(songName, songIdx, isEgg = false) {
   $('tp-comments-body').innerHTML = '';
   clearWaveCanvas();
 
-  if (_lyricsScrollOn) { _lyricsScrollOn = false; cancelAnimationFrame(_lyricsScrollRaf); _lyricsScrollRaf = null; $('tp-lyrics-scroll-btn')?.classList.remove('on'); $('tp-lyrics-view')?.classList.remove('active'); $('tp-lyrics-text')?.classList.remove('hidden'); }
+  if (_lyricsScrollOn) { _lyricsScrollOn = false; cancelAnimationFrame(_lyricsScrollRaf); _lyricsScrollRaf = null; $('tp-lyrics-scroll-btn')?.classList.remove('on'); }
   $('tp-lyrics-text').value = songEntry?.notes || '';
+  _lyrSetMode('tp', 'edit');
   const notesEl = $('tp-notes-text'); if (notesEl) notesEl.value = songEntry?.noteText || '';
   tpSwitchTab('recordings');
 
@@ -2565,7 +2572,7 @@ function tpSwitchTab(tab) {
   if (tab === 'structure') { renderPinnedStruct(); renderStructureTabList(); }
   if (tab === 'notes') _renderNoteImages();
   if (tab === 'tabs') renderSongTabsData();
-  if (tab === 'lyrics') { _lyricsCtx.songName = S.tp.songName; _lyrRender('tp'); }
+  if (tab === 'lyrics') { _lyricsCtx.songName = S.tp.songName; _lyrSetMode('tp', 'edit'); $('tp-lyrics-text').value = S.songs.find(s => s.name === S.tp.songName)?.notes || ''; }
 }
 
 function renderStructureTabList() {
@@ -5193,28 +5200,22 @@ function _stopSnipPlayMetro() {
 
 /* ── TRACK PAGE LYRICS AUTOSCROLL ───────────────────────── */
 function tpLyricsEditMode() {
-  if (_lyricsScrollOn) tpLyricsScrollToggle();
-  $('tp-lyrics-view')?.classList.remove('active');
-  $('tp-lyrics-text')?.classList.remove('hidden');
+  if (_lyricsScrollOn) { _lyricsScrollOn = false; cancelAnimationFrame(_lyricsScrollRaf); _lyricsScrollRaf = null; $('tp-lyrics-scroll-btn')?.classList.remove('on'); }
+  _lyrSetMode('tp', 'edit');
   $('tp-lyrics-text')?.focus();
 }
 
 function tpLyricsScrollToggle() {
   _lyricsScrollOn = !_lyricsScrollOn;
-  const btn = $('tp-lyrics-scroll-btn');
-  const view = $('tp-lyrics-view');
-  const ta   = $('tp-lyrics-text');
-  btn?.classList.toggle('on', _lyricsScrollOn);
+  $('tp-lyrics-scroll-btn')?.classList.toggle('on', _lyricsScrollOn);
   if (_lyricsScrollOn) {
     _lyrRender('tp');
-    view.classList.add('active');
-    ta.classList.add('hidden');
-    view.scrollTop = 0;
+    _lyrSetMode('tp', 'view');
+    $('tp-lyrics-view').scrollTop = 0;
     _lyricsScrollLoop();
   } else {
     cancelAnimationFrame(_lyricsScrollRaf); _lyricsScrollRaf = null;
-    view.classList.remove('active');
-    ta.classList.remove('hidden');
+    _lyrSetMode('tp', 'view');
   }
 }
 
@@ -5272,9 +5273,27 @@ let _pendingAnnSnip = null;
 
 /* element maps by context */
 const _LYR = {
-  tp:    { taId: 'tp-lyrics-text',  viewId: 'tp-lyrics-view',  ttId: 'tp-lyric-tooltip' },
-  panel: { taId: 'lyr-panel-ta',    viewId: 'lyr-panel-view',  ttId: 'lyr-panel-tooltip' },
+  tp:    { taId: 'tp-lyrics-text',  viewId: 'tp-lyrics-view',  ttId: 'tp-lyric-tooltip',  scrollBarId: 'tp-lyrics-scroll-bar',  annBarId: 'tp-lyrics-ann-bar'  },
+  panel: { taId: 'lyr-panel-ta',    viewId: 'lyr-panel-view',  ttId: 'lyr-panel-tooltip', scrollBarId: 'lyr-panel-scroll-bar', annBarId: 'lyr-panel-ann-bar' },
 };
+
+function _lyrSetMode(ctx, mode) {
+  const el = _LYR[ctx] || _LYR.tp;
+  const isView = mode === 'view';
+  $(el.taId)?.classList.toggle('hidden', isView);
+  $(el.viewId)?.classList.toggle('active', isView);
+  $(el.scrollBarId)?.classList.toggle('hidden', !isView);
+  $(el.annBarId)?.classList.toggle('hidden', isView);
+}
+
+if (window.visualViewport) {
+  const _onVV = () => {
+    const kbH = Math.max(0, window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop);
+    document.documentElement.style.setProperty('--kb-h', kbH + 'px');
+  };
+  window.visualViewport.addEventListener('resize', _onVV);
+  window.visualViewport.addEventListener('scroll', _onVV);
+}
 
 /* ── lyr-panel (Feathers overlay) ────────────────────── */
 let _lyrPanelScrollOn = false, _lyrPanelScrollRaf = null;
@@ -5283,16 +5302,12 @@ function lyrPanelOpen(songName) {
   _lyricsCtx.songName = songName;
   const songEntry = S.songs.find(s => s.name === songName);
   $('lyr-panel-title').textContent = songName;
-  // Always open in edit mode
-  const ta = $('lyr-panel-ta');
-  const view = $('lyr-panel-view');
-  ta.value = songEntry?.notes || '';
-  ta.classList.remove('hidden');
-  view.classList.remove('active');
-  $('lyr-panel-view-btn').textContent = '👁 View';
+  $('lyr-panel-ta').value = songEntry?.notes || '';
   if (_lyrPanelScrollOn) { _lyrPanelScrollOn = false; cancelAnimationFrame(_lyrPanelScrollRaf); $('lyr-panel-auto-btn')?.classList.remove('on'); }
+  _lyrSetMode('panel', 'edit');
+  $('lyr-panel-view-btn').textContent = '👁 View';
   $('lyr-panel').classList.add('open');
-  setTimeout(() => ta.focus(), 50);
+  setTimeout(() => $('lyr-panel-ta').focus(), 50);
 }
 
 function lyrPanelClose() {
@@ -5302,22 +5317,16 @@ function lyrPanelClose() {
 }
 
 function lyrPanelToggleView() {
-  const ta = $('lyr-panel-ta');
-  const view = $('lyr-panel-view');
   const btn = $('lyr-panel-view-btn');
-  if (view.classList.contains('active')) {
-    // switch to edit
-    _lyrPanelSave();
-    view.classList.remove('active');
-    ta.classList.remove('hidden');
+  const isView = $('lyr-panel-view').classList.contains('active');
+  _lyrPanelSave();
+  if (isView) {
+    _lyrSetMode('panel', 'edit');
     btn.textContent = '👁 View';
-    ta.focus();
+    $('lyr-panel-ta').focus();
   } else {
-    // switch to view
-    _lyrPanelSave();
     _lyrRender('panel');
-    ta.classList.add('hidden');
-    view.classList.add('active');
+    _lyrSetMode('panel', 'view');
     btn.textContent = '✏ Edit';
   }
 }
@@ -5339,17 +5348,12 @@ async function _lyrPanelSave() {
 
 function lyrPanelAutoToggle() {
   _lyrPanelScrollOn = !_lyrPanelScrollOn;
-  const btn = $('lyr-panel-auto-btn');
-  const view = $('lyr-panel-view');
-  const ta = $('lyr-panel-ta');
-  btn?.classList.toggle('on', _lyrPanelScrollOn);
+  $('lyr-panel-auto-btn')?.classList.toggle('on', _lyrPanelScrollOn);
   if (_lyrPanelScrollOn) {
-    // switch to view mode for scrolling
     _lyrPanelSave();
     _lyrRender('panel');
-    ta.classList.add('hidden');
-    view.classList.add('active');
-    view.scrollTop = 0;
+    _lyrSetMode('panel', 'view');
+    $('lyr-panel-view').scrollTop = 0;
     $('lyr-panel-view-btn').textContent = '✏ Edit';
     _lyrPanelScrollLoop();
   } else {
