@@ -900,6 +900,7 @@ body.tab-view #tab-view-close { display:flex; }
               <button class="lyr-ann-btn hl" onclick="lyrAnnotate('highlight','tp')">Highlight</button>
               <button class="lyr-ann-btn"    onclick="lyrAnnotate('note','tp')">Add Note</button>
               <button class="lyr-ann-btn"    onclick="lyrAnnotate('snippet','tp')">Add Snippet</button>
+              <button class="lyr-scroll-btn" onclick="tpLyricsViewMode()" style="margin-left:auto">👁 View</button>
             </div>
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-structure">
@@ -1024,17 +1025,21 @@ body.tab-view #tab-view-close { display:flex; }
     </div>
     <div class="scroll-area">
       <div class="an-grid" id="an-grid">
+        <div class="an-card" onclick="openSnipRecorder('addnotes')">
+          <div class="an-card-icon" style="font-size:20px;line-height:1">𓅣</div>
+          <div class="an-card-label">Rec Snippet</div>
+        </div>
+        <div class="an-card" onclick="openLyricsWriter()">
+          <div class="an-card-icon">♫</div>
+          <div class="an-card-label">Write Lyrics</div>
+        </div>
         <div class="an-card" onclick="tabNewTab()">
           <div class="an-card-icon">𝄆</div>
           <div class="an-card-label">Add Tab</div>
         </div>
         <div class="an-card" onclick="structNewEditor()">
           <div class="an-card-icon">⬡</div>
-          <div class="an-card-label">Structure</div>
-        </div>
-        <div class="an-card" onclick="openSnipRecorder('addnotes')">
-          <div class="an-card-icon" style="font-size:20px;line-height:1">𓅣</div>
-          <div class="an-card-label">Snippet</div>
+          <div class="an-card-label">Add Structure</div>
         </div>
         <div class="an-card" onclick="openFeatherImageUpload()">
           <div class="an-card-icon">𓅱</div>
@@ -1045,25 +1050,26 @@ body.tab-view #tab-view-close { display:flex; }
           <div class="an-card-label">Tap BPM</div>
         </div>
         <div class="an-card soon">
-          <div class="an-card-icon">♫</div>
-          <div class="an-card-label">Upload Audio</div>
+          <div class="an-card-icon">𓆑</div>
+          <div class="an-card-label">Upload Tracks</div>
         </div>
-        <div class="an-card" onclick="openLyricsWriter()">
-          <div class="an-card-icon">♫</div>
-          <div class="an-card-label">Write Lyrics</div>
+        <div class="an-card soon">
+          <div class="an-card-icon">𓅃</div>
+          <div class="an-card-label">Pluck Songs</div>
         </div>
       </div>
       <!-- tab bar -->
       <div class="an-tab-bar">
-        <button class="an-tab active" data-antab="tabs"       onclick="anSwitchTab('tabs')">Tabs</button>
-        <button class="an-tab"        data-antab="structures" onclick="anSwitchTab('structures')">Structures</button>
-        <button class="an-tab"        data-antab="snippets"   onclick="anSwitchTab('snippets')">Snippets</button>
-        <button class="an-tab"        data-antab="images"     onclick="anSwitchTab('images')">Images</button>
+        <button class="an-tab active" data-antab="snippets"   onclick="anSwitchTab('snippets')">Snippets</button>
         <button class="an-tab"        data-antab="lyrics"     onclick="anSwitchTab('lyrics')">Lyrics</button>
+        <button class="an-tab"        data-antab="tabs"       onclick="anSwitchTab('tabs')">Tabs</button>
+        <button class="an-tab"        data-antab="structures" onclick="anSwitchTab('structures')">Structures</button>
+        <button class="an-tab"        data-antab="images"     onclick="anSwitchTab('images')">Images</button>
       </div>
-      <div id="an-tabcontent-tabs"       class="an-tabcontent active"><div id="an-tabs-list"></div></div>
+      <div id="an-tabcontent-snippets"   class="an-tabcontent active"><div id="an-snips-list"></div></div>
+      <div id="an-tabcontent-lyrics"     class="an-tabcontent"><div id="an-lyrics-list"></div></div>
+      <div id="an-tabcontent-tabs"       class="an-tabcontent"><div id="an-tabs-list"></div></div>
       <div id="an-tabcontent-structures" class="an-tabcontent"><div id="an-struct-list"></div></div>
-      <div id="an-tabcontent-snippets"   class="an-tabcontent"><div id="an-snips-list"></div></div>
       <div id="an-tabcontent-images"     class="an-tabcontent">
         <div class="an-img-filter">
           <button class="an-img-filter-btn active" id="an-img-filter-all"   onclick="anSetImgFilter('all')">All</button>
@@ -1071,7 +1077,6 @@ body.tab-view #tab-view-close { display:flex; }
         </div>
         <div class="an-img-grid" id="an-images-list"></div>
       </div>
-      <div id="an-tabcontent-lyrics"     class="an-tabcontent"><div id="an-lyrics-list"></div></div>
     </div>
   </div>
 
@@ -2099,7 +2104,6 @@ async function openSong(songName, songIdx, isEgg = false) {
 
   if (_lyricsScrollOn) { _lyricsScrollOn = false; cancelAnimationFrame(_lyricsScrollRaf); _lyricsScrollRaf = null; $('tp-lyrics-scroll-btn')?.classList.remove('on'); }
   $('tp-lyrics-text').value = songEntry?.notes || '';
-  _lyrSetMode('tp', 'edit');
   const notesEl = $('tp-notes-text'); if (notesEl) notesEl.value = songEntry?.noteText || '';
   tpSwitchTab('recordings');
 
@@ -2572,7 +2576,7 @@ function tpSwitchTab(tab) {
   if (tab === 'structure') { renderPinnedStruct(); renderStructureTabList(); }
   if (tab === 'notes') _renderNoteImages();
   if (tab === 'tabs') renderSongTabsData();
-  if (tab === 'lyrics') { _lyricsCtx.songName = S.tp.songName; _lyrSetMode('tp', 'edit'); $('tp-lyrics-text').value = S.songs.find(s => s.name === S.tp.songName)?.notes || ''; }
+  if (tab === 'lyrics') { _lyricsCtx.songName = S.tp.songName; const _lyrEntry = S.songs.find(s => s.name === S.tp.songName); $('tp-lyrics-text').value = _lyrEntry?.notes || ''; _lyrRender('tp'); _lyrSetMode('tp', 'view'); }
 }
 
 function renderStructureTabList() {
@@ -3870,11 +3874,11 @@ async function deleteFeatherImage(id) {
 /* ── Write Lyrics from Feathers ─────────────────────────── */
 async function openLyricsWriter() {
   if (!S.songs?.length) { showLoading('Loading…'); await loadSongs(); hideLoading(); }
-  const tracks = S.songs.filter(s => !s.type || s.type === 'track').map(s => s.name);
-  const eggs   = S.songs.filter(s => s.type === 'egg').map(s => s.name);
-  const options = [...tracks, ...eggs, '𓅣 New Egg'];
+  const tracks = S.songs.filter(s => !s.type || s.type === 'track').map(s => s.name).filter(Boolean);
+  const eggs   = S.songs.filter(s => s.type === 'egg').map(s => s.name).filter(Boolean);
+  const options = [...tracks, ...(eggs.length ? ['── Eggs ──', ...eggs] : []), '𓅣 New Egg'];
   const picked = await _simplePickerModal('Add lyrics to…', options, null);
-  if (!picked) return;
+  if (!picked || picked.startsWith('──')) return;
   let songName = picked;
   if (picked === '𓅣 New Egg') {
     songName = await new Promise(resolve => {
@@ -3908,6 +3912,8 @@ async function openLyricsWriter() {
   if (idx < 0) return;
   await openSong(songName, idx);
   tpSwitchTab('lyrics');
+  _lyrSetMode('tp', 'edit');
+  setTimeout(() => $('tp-lyrics-text')?.focus(), 80);
 }
 
 /* ── Feathers lyrics list ────────────────────────────── */
@@ -5199,6 +5205,11 @@ function _stopSnipPlayMetro() {
 }
 
 /* ── TRACK PAGE LYRICS AUTOSCROLL ───────────────────────── */
+function tpLyricsViewMode() {
+  _lyrRender('tp');
+  _lyrSetMode('tp', 'view');
+}
+
 function tpLyricsEditMode() {
   if (_lyricsScrollOn) { _lyricsScrollOn = false; cancelAnimationFrame(_lyricsScrollRaf); _lyricsScrollRaf = null; $('tp-lyrics-scroll-btn')?.classList.remove('on'); }
   _lyrSetMode('tp', 'edit');
@@ -5224,7 +5235,7 @@ function tpLyricsSpeedChanged() {}
 function _lyricsScrollLoop() {
   const view = $('tp-lyrics-view');
   if (!view || !_lyricsScrollOn) return;
-  const speed = parseFloat($('tp-lyrics-speed')?.value || 25) / 600;
+  const speed = parseFloat($('tp-lyrics-speed')?.value || 25) / 10;
   view.scrollTop += speed;
   if (view.scrollTop >= view.scrollHeight - view.clientHeight) {
     _lyricsScrollOn = false; $('tp-lyrics-scroll-btn')?.classList.remove('on'); return;
@@ -5364,7 +5375,7 @@ function lyrPanelAutoToggle() {
 function _lyrPanelScrollLoop() {
   if (!_lyrPanelScrollOn) return;
   const view = $('lyr-panel-view');
-  const speed = parseFloat($('lyr-panel-speed')?.value || 25) / 600;
+  const speed = parseFloat($('lyr-panel-speed')?.value || 25) / 10;
   view.scrollTop += speed;
   if (view.scrollTop >= view.scrollHeight - view.clientHeight) {
     _lyrPanelScrollOn = false; $('lyr-panel-auto-btn')?.classList.remove('on'); return;
