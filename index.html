@@ -311,11 +311,25 @@ header {
 .an-snip-del-reveal { position:absolute; right:0; top:0; bottom:0; width:60px; display:flex; align-items:center; justify-content:center; background:var(--c-accent); color:var(--c-text); font-size:20px; opacity:0; pointer-events:none; }
 .an-snip-del-confirm { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(196,69,54,0.92); color:var(--c-text); font-family:var(--f-mono); font-size:11px; gap:10px; z-index:5; opacity:0; pointer-events:none; transition:opacity 0.15s; }
 .an-snip-del-confirm.show { opacity:1; pointer-events:auto; }
-/* shared always-visible annotation bar (track page lyrics tab) */
+/* shared lyrics annotation/scroll bars (track page lyrics tab + lyr-panel) */
 .lyr-ann-bar { display:flex; align-items:center; gap:8px; padding:8px 12px; border-top:1px solid var(--c-border); background:var(--c-surface); flex-shrink:0; }
 .lyr-ann-btn { font-family:var(--f-mono); font-size:10px; padding:5px 10px; border:1px solid var(--c-border); border-radius:5px; background:none; color:var(--c-teal-pale); cursor:pointer; white-space:nowrap; user-select:none; }
 .lyr-ann-btn:hover { border-color:var(--c-teal-pale); color:var(--c-text); }
 .lyr-ann-btn.hl { border-color:var(--c-amber); color:var(--c-amber); }
+/* Lyrics panel (Feathers overlay) */
+.lyr-panel { position:fixed; inset:0; z-index:300; flex-direction:column; background:var(--c-bg); display:none; }
+.lyr-panel.open { display:flex; }
+.lyr-panel-nav { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--c-surface); border-bottom:1px solid var(--c-border); flex-shrink:0; }
+.lyr-panel-title { flex:1; font-family:var(--f-display); font-size:15px; font-weight:600; }
+.lyr-panel-ta { flex:1; min-height:0; background:transparent; border:none; resize:none; outline:none; color:var(--c-text); font-family:var(--f-sans); font-size:13px; line-height:1.8; padding:12px 14px; width:100%; box-sizing:border-box; }
+.lyr-panel-view { flex:1; overflow-y:auto; padding:12px 14px; font-family:var(--f-sans); font-size:13px; line-height:1.8; color:var(--c-text); white-space:pre-wrap; display:none; }
+.lyr-panel-view.active { display:block; }
+.lyr-panel-ta.hidden { display:none; }
+.lyr-scroll-bar { display:flex; align-items:center; gap:10px; padding:8px 14px; border-top:1px solid var(--c-border); background:var(--c-surface); flex-shrink:0; }
+.lyr-scroll-btn { font-family:var(--f-mono); font-size:9px; padding:4px 10px; border:1px solid var(--c-border); border-radius:5px; background:none; color:var(--c-teal-pale); cursor:pointer; white-space:nowrap; user-select:none; flex-shrink:0; }
+.lyr-scroll-btn.on { border-color:var(--c-amber-lt); color:var(--c-amber-lt); background:rgba(232,169,106,0.1); }
+.lyr-speed { flex:1; -webkit-appearance:none; height:3px; border-radius:2px; background:var(--c-border); outline:none; cursor:pointer; }
+.lyr-speed::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--c-amber); cursor:pointer; }
 
 /* lyrics annotation bar */
 .tp-lyric-ann-bar { display:none; align-items:center; gap:8px; padding:8px 12px; background:var(--c-surface); border-top:1px solid var(--c-border); flex-shrink:0; }
@@ -587,17 +601,11 @@ header {
 /* snippet metro playback icon */
 .tp-snip-metro-icon { font-size:13px; color:var(--c-border); cursor:pointer; flex-shrink:0; user-select:none; padding:2px; transition:color 0.15s; }
 .tp-snip-metro-icon.on { color:var(--c-amber-lt); }
-/* lyrics autoscroll */
+/* lyrics widget (track page tab + lyr-panel) */
 .tp-lyrics-wrap { display:flex; flex-direction:column; flex:1; min-height:0; }
 .tp-lyrics-view { flex:1; overflow-y:auto; padding:12px 14px; font-family:var(--f-sans); font-size:13px; line-height:1.8; color:var(--c-text); white-space:pre-wrap; display:none; }
 .tp-lyrics-view.active { display:block; }
 .tp-lyrics-text.hidden { display:none; }
-.tp-lyrics-scroll-bar { flex-shrink:0; display:none; align-items:center; gap:10px; padding:8px 14px; border-top:1px solid var(--c-border); background:var(--c-surface); }
-.tp-lyrics-scroll-bar.visible { display:flex; }
-.tp-lyrics-scroll-btn { font-family:var(--f-mono); font-size:9px; padding:4px 10px; border:1px solid var(--c-border); border-radius:5px; background:none; color:var(--c-teal-pale); cursor:pointer; white-space:nowrap; user-select:none; flex-shrink:0; }
-.tp-lyrics-scroll-btn.on { border-color:var(--c-amber-lt); color:var(--c-amber-lt); background:rgba(232,169,106,0.1); }
-.tp-lyrics-speed { flex:1; -webkit-appearance:none; height:3px; border-radius:2px; background:var(--c-border); outline:none; cursor:pointer; }
-.tp-lyrics-speed::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--c-amber); cursor:pointer; }
 /* tabs list */
 .tp-tabs-list { padding:0; }
 .tp-tab-entry { border-bottom:1px solid var(--c-border); }
@@ -876,14 +884,13 @@ body.tab-view #tab-view-close { display:flex; }
                         placeholder="Add lyrics, chords…"
                         oninput="tpNotesChanged()"></textarea>
               <div class="tp-lyric-tooltip" id="tp-lyric-tooltip"></div>
-              <div class="tp-lyrics-scroll-bar" id="tp-lyrics-scroll-bar">
-                <button class="tp-lyrics-scroll-btn" id="tp-lyrics-scroll-btn" onclick="tpLyricsScrollToggle()">⟳ Auto</button>
-                <input type="range" class="tp-lyrics-speed" id="tp-lyrics-speed" min="1" max="100" value="25" oninput="tpLyricsSpeedChanged()">
-                <button class="tp-lyrics-scroll-btn" id="tp-lyrics-edit-btn" onclick="tpLyricsEditMode()" style="margin-left:auto">✏ Edit</button>
-              </div>
             </div>
-            <!-- Always-visible annotation bar for track page lyrics tab -->
-            <div class="lyr-ann-bar" id="tp-lyr-ann-bar">
+            <div class="lyr-scroll-bar" id="tp-lyrics-scroll-bar">
+              <button class="lyr-scroll-btn" id="tp-lyrics-scroll-btn" onclick="tpLyricsScrollToggle()">⟳ Auto</button>
+              <input type="range" class="lyr-speed" id="tp-lyrics-speed" min="1" max="100" value="25" oninput="tpLyricsSpeedChanged()">
+              <button class="lyr-scroll-btn" id="tp-lyrics-edit-btn" onclick="tpLyricsEditMode()" style="margin-left:auto">✏ Edit</button>
+            </div>
+            <div class="lyr-ann-bar">
               <button class="lyr-ann-btn hl" onclick="lyrAnnotate('highlight','tp')">Highlight</button>
               <button class="lyr-ann-btn"    onclick="lyrAnnotate('note','tp')">Add Note</button>
               <button class="lyr-ann-btn"    onclick="lyrAnnotate('snippet','tp')">Add Snippet</button>
@@ -1142,6 +1149,27 @@ body.tab-view #tab-view-close { display:flex; }
 
 </div>
 
+<!-- ── LYRICS PANEL (Feathers overlay) ── -->
+<div class="lyr-panel" id="lyr-panel">
+  <div class="lyr-panel-nav">
+    <button class="back-btn" onclick="lyrPanelClose()">✕</button>
+    <div class="lyr-panel-title" id="lyr-panel-title">Lyrics</div>
+    <button class="lyr-scroll-btn" id="lyr-panel-view-btn" onclick="lyrPanelToggleView()">👁 View</button>
+  </div>
+  <div id="lyr-panel-view" class="lyr-panel-view" onclick="_lyricsHandleViewClick(event,'panel',$('lyr-panel-tooltip'))"></div>
+  <textarea id="lyr-panel-ta" class="lyr-panel-ta" placeholder="Add lyrics, chords…"
+            oninput="lyrPanelChanged()"></textarea>
+  <div class="tp-lyric-tooltip" id="lyr-panel-tooltip"></div>
+  <div class="lyr-scroll-bar">
+    <button class="lyr-scroll-btn" id="lyr-panel-auto-btn" onclick="lyrPanelAutoToggle()">⟳ Auto</button>
+    <input type="range" class="lyr-speed" id="lyr-panel-speed" min="1" max="100" value="25">
+  </div>
+  <div class="lyr-ann-bar">
+    <button class="lyr-ann-btn hl" onclick="lyrAnnotate('highlight','panel')">Highlight</button>
+    <button class="lyr-ann-btn"    onclick="lyrAnnotate('note','panel')">Add Note</button>
+    <button class="lyr-ann-btn"    onclick="lyrAnnotate('snippet','panel')">Add Snippet</button>
+  </div>
+</div>
 
 <!-- ── PLAYER BAR ── -->
 <div id="player-bar">
@@ -2537,7 +2565,7 @@ function tpSwitchTab(tab) {
   if (tab === 'structure') { renderPinnedStruct(); renderStructureTabList(); }
   if (tab === 'notes') _renderNoteImages();
   if (tab === 'tabs') renderSongTabsData();
-  if (tab === 'lyrics') { $('tp-lyrics-scroll-bar')?.classList.add('visible'); _lyricsCtx.songName = S.tp.songName; _lyrRender('tp'); }
+  if (tab === 'lyrics') { _lyricsCtx.songName = S.tp.songName; _lyrRender('tp'); }
 }
 
 function renderStructureTabList() {
@@ -3890,7 +3918,7 @@ function renderAnLyricsList() {
     row.style.cssText = 'padding:10px 16px;border-bottom:1px solid var(--c-border)';
     row.innerHTML = `<div style="font-family:var(--f-display);font-size:14px;font-weight:600;color:var(--c-text);margin-bottom:4px">${song.name}</div>
       <div style="font-family:var(--f-sans);font-size:12px;color:var(--c-teal-pale);white-space:pre-wrap;max-height:80px;overflow:hidden;position:relative">${song.notes}</div>`;
-    row.onclick = async () => { const idx = S.songs.findIndex(s => s.name === song.name); if (idx >= 0) { await openSong(song.name, idx); tpSwitchTab('lyrics'); } };
+    row.onclick = () => lyrPanelOpen(song.name);
     el.appendChild(row);
   });
 }
@@ -5163,9 +5191,9 @@ function _stopSnipPlayMetro() {
   _snipPlayMetro.on = false;
 }
 
-/* ── LYRICS AUTOSCROLL ──────────────────────────────────── */
+/* ── TRACK PAGE LYRICS AUTOSCROLL ───────────────────────── */
 function tpLyricsEditMode() {
-  if (_lyricsScrollOn) tpLyricsScrollToggle(); // turn off autoscroll first
+  if (_lyricsScrollOn) tpLyricsScrollToggle();
   $('tp-lyrics-view')?.classList.remove('active');
   $('tp-lyrics-text')?.classList.remove('hidden');
   $('tp-lyrics-text')?.focus();
@@ -5174,13 +5202,11 @@ function tpLyricsEditMode() {
 function tpLyricsScrollToggle() {
   _lyricsScrollOn = !_lyricsScrollOn;
   const btn = $('tp-lyrics-scroll-btn');
-  const bar = $('tp-lyrics-scroll-bar');
   const view = $('tp-lyrics-view');
   const ta   = $('tp-lyrics-text');
   btn?.classList.toggle('on', _lyricsScrollOn);
-  if (bar) bar.classList.toggle('visible', true); // always show bar once used
   if (_lyricsScrollOn) {
-    _renderLyricsAnnotated();
+    _lyrRender('tp');
     view.classList.add('active');
     ta.classList.add('hidden');
     view.scrollTop = 0;
@@ -5197,13 +5223,10 @@ function tpLyricsSpeedChanged() {}
 function _lyricsScrollLoop() {
   const view = $('tp-lyrics-view');
   if (!view || !_lyricsScrollOn) return;
-  const speed = parseFloat($('tp-lyrics-speed')?.value || 25);
-  const pxPerFrame = speed / 600;
-  view.scrollTop += pxPerFrame;
+  const speed = parseFloat($('tp-lyrics-speed')?.value || 25) / 600;
+  view.scrollTop += speed;
   if (view.scrollTop >= view.scrollHeight - view.clientHeight) {
-    _lyricsScrollOn = false;
-    $('tp-lyrics-scroll-btn')?.classList.remove('on');
-    return;
+    _lyricsScrollOn = false; $('tp-lyrics-scroll-btn')?.classList.remove('on'); return;
   }
   _lyricsScrollRaf = requestAnimationFrame(_lyricsScrollLoop);
 }
@@ -5243,114 +5266,146 @@ async function deleteTabFromTrack(id) {
 }
 
 /* ── LYRICS SCREEN (standalone, opened from Feathers) ───── */
-let _lyricsCtx = { songName: null, fromScreen: 'screen-addnotes', editing: false };
+/* ── LYRICS widget — shared by track page tab ('tp') and lyr-panel ('panel') ── */
+let _lyricsCtx = { songName: null };
 let _pendingAnnSnip = null;
 
-function openLyricsScreen(songName, fromScreen) {
-  _lyricsCtx.songName   = songName;
-  _lyricsCtx.fromScreen = fromScreen || 'screen-addnotes';
-  _lyricsCtx.editing    = false;
+/* element maps by context */
+const _LYR = {
+  tp:    { taId: 'tp-lyrics-text',  viewId: 'tp-lyrics-view',  ttId: 'tp-lyric-tooltip' },
+  panel: { taId: 'lyr-panel-ta',    viewId: 'lyr-panel-view',  ttId: 'lyr-panel-tooltip' },
+};
+
+/* ── lyr-panel (Feathers overlay) ────────────────────── */
+let _lyrPanelScrollOn = false, _lyrPanelScrollRaf = null;
+
+function lyrPanelOpen(songName) {
+  _lyricsCtx.songName = songName;
   const songEntry = S.songs.find(s => s.name === songName);
-  $('lyr-nav-title').textContent = songName;
-  $('lyr-edit-ta').value = songEntry?.notes || '';
-  $('lyr-edit-ta').style.display = 'none';
-  $('lyr-edit-toggle').textContent = '✏ Edit';
-  _lyrRender();
-  showScreen('screen-lyrics');
+  $('lyr-panel-title').textContent = songName;
+  // Always open in edit mode
+  const ta = $('lyr-panel-ta');
+  const view = $('lyr-panel-view');
+  ta.value = songEntry?.notes || '';
+  ta.classList.remove('hidden');
+  view.classList.remove('active');
+  $('lyr-panel-view-btn').textContent = '👁 View';
+  if (_lyrPanelScrollOn) { _lyrPanelScrollOn = false; cancelAnimationFrame(_lyrPanelScrollRaf); $('lyr-panel-auto-btn')?.classList.remove('on'); }
+  $('lyr-panel').classList.add('open');
+  setTimeout(() => ta.focus(), 50);
 }
 
-function closeLyricsScreen() {
-  if (_lyricsCtx.editing) lyrSaveEdits();
-  showScreen(_lyricsCtx.fromScreen);
+function lyrPanelClose() {
+  _lyrPanelSave();
+  if (_lyrPanelScrollOn) { _lyrPanelScrollOn = false; cancelAnimationFrame(_lyrPanelScrollRaf); }
+  $('lyr-panel').classList.remove('open');
 }
 
-function lyrToggleEdit() {
-  _lyricsCtx.editing = !_lyricsCtx.editing;
-  const view = $('lyr-view');
-  const ta   = $('lyr-edit-ta');
-  const btn  = $('lyr-edit-toggle');
-  if (_lyricsCtx.editing) {
-    view.style.display = 'none';
-    ta.style.display   = 'block';
-    btn.textContent    = '👁 View';
+function lyrPanelToggleView() {
+  const ta = $('lyr-panel-ta');
+  const view = $('lyr-panel-view');
+  const btn = $('lyr-panel-view-btn');
+  if (view.classList.contains('active')) {
+    // switch to edit
+    _lyrPanelSave();
+    view.classList.remove('active');
+    ta.classList.remove('hidden');
+    btn.textContent = '👁 View';
     ta.focus();
   } else {
-    lyrSaveEdits();
-    view.style.display = '';
-    ta.style.display   = 'none';
-    btn.textContent    = '✏ Edit';
-    _lyrRender();
+    // switch to view
+    _lyrPanelSave();
+    _lyrRender('panel');
+    ta.classList.add('hidden');
+    view.classList.add('active');
+    btn.textContent = '✏ Edit';
   }
 }
 
-function lyrEditChanged() {
-  // live-save debounced
-  clearTimeout(_lyricsCtx._saveTimer);
-  _lyricsCtx._saveTimer = setTimeout(lyrSaveEdits, 1500);
+function lyrPanelChanged() {
+  clearTimeout(_lyricsCtx._panelTimer);
+  _lyricsCtx._panelTimer = setTimeout(_lyrPanelSave, 1500);
 }
 
-async function lyrSaveEdits() {
-  clearTimeout(_lyricsCtx._saveTimer);
+async function _lyrPanelSave() {
+  clearTimeout(_lyricsCtx._panelTimer);
   const idx = S.songs.findIndex(s => s.name === _lyricsCtx.songName);
   if (idx < 0) return;
-  const val = $('lyr-edit-ta')?.value ?? '';
+  const val = $('lyr-panel-ta')?.value ?? '';
   if (S.songs[idx].notes === val) return;
   S.songs[idx].notes = val;
-  try { await saveSongsJson(); } catch(e) { console.warn('lyrSaveEdits:', e); }
+  try { await saveSongsJson(); renderAnLyricsList(); } catch(e) { console.warn('lyrPanelSave:', e); }
 }
 
+function lyrPanelAutoToggle() {
+  _lyrPanelScrollOn = !_lyrPanelScrollOn;
+  const btn = $('lyr-panel-auto-btn');
+  const view = $('lyr-panel-view');
+  const ta = $('lyr-panel-ta');
+  btn?.classList.toggle('on', _lyrPanelScrollOn);
+  if (_lyrPanelScrollOn) {
+    // switch to view mode for scrolling
+    _lyrPanelSave();
+    _lyrRender('panel');
+    ta.classList.add('hidden');
+    view.classList.add('active');
+    view.scrollTop = 0;
+    $('lyr-panel-view-btn').textContent = '✏ Edit';
+    _lyrPanelScrollLoop();
+  } else {
+    cancelAnimationFrame(_lyrPanelScrollRaf); _lyrPanelScrollRaf = null;
+  }
+}
+
+function _lyrPanelScrollLoop() {
+  if (!_lyrPanelScrollOn) return;
+  const view = $('lyr-panel-view');
+  const speed = parseFloat($('lyr-panel-speed')?.value || 25) / 600;
+  view.scrollTop += speed;
+  if (view.scrollTop >= view.scrollHeight - view.clientHeight) {
+    _lyrPanelScrollOn = false; $('lyr-panel-auto-btn')?.classList.remove('on'); return;
+  }
+  _lyrPanelScrollRaf = requestAnimationFrame(_lyrPanelScrollLoop);
+}
+
+/* ── render annotated view ───────────────────────────── */
 function _lyrRender(ctx) {
-  // ctx = 'tp' (track page tab) or 'lyr' (screen-lyrics) or auto-detect
-  const isTp  = ctx === 'tp' || (!ctx && document.querySelector('#screen-track.active'));
-  const viewEl = isTp ? $('tp-lyrics-view') : $('lyr-view');
-  const taEl   = isTp ? $('tp-lyrics-text') : $('lyr-edit-ta');
-  const songName = isTp ? S.tp.songName : _lyricsCtx.songName;
+  const el = _LYR[ctx] || _LYR.tp;
+  const viewEl = $(el.viewId);
+  const taEl   = $(el.taId);
+  const songName = ctx === 'tp' ? S.tp.songName : _lyricsCtx.songName;
   if (!viewEl) return;
   const songEntry = S.songs.find(s => s.name === songName);
   const text = taEl?.value || songEntry?.notes || '';
   const anns = (songEntry?.lyricsAnnotations || []).slice().sort((a,b) => a.start - b.start);
-  const escaped = t => t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  if (!anns.length) { viewEl.innerHTML = escaped(text).replace(/\n/g,'<br>'); return; }
+  const esc = t => t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if (!anns.length) { viewEl.innerHTML = esc(text).replace(/\n/g,'<br>'); return; }
   let result = '', pos = 0;
   const pts = new Set(); anns.forEach(a => { pts.add(a.start); pts.add(a.end); });
-  const sorted = [...pts].sort((a,b)=>a-b);
-  for (let i = 0; i < sorted.length - 1; i++) {
-    const s = sorted[i], e = sorted[i+1];
-    if (pos < s) { result += escaped(text.slice(pos, s)); pos = s; }
-    const covering = anns.find(a => a.start <= s && a.end >= e);
-    if (covering) {
-      const cls = covering.type === 'note' ? 'lyr-note' : covering.type === 'snippet' ? 'lyr-snip' : 'lyr-hl';
-      result += `<span class="${cls}" data-ann-id="${covering.id}">${escaped(text.slice(s,e))}</span>`;
+  [...pts].sort((a,b)=>a-b).forEach((p, i, arr) => {
+    if (i === arr.length - 1) return;
+    const s = p, e = arr[i+1];
+    if (pos < s) { result += esc(text.slice(pos, s)); pos = s; }
+    const cov = anns.find(a => a.start <= s && a.end >= e);
+    if (cov) {
+      const cls = cov.type === 'note' ? 'lyr-note' : cov.type === 'snippet' ? 'lyr-snip' : 'lyr-hl';
+      result += `<span class="${cls}" data-ann-id="${cov.id}">${esc(text.slice(s,e))}</span>`;
       pos = e;
     }
-  }
-  if (pos < text.length) result += escaped(text.slice(pos));
+  });
+  if (pos < text.length) result += esc(text.slice(pos));
   viewEl.innerHTML = result.replace(/\n/g,'<br>');
-  // Show view, hide textarea (only for track page tab — screen-lyrics manages its own state)
-  if (isTp) {
-    viewEl.classList.add('active');
-    taEl?.classList.add('hidden');
-    $('tp-lyrics-scroll-bar')?.classList.add('visible');
-  }
 }
 
-function _renderLyricsAnnotated() { _lyrRender('tp'); } // keep old name for callers
+function _renderLyricsAnnotated() { _lyrRender('tp'); }
 
-/* Unified annotation entry point — ctx: 'tp' | 'lyr' */
+/* ── annotations ─────────────────────────────────────── */
 function lyrAnnotate(type, ctx) {
-  const isTp = ctx === 'tp';
-  const songName = isTp ? S.tp.songName : _lyricsCtx.songName;
+  const el = _LYR[ctx] || _LYR.tp;
+  const songName = ctx === 'tp' ? S.tp.songName : _lyricsCtx.songName;
   if (!songName) return;
-  // Get selection from the appropriate textarea
-  const taId = isTp ? 'tp-lyrics-text' : 'lyr-edit-ta';
-  const ta = $(taId);
-  if (!ta) return;
-  // If in view mode on screen-lyrics, switch to edit first
-  if (!isTp && !_lyricsCtx.editing) {
-    lyrToggleEdit();
-    showToast('Select text then tap the button again');
-    return;
-  }
+  const ta = $(el.taId);
+  if (!ta || ta.classList.contains('hidden')) { showToast('Tap ✏ Edit first, then select text'); return; }
   const start = Math.min(ta.selectionStart, ta.selectionEnd);
   const end   = Math.max(ta.selectionStart, ta.selectionEnd);
   if (start === end) { showToast('Select some text first'); return; }
@@ -5365,12 +5420,10 @@ function lyrAnnotate(type, ctx) {
   }
 }
 
-/* Keep old name used by track page autoscroll toggle */
 function tpLyricsAnnotate(type) { lyrAnnotate(type, 'tp'); }
 
 async function _saveLyricsAnnotation(ann, songName, ctx) {
-  const name = songName || (ctx === 'tp' ? S.tp.songName : _lyricsCtx.songName);
-  const idx = S.songs.findIndex(s => s.name === name);
+  const idx = S.songs.findIndex(s => s.name === songName);
   if (idx < 0) return;
   const entry = { id: 'ann_' + Date.now().toString(36), ...ann };
   if (!S.songs[idx].lyricsAnnotations) S.songs[idx].lyricsAnnotations = [];
@@ -5379,14 +5432,14 @@ async function _saveLyricsAnnotation(ann, songName, ctx) {
   _lyrRender(ctx || 'tp');
 }
 
-function tpLyricsViewClick(e)  { _lyricsHandleViewClick(e, 'tp', $('tp-lyric-tooltip')); }
-function lyrViewClick(e)        { _lyricsHandleViewClick(e, 'lyr', $('lyr-tooltip')); }
-function _lyricsHandleViewClick(e, ctx, tt) {
+function tpLyricsViewClick(e) { _lyricsHandleViewClick(e, 'tp'); }
+function _lyricsHandleViewClick(e, ctx) {
+  const el = _LYR[ctx] || _LYR.tp;
+  const tt = $(el.ttId);
   const annId = e.target.dataset?.annId;
   if (!annId || !tt) { tt?.classList.remove('visible'); return; }
   const songName = ctx === 'tp' ? S.tp.songName : _lyricsCtx.songName;
-  const songEntry = S.songs.find(s => s.name === songName);
-  const ann = songEntry?.lyricsAnnotations?.find(a => a.id === annId);
+  const ann = S.songs.find(s => s.name === songName)?.lyricsAnnotations?.find(a => a.id === annId);
   if (!ann) return;
   if (ann.type === 'note') {
     tt.textContent = ann.note || '';
