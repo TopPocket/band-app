@@ -893,7 +893,7 @@ body.tab-view #tab-view-close { display:flex; }
             <div class="tp-lyric-tooltip" id="tp-lyric-tooltip"></div>
             <div class="lyr-scroll-bar hidden" id="tp-lyrics-scroll-bar">
               <button class="lyr-scroll-btn" id="tp-lyrics-scroll-btn" onclick="tpLyricsScrollToggle()">⟳ Auto</button>
-              <input type="range" class="lyr-speed" id="tp-lyrics-speed" min="1" max="100" value="25" oninput="tpLyricsSpeedChanged()">
+              <input type="range" class="lyr-speed" id="tp-lyrics-speed" min="1" max="1000" value="250" oninput="tpLyricsSpeedChanged()">
               <button class="lyr-scroll-btn" id="tp-lyrics-edit-btn" onclick="tpLyricsEditMode()" style="margin-left:auto">✏ Edit</button>
             </div>
             <div class="lyr-ann-bar" id="tp-lyrics-ann-bar">
@@ -1173,7 +1173,7 @@ body.tab-view #tab-view-close { display:flex; }
   <div class="tp-lyric-tooltip" id="lyr-panel-tooltip"></div>
   <div class="lyr-scroll-bar hidden" id="lyr-panel-scroll-bar">
     <button class="lyr-scroll-btn" id="lyr-panel-auto-btn" onclick="lyrPanelAutoToggle()">⟳ Auto</button>
-    <input type="range" class="lyr-speed" id="lyr-panel-speed" min="1" max="100" value="25">
+    <input type="range" class="lyr-speed" id="lyr-panel-speed" min="1" max="1000" value="250">
   </div>
   <div class="lyr-ann-bar" id="lyr-panel-ann-bar">
     <button class="lyr-ann-btn hl" onclick="lyrAnnotate('highlight','panel')">Highlight</button>
@@ -3915,12 +3915,13 @@ async function openLyricsWriter() {
     S.songs.push(ne);
     await saveSongsJson();
   }
-  const idx = S.songs.findIndex(s => s.name === songName);
-  if (idx < 0) return;
-  await openSong(songName, idx);
-  tpSwitchTab('lyrics');
-  _lyrSetMode('tp', 'edit');
-  setTimeout(() => $('tp-lyrics-text')?.focus(), 80);
+  if (!S.songs.find(s => s.name === songName)) return;
+  lyrPanelOpen(songName);
+  setTimeout(() => {
+    _lyrSetMode('panel', 'edit');
+    $('lyr-panel-view-btn').textContent = '👁 View';
+    $('lyr-panel-ta').focus();
+  }, 30);
 }
 
 /* ── Feathers lyrics list ────────────────────────────── */
@@ -5300,7 +5301,7 @@ function tpLyricsSpeedChanged() {}
 function _lyricsScrollLoop() {
   const view = $('tp-lyrics-view');
   if (!view || !_lyricsScrollOn) return;
-  const speed = parseFloat($('tp-lyrics-speed')?.value || 25) / 80;
+  const speed = parseFloat($('tp-lyrics-speed')?.value || 250) / 800;
   view.scrollTop += speed;
   if (view.scrollTop >= view.scrollHeight - view.clientHeight) {
     _lyricsScrollOn = false; $('tp-lyrics-scroll-btn')?.classList.remove('on'); return;
@@ -5440,7 +5441,7 @@ function lyrPanelAutoToggle() {
 function _lyrPanelScrollLoop() {
   if (!_lyrPanelScrollOn) return;
   const view = $('lyr-panel-view');
-  const speed = parseFloat($('lyr-panel-speed')?.value || 25) / 80;
+  const speed = parseFloat($('lyr-panel-speed')?.value || 250) / 800;
   view.scrollTop += speed;
   if (view.scrollTop >= view.scrollHeight - view.clientHeight) {
     _lyrPanelScrollOn = false; $('lyr-panel-auto-btn')?.classList.remove('on'); return;
