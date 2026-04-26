@@ -220,13 +220,26 @@ header {
 .song-card.egg-card .song-card-name { color: var(--c-text-dim); }
 
 /* ══ TRACK DETAIL ══ */
-#screen-track { overflow-y: auto; overflow-x: hidden; }
-.tp-body {
-  flex: 1; min-height: 0; overflow: hidden;
-  display: flex; flex-direction: column;
+#screen-track { overflow: hidden; }
+.tp-body { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+/* ── wave sheet (draggable bottom panel) ── */
+#tp-wave-sheet {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  height: var(--wave-sheet-h, 162px);
+  z-index: 20; background: var(--c-bg);
+  border-top: 2px solid var(--c-border);
+  display: flex; flex-direction: column; overflow: hidden;
 }
-/* controls + waveform always at bottom — flex child, not sticky */
-.tp-player-sticky { flex-shrink: 0; z-index: 5; background: var(--c-bg); }
+#tp-wave-sheet.ws-snap { transition: height 0.25s cubic-bezier(0.4,0,0.2,1); }
+.tp-wave-handle {
+  flex-shrink: 0; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--c-surface); border-bottom: 1px solid var(--c-border);
+  cursor: row-resize; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.tp-wave-handle-pip { width: 40px; height: 4px; border-radius: 2px; background: var(--c-border); }
+.tp-wave-sheet-fixed { flex-shrink: 0; }
+.tp-wave-sheet-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 /* ── tab bar ── */
 .tp-tabs-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .tp-tabs-bar { flex-shrink: 0; display: flex; overflow-x: auto; background: var(--c-surface2); border-bottom: 1px solid var(--c-amber-lt); scrollbar-width: none; padding: 0 4px; }
@@ -239,6 +252,7 @@ header {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   display: flex; flex-direction: column;
+  padding-bottom: var(--wave-fixed-h, 162px);
 }
 .tp-tabcontent { display: none; }
 .tp-tabcontent.active { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; }
@@ -398,7 +412,7 @@ header {
 }
 #tp-waveform-canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
 .tp-wave-time {
-  position: absolute; bottom: 3px; right: 8px;
+  position: absolute; bottom: 3px; left: 8px;
   font-family: var(--f-mono); font-size: 9px; color: rgba(46,70,68,0.9); pointer-events: none;
 }
 /* comments section */
@@ -458,23 +472,17 @@ header {
 
 /* ══ PC LAYOUT (≥768px) ══ */
 @media (min-width: 768px) {
-  #screen-track { overflow: hidden; }
-  .tp-body {
-    min-height: unset; overflow: hidden;
-    display: grid;
-    height: calc(100vh - 94px);
-    grid-template-columns: 260px 1fr;
-    grid-template-rows: 120px minmax(0,1fr);
-    grid-template-areas:
-      "tabs waveform"
-      "tabs controls";
-  }
-  .tp-tabs-wrap { grid-area: tabs; border-bottom: none; border-right: 1px solid var(--c-border); flex: unset; overflow: hidden; display: flex; flex-direction: column; }
-  .tp-tab-panel { flex: 1; max-height: none; overflow-y: auto; min-height: 0; overscroll-behavior-y: auto; }
+  #screen-track { overflow: hidden; display: flex; flex-direction: row; }
+  .tp-body { width: 280px; min-width: 280px; flex: unset; border-right: 1px solid var(--c-border); }
+  .tp-tab-panel { padding-bottom: 0; }
   .tp-tabcontent.active { min-height: unset; }
-  .tp-player-sticky { display: contents; }
-  .tp-controls { grid-area: controls; overflow-y: auto; }
-  .tp-waveform-wrap { grid-area: waveform; height: auto; border-bottom: 1px solid var(--c-border); }
+  #tp-wave-sheet {
+    position: static; flex: 1; height: auto !important;
+    border-top: none; border-left: 1px solid var(--c-border);
+    transition: none !important;
+  }
+  .tp-wave-handle { display: none; }
+  .tp-wave-sheet-scroll { overflow-y: auto; }
   .tp-comments-section { border-top: 1px solid var(--c-border); }
 }
 
@@ -876,11 +884,6 @@ body.tab-view #tab-view-close { display:flex; }
         <div class="tp-tab-panel" id="tp-tab-panel">
           <div class="tp-tabcontent active" id="tp-tabcontent-recordings">
             <div id="tp-versions-body"></div>
-            <!-- comments below versions list; scroll down to reveal -->
-            <div class="tp-comments-section" id="tp-comments-section">
-              <div class="tp-comments-title">Comments</div>
-              <div id="tp-comments-body"></div>
-            </div>
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-lyrics">
             <div class="tp-lyrics-wrap">
@@ -929,8 +932,17 @@ body.tab-view #tab-view-close { display:flex; }
         </div>
       </div>
 
-      <!-- controls + waveform: sticky at bottom on mobile -->
-      <div class="tp-player-sticky">
+    </div><!-- end tp-body -->
+
+    <!-- wave sheet: draggable bottom panel (controls + waveform + comments) -->
+    <div id="tp-wave-sheet">
+      <div class="tp-wave-handle"
+           ontouchstart="waveHandleDragStart(event)"
+           ontouchmove="waveHandleDragMove(event)"
+           ontouchend="waveHandleDragEnd(event)">
+        <div class="tp-wave-handle-pip"></div>
+      </div>
+      <div class="tp-wave-sheet-fixed">
         <div class="tp-controls">
           <button class="tp-ctrl-btn comment-btn" id="tp-ctrl-comment"
                   onmousedown="commentBtnDown()" onmouseup="commentBtnUp()"
@@ -942,7 +954,10 @@ body.tab-view #tab-view-close { display:flex; }
           <button class="tp-ctrl-btn tp-ctrl-skip" onclick="tpNextVersion()" title="Next version">⏭&#xFE0E;</button>
           <button class="tp-bpm-ctrl-btn" onclick="openBpmTapper('track')">BPM</button>
         </div>
-        <div class="tp-waveform-wrap">
+        <div class="tp-waveform-wrap"
+             ontouchstart="waveSheetTouchStart(event)"
+             ontouchmove="waveSheetTouchMove(event)"
+             ontouchend="waveHandleDragEnd(event)">
           <canvas id="tp-waveform-canvas"
                   onclick="waveSeek(event)"
                   onwheel="waveZoom(event)"
@@ -951,33 +966,41 @@ body.tab-view #tab-view-close { display:flex; }
           <div class="tp-wave-time" id="tp-wave-time">0:00 / —:——</div>
         </div>
         <div class="tp-bpm-tags-body" id="tp-bpm-tags-body"></div>
+        <!-- structure panel (shown when tapping ⬡ on a version) -->
+        <div id="tp-struct-panel">
+          <div id="tp-struct-bar-wrap">
+            <div id="tp-struct-bar" class="struct-bar mini"></div>
+          </div>
+          <div class="tp-struct-keyboard">
+            <button class="tp-struct-key" style="border-color:#4A9AA8;color:#4A9AA8" onclick="tpSePressKey('I')">I</button>
+            <button class="tp-struct-key" style="border-color:#C07840;color:#C07840" onclick="tpSePressKey('V')">V</button>
+            <button class="tp-struct-key" style="border-color:#D04848;color:#D04848" onclick="tpSePressKey('C')">C</button>
+            <button class="tp-struct-key" style="border-color:#5A9868;color:#5A9868" onclick="tpSePressKey('B')">B</button>
+            <button class="tp-struct-key" style="border-color:#7A90B8;color:#7A90B8" onclick="tpSePressKey('O')">O</button>
+            <button class="tp-struct-key" style="border-color:#9070A8;color:#9070A8" onclick="tpSePressKey('X')">X</button>
+            <button class="tp-struct-key" style="border-color:#C8B840;color:#C8B840" onclick="tpSePressKey('S')">S</button>
+            <button class="tp-struct-key-del" onclick="tpSeDeleteBar()">⌫</button>
+          </div>
+          <div id="tp-struct-actions">
+            <button class="tp-struct-act" style="background:var(--c-surface2);color:var(--c-teal-pale);border:1px solid var(--c-border)" onclick="tpStructCancel()">Cancel</button>
+            <button class="tp-struct-act" id="tp-struct-del-btn" style="background:var(--c-accent-dk);color:var(--c-accent);border:1px solid var(--c-accent);display:none" onclick="tpStructDelete()">Delete</button>
+            <button class="tp-struct-act" style="background:var(--c-teal);color:var(--c-text)" onclick="tpStructSave(false)">Save</button>
+            <button class="tp-struct-act" style="background:var(--c-accent);color:var(--c-text)" onclick="tpStructSave(true)">Save &amp; Pin</button>
+          </div>
+        </div>
       </div>
-
-      <!-- structure panel (shown when tapping ⬡ on a version) -->
-      <div id="tp-struct-panel">
-        <div id="tp-struct-bar-wrap">
-          <div id="tp-struct-bar" class="struct-bar mini"></div>
-        </div>
-        <div class="tp-struct-keyboard">
-          <button class="tp-struct-key" style="border-color:#4A9AA8;color:#4A9AA8" onclick="tpSePressKey('I')">I</button>
-          <button class="tp-struct-key" style="border-color:#C07840;color:#C07840" onclick="tpSePressKey('V')">V</button>
-          <button class="tp-struct-key" style="border-color:#D04848;color:#D04848" onclick="tpSePressKey('C')">C</button>
-          <button class="tp-struct-key" style="border-color:#5A9868;color:#5A9868" onclick="tpSePressKey('B')">B</button>
-          <button class="tp-struct-key" style="border-color:#7A90B8;color:#7A90B8" onclick="tpSePressKey('O')">O</button>
-          <button class="tp-struct-key" style="border-color:#9070A8;color:#9070A8" onclick="tpSePressKey('X')">X</button>
-          <button class="tp-struct-key" style="border-color:#C8B840;color:#C8B840" onclick="tpSePressKey('S')">S</button>
-          <button class="tp-struct-key-del" onclick="tpSeDeleteBar()">⌫</button>
-        </div>
-        <div id="tp-struct-actions">
-          <button class="tp-struct-act" style="background:var(--c-surface2);color:var(--c-teal-pale);border:1px solid var(--c-border)" onclick="tpStructCancel()">Cancel</button>
-          <button class="tp-struct-act" id="tp-struct-del-btn" style="background:var(--c-accent-dk);color:var(--c-accent);border:1px solid var(--c-accent);display:none" onclick="tpStructDelete()">Delete</button>
-          <button class="tp-struct-act" style="background:var(--c-teal);color:var(--c-text)" onclick="tpStructSave(false)">Save</button>
-          <button class="tp-struct-act" style="background:var(--c-accent);color:var(--c-text)" onclick="tpStructSave(true)">Save &amp; Pin</button>
+      <div class="tp-wave-sheet-scroll"
+           ontouchstart="waveScrollDragStart(event)"
+           ontouchmove="waveHandleDragMove(event)"
+           ontouchend="waveHandleDragEnd(event)">
+        <div class="tp-comments-section" id="tp-comments-section">
+          <div class="tp-comments-title">Comments</div>
+          <div id="tp-comments-body"></div>
         </div>
       </div>
-
     </div>
-  </div>
+
+  </div><!-- end screen-track -->
 
   <!-- ── SESSION DETAIL ── -->
   <div class="screen" id="screen-session">
@@ -1939,10 +1962,82 @@ async function goTracks() {
   if (S.songs.length === 0) await loadSongs();
 }
 
+/* ── WAVE SHEET (draggable bottom panel) ─────────────── */
+const _WS = { fixedH: 0, maxH: 0, curH: 0, drag: null };
+
+function initWaveSheet() {
+  requestAnimationFrame(() => {
+    const el = $('tp-wave-sheet');
+    if (!el) return;
+    const navH = document.querySelector('#screen-track .screen-nav')?.offsetHeight || 44;
+    const fixed = el.querySelector('.tp-wave-sheet-fixed');
+    const handleH = el.querySelector('.tp-wave-handle')?.offsetHeight || 18;
+    _WS.fixedH = handleH + (fixed?.offsetHeight || 144);
+    _WS.maxH = window.innerHeight - navH;
+    _wsSetH(_WS.fixedH, false);
+  });
+}
+
+function _wsSetH(h, animate) {
+  const el = $('tp-wave-sheet'); if (!el) return;
+  _WS.curH = Math.max(_WS.fixedH || 120, Math.min(_WS.maxH || window.innerHeight, h));
+  if (animate) {
+    el.classList.add('ws-snap');
+    setTimeout(() => el.classList.remove('ws-snap'), 280);
+  }
+  el.style.height = _WS.curH + 'px';
+  document.documentElement.style.setProperty('--wave-sheet-h', _WS.curH + 'px');
+  document.documentElement.style.setProperty('--wave-fixed-h', (_WS.fixedH || _WS.curH) + 'px');
+}
+
+function waveHandleDragStart(e) {
+  e.preventDefault();
+  const t = e.touches?.[0] || e;
+  _WS.drag = { startY: t.clientY, startH: _WS.curH };
+  $('tp-wave-sheet')?.classList.remove('ws-snap');
+}
+
+function waveHandleDragMove(e) {
+  if (!_WS.drag) return;
+  e.preventDefault();
+  const t = e.touches?.[0] || e;
+  _wsSetH(_WS.drag.startH + (_WS.drag.startY - t.clientY), false);
+}
+
+function waveHandleDragEnd() {
+  if (!_WS.drag) return;
+  const mid = _WS.fixedH + (_WS.maxH - _WS.fixedH) * 0.35;
+  _wsSetH(_WS.curH > mid ? _WS.maxH : _WS.fixedH, true);
+  _WS.drag = null;
+}
+
+function waveSheetTouchStart(e) {
+  if (e.touches.length !== 1) return;
+  _WS._wvTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY, dir: null };
+}
+
+function waveSheetTouchMove(e) {
+  if (!_WS._wvTouch) return;
+  const dx = Math.abs(e.touches[0].clientX - _WS._wvTouch.x);
+  const dy = e.touches[0].clientY - _WS._wvTouch.y;
+  if (!_WS._wvTouch.dir) _WS._wvTouch.dir = Math.abs(dy) > dx + 5 ? 'v' : 'h';
+  if (_WS._wvTouch.dir === 'v') {
+    if (!_WS.drag) waveHandleDragStart({ preventDefault(){}, touches: e.touches });
+    waveHandleDragMove(e);
+  }
+}
+
+function waveScrollDragStart(e) {
+  const scroll = e.currentTarget;
+  if (scroll.scrollTop > 0) return; // let it scroll normally
+  waveHandleDragStart(e);
+}
+
 function backToTracks() {
   S.tp.audio.pause();
   _stopSnipPlayMetro();
   document.querySelectorAll('.tp-snip-metro-icon').forEach(el => el.classList.remove('on'));
+  if (_WS.fixedH) _wsSetH(_WS.fixedH, false);
   showScreen('screen-tracks');
 }
 
@@ -2080,6 +2175,7 @@ async function openSong(songName, songIdx, isEgg = false) {
   S.tp.audio.pause();
 
   showScreen('screen-track');
+  initWaveSheet();
   $('tp-title').textContent = songName;
 
   // Show hatch button for eggs, nest button for hatched tracks
