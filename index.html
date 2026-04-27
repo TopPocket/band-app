@@ -221,14 +221,26 @@ header {
 
 /* ══ TRACK DETAIL ══ */
 #screen-track { overflow: hidden; }
-.tp-body { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.tp-body { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; padding-bottom: var(--wave-sheet-h, 162px); box-sizing: border-box; }
 /* ── wave sheet (draggable bottom panel) ── */
+#tp-right-col { display: contents; } /* transparent wrapper on mobile; right column on desktop */
 #tp-wave-sheet {
   position: fixed; left: 0; right: 0; bottom: 0;
   height: var(--wave-sheet-h, 162px);
-  z-index: 20; background: var(--c-bg);
+  z-index: 20; background: transparent;
   border-top: 2px solid var(--c-border);
-  display: flex; flex-direction: column; overflow: hidden;
+  display: flex; flex-direction: column; overflow: visible; pointer-events: none;
+}
+#tp-wave-sheet > * { pointer-events: auto; }
+/* Comments panel: fixed below the waveform's fixed section */
+#tp-comments-area {
+  display: block;
+  position: fixed; left: 0; right: 0; bottom: 0;
+  top: calc(100vh - var(--wave-sheet-h, 162px) + var(--wave-fixed-h, 162px));
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  background: var(--c-bg);
+  z-index: 18;
 }
 #tp-wave-sheet.ws-snap { transition: height 0.25s cubic-bezier(0.4,0,0.2,1); }
 .tp-wave-handle {
@@ -238,8 +250,7 @@ header {
   cursor: row-resize; touch-action: none; user-select: none; -webkit-user-select: none;
 }
 .tp-wave-handle-pip { width: 40px; height: 4px; border-radius: 2px; background: var(--c-border); }
-.tp-wave-sheet-fixed { flex-shrink: 0; }
-.tp-wave-sheet-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.tp-wave-sheet-fixed { flex-shrink: 0; background: var(--c-bg); }
 /* ── tab bar ── */
 .tp-tabs-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .tp-tabs-bar { flex-shrink: 0; display: flex; overflow-x: auto; background: var(--c-surface2); border-bottom: 1px solid var(--c-amber-lt); scrollbar-width: none; padding: 0 4px; }
@@ -252,7 +263,7 @@ header {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   display: flex; flex-direction: column;
-  padding-bottom: var(--wave-fixed-h, 162px);
+  padding-bottom: 14px;
 }
 .tp-tabcontent { display: none; }
 .tp-tabcontent.active { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; }
@@ -426,7 +437,7 @@ header {
   background: var(--c-surface); transition: border-color 0.15s;
 }
 .tp-comment-item.dim       { opacity: 0.4; }
-.tp-comment-item.highlight { border-color: var(--c-teal); background: rgba(25,114,120,0.08); }
+.tp-comment-item.highlight { border-color: var(--c-teal); background: rgba(25,114,120,0.08); box-shadow: 0 0 0 2px rgba(25,114,120,0.25), 0 0 10px rgba(25,114,120,0.35); }
 .tp-comment-hdr  { display: flex; align-items: center; gap: 6px; }
 .tp-comment-time { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); flex-shrink: 0; }
 .tp-comment-hdr .cd-card-directed-row { margin-left: auto; }
@@ -507,16 +518,20 @@ header {
 /* ══ PC LAYOUT (≥768px) ══ */
 @media (min-width: 768px) {
   #screen-track { overflow: hidden; display: flex; flex-direction: row; }
-  .tp-body { width: 280px; min-width: 280px; flex: unset; border-right: 1px solid var(--c-border); }
+  .tp-body { width: 280px; min-width: 280px; flex: unset; border-right: 1px solid var(--c-border); padding-bottom: 0; }
   .tp-tab-panel { padding-bottom: 0; }
   .tp-tabcontent.active { min-height: unset; }
+  #tp-right-col { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; border-left: 1px solid var(--c-border); }
   #tp-wave-sheet {
-    position: static; flex: 1; height: auto !important;
-    border-top: none; border-left: 1px solid var(--c-border);
+    position: static; height: auto !important; flex-shrink: 0;
+    border-top: none; border-left: none; background: var(--c-bg); pointer-events: auto; overflow: hidden;
     transition: none !important;
   }
   .tp-wave-handle { display: none; }
-  .tp-wave-sheet-scroll { overflow-y: auto; }
+  #tp-comments-area {
+    position: static; flex: 1; min-height: 0; overflow-y: auto;
+    top: auto; bottom: auto; background: transparent; z-index: auto;
+  }
   .tp-comments-section { border-top: 1px solid var(--c-border); }
 }
 
@@ -968,7 +983,10 @@ body.tab-view #tab-view-close { display:flex; }
 
     </div><!-- end tp-body -->
 
-    <!-- wave sheet: draggable bottom panel (controls + waveform + comments) -->
+    <!-- right col: wave sheet + comments (transparent on mobile, flex column on desktop) -->
+    <div id="tp-right-col">
+
+    <!-- wave sheet: draggable panel (handle + waveform + controls) -->
     <div id="tp-wave-sheet">
       <div class="tp-wave-handle"
            ontouchstart="waveHandleDragStart(event)"
@@ -1023,17 +1041,17 @@ body.tab-view #tab-view-close { display:flex; }
           </div>
         </div>
       </div>
-      <div class="tp-wave-sheet-scroll"
-           ontouchstart="waveScrollDragStart(event)"
-           ontouchmove="waveHandleDragMove(event)"
-           ontouchend="waveHandleDragEnd(event)">
-        <div class="tp-comments-section" id="tp-comments-section">
-          <div class="tp-comments-title">Comments</div>
-          <div id="tp-comments-body"></div>
-        </div>
+    </div><!-- end tp-wave-sheet -->
+
+    <!-- comments: independently scrollable below the waveform bar -->
+    <div id="tp-comments-area">
+      <div class="tp-comments-section" id="tp-comments-section">
+        <div class="tp-comments-title">Comments</div>
+        <div id="tp-comments-body"></div>
       </div>
     </div>
 
+    </div><!-- end tp-right-col -->
   </div><!-- end screen-track -->
 
   <!-- ── IMPORTER ── -->
@@ -2135,7 +2153,7 @@ function waveHandleDragMove(e) {
 
 function waveHandleDragEnd() {
   if (!_WS.drag) return;
-  const mid = _WS.fixedH + (_WS.maxH - _WS.fixedH) * 0.35;
+  const mid = _WS.fixedH + (_WS.maxH - _WS.fixedH) * 0.15;
   _wsSetH(_WS.curH > mid ? _WS.maxH : _WS.fixedH, true);
   _WS.drag = null;
 }
@@ -2154,12 +2172,6 @@ function waveSheetTouchMove(e) {
     if (!_WS.drag) waveHandleDragStart({ preventDefault(){}, touches: e.touches });
     waveHandleDragMove(e);
   }
-}
-
-function waveScrollDragStart(e) {
-  const scroll = e.currentTarget;
-  if (scroll.scrollTop > 0) return; // let it scroll normally
-  waveHandleDragStart(e);
 }
 
 function backToTracks() {
@@ -3205,6 +3217,7 @@ function renderComments() {
     const el = document.createElement('div');
     el.className = 'tp-comment-item';
     el.dataset.start = c.startTime;
+    el.dataset.end   = c.endTime || '';
     const timeStr      = c.endTime ? `${fmt(c.startTime)}–${fmt(c.endTime)}` : fmt(c.startTime);
     const authorCircle = `<span class="cd-circle cd-circle-author">${(c.author||'?')[0]}</span>`;
     const toCircles    = (c.directedTo||[]).map(p=>`<span class="cd-circle">${p[0]}</span>`).join('');
@@ -3215,23 +3228,28 @@ function renderComments() {
         <div class="cd-card-directed-row">${dirRow}</div>
       </div>
       <div class="tp-comment-text">${c.text}</div>`;
-    el.onclick = () => { S.tp.audio.currentTime = c.startTime; if (S.tp.audio.paused) S.tp.audio.play(); };
+    el.addEventListener('click', () => { S.tp.audio.currentTime = c.startTime; S.tp.audio.play().catch(()=>{}); });
     if (c.endTime && c.endTime > c.startTime + 0.5) {
       const actions = document.createElement('div');
       actions.className = 'tp-comment-actions';
-      actions.innerHTML = `<button class="tp-comment-act-btn" onclick="openLoopTrim('${c.id}');event.stopPropagation()">✂ Loop & Trim</button>`;
+      const btn = document.createElement('button');
+      btn.className = 'tp-comment-act-btn';
+      btn.textContent = '✂ Loop & Trim';
+      btn.addEventListener('click', e => { e.stopPropagation(); openLoopTrim(c.id); });
+      actions.appendChild(btn);
       el.appendChild(actions);
     }
     body.appendChild(el);
   });
 }
 
-// Highlight nearest comment during playback
+// Highlight comments whose time range overlaps current playback position
 S.tp.audio.addEventListener('timeupdate', () => {
   const cur = S.tp.audio.currentTime;
   document.querySelectorAll('.tp-comment-item').forEach(el => {
-    const t = parseFloat(el.dataset.start);
-    el.classList.toggle('highlight', !isNaN(t) && Math.abs(t - cur) < 2);
+    const start = parseFloat(el.dataset.start);
+    const end   = el.dataset.end ? parseFloat(el.dataset.end) : start + 2;
+    el.classList.toggle('highlight', !isNaN(start) && cur >= start && cur <= end);
   });
 });
 
@@ -3687,7 +3705,9 @@ function buildCommentCard(c){
       <div class="cd-card-text">${c.text}</div>
       <div class="cd-card-actions">
         <button class="cd-action-btn" id="cdplay-${c.id}" onclick="cdPlayComment('${c.id}')">▶&#xFE0E; Play</button>
-        <button class="cd-action-btn" id="cdloop-${c.id}" onclick="cdToggleLoop('${c.id}')">⟳ Loop</button>
+        ${c.endTime && c.endTime > c.startTime + 0.5
+          ? `<button class="cd-action-btn" id="cdlt-${c.id}" onclick="openLoopTrimCd('${c.id}')">✂ Loop &amp; Trim</button>`
+          : `<button class="cd-action-btn" id="cdloop-${c.id}" onclick="cdToggleLoop('${c.id}')">⟳ Loop</button>`}
         <button class="cd-action-btn${isPerched?' perched':''}" id="cdperch-${c.id}" onclick="cdTogglePerch('${c.id}')">${NEST_SVG} ${(c.perches||[]).length||''}</button>
       </div>
     </div>
@@ -3807,6 +3827,28 @@ _cdAudio.addEventListener('timeupdate',()=>{
     else { _cdAudio.pause(); }
   }
 });
+
+async function openLoopTrimCd(cid) {
+  const c = _cdAllComments.find(c => c.id === cid);
+  if (!c || !c.endTime) { showToast('Not a range comment'); return; }
+  const btn = $(`cdlt-${cid}`);
+  if (btn) { btn.textContent = '… Loading'; btn.disabled = true; }
+  try {
+    showLoading('Loading audio…');
+    const blob = await Drive.fetchBlob(c.fileId);
+    hideLoading();
+    const url = URL.createObjectURL(blob);
+    if (_LT._overrideUrl && _LT._overrideUrl !== S.tp.blobUrl) {
+      try { URL.revokeObjectURL(_LT._overrideUrl); } catch(e) {}
+    }
+    await openLoopTrim(cid, url);
+  } catch(e) {
+    hideLoading();
+    showToast('Could not load audio: ' + e.message);
+  } finally {
+    if (btn) { btn.textContent = '✂ Loop & Trim'; btn.disabled = false; }
+  }
+}
 
 function cdToggleLoop(cid){
   const btn=$(`cdloop-${cid}`);
@@ -5452,18 +5494,22 @@ function snipBpmKnobUp() {
 
 /* ── LOOP & TRIM ──────────────────────────────────────── */
 const _LT = {
-  _blobUrlUsed: null, commentId: null, songName: null,
+  _blobUrlUsed: null, _overrideUrl: null, commentId: null, songName: null,
   _waCtx: null, _waBuf: null, _waSrc: null,
   _waPlaying: false, _waT0: 0, _waOff: 0,
   peaks: [], winStart: 0, winEnd: 0, winDur: 0,
   trimStart: 0, trimEnd: 0, _knob: null, _rafId: null,
 };
 
-async function openLoopTrim(commentId) {
-  const c = S.tp.comments.find(c => c.id === commentId);
-  if (!c || !c.endTime) return;
-  _LT.commentId = commentId;
-  _LT.songName = S.tp.songName;
+async function openLoopTrim(commentId, overrideBlobUrl) {
+  // Find in track-page comments or (if called from diary) all diary comments
+  const c = S.tp.comments.find(c => c.id === commentId)
+         || _cdAllComments.find(c => c.id === commentId);
+  if (!c) { showToast('Comment not found'); return; }
+  if (!c.endTime) { showToast('Not a range comment'); return; }
+  _LT.commentId    = commentId;
+  _LT.songName     = c.songName || S.tp.songName;
+  _LT._overrideUrl = overrideBlobUrl || null;
   _LT.winStart  = Math.max(0, c.startTime - 1);
   _LT.winEnd    = c.endTime + 1;
   _LT.winDur    = _LT.winEnd - _LT.winStart;
@@ -5477,7 +5523,7 @@ async function openLoopTrim(commentId) {
 }
 
 async function _ltLoadAudio() {
-  const blobUrl = S.tp.blobUrl;
+  const blobUrl = _LT._overrideUrl || S.tp.blobUrl;
   if (!blobUrl) { showToast('No audio loaded'); return; }
   if (_LT._blobUrlUsed === blobUrl && _LT._waBuf) {
     _ltGenPeaks(); _ltUpdateKnobs(); _ltUpdateLabels(); _ltDrawCanvas();
@@ -5486,13 +5532,14 @@ async function _ltLoadAudio() {
   showLoading('Loading waveform…');
   try {
     const resp = await fetch(blobUrl);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const ab   = await resp.arrayBuffer();
     if (_LT._waCtx) { try { _LT._waCtx.close(); } catch(e){} }
     _LT._waCtx = new (window.AudioContext || window.webkitAudioContext)();
     _LT._waBuf = await _LT._waCtx.decodeAudioData(ab);
     _LT._blobUrlUsed = blobUrl;
     _ltGenPeaks(); _ltUpdateKnobs(); _ltUpdateLabels(); _ltDrawCanvas();
-  } catch(e) { showToast('Audio load failed'); console.warn(e); }
+  } catch(e) { showToast('Audio load failed: ' + e.message); console.warn(e); }
   hideLoading();
 }
 
@@ -5641,19 +5688,26 @@ function ltKnobUp() {
 
 function ltClose() {
   _ltWaStop(); cancelAnimationFrame(_LT._rafId); _LT._rafId = null;
+  if (_LT._overrideUrl) {
+    try { URL.revokeObjectURL(_LT._overrideUrl); } catch(e) {}
+    _LT._overrideUrl = null;
+    _LT._blobUrlUsed = null;
+    _LT._waBuf = null;
+  }
   Object.assign(_LT, { commentId:null, _waPlaying:false, _waSrc:null, _knob:null });
   $('lt-play-btn').textContent = '▶︎';
   $('lt-modal').classList.remove('open');
 }
 
 async function ltSaveAsSnippet() {
-  if (!_LT._waBuf || !S.tp.blobUrl) return;
+  const srcUrl = _LT._overrideUrl || S.tp.blobUrl;
+  if (!_LT._waBuf || !srcUrl) return;
   showLoading('Trimming & saving…');
   try {
     await loadSnippets();
     const metaId = S.folders._meta;
     if (!metaId) throw new Error('_meta folder not found');
-    const blob = await (await fetch(S.tp.blobUrl)).blob();
+    const blob = await (await fetch(srcUrl)).blob();
     const trimmedBlob = await _trimBlobToWav(blob, _LT.trimStart, _LT.trimEnd);
     const dur = _LT.trimEnd - _LT.trimStart;
     const fname = `snip_${Date.now()}.wav`;
