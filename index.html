@@ -443,6 +443,7 @@ header {
 .lt-timebar { display:flex; justify-content:space-between; font-family:var(--f-mono); font-size:11px; color:var(--c-teal-pale); flex-shrink:0; }
 .lt-controls { display:flex; align-items:center; justify-content:center; gap:24px; flex-shrink:0; padding-bottom:8px; }
 /* ── Importer screen ── */
+#screen-import.active { display:flex; flex-direction:column; }
 .imp-step { display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
 .imp-step.active { display:flex; }
 .imp-dropzone { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; gap:16px; padding:24px; text-align:center; }
@@ -1036,7 +1037,7 @@ body.tab-view #tab-view-close { display:flex; }
   </div><!-- end screen-track -->
 
   <!-- ── IMPORTER ── -->
-  <div class="screen" id="screen-import" style="display:flex;flex-direction:column;">
+  <div class="screen" id="screen-import">
     <div class="screen-nav">
       <button class="back-btn" onclick="impBack()">‹ Feathers</button>
       <div class="screen-nav-title">Upload Tracks</div>
