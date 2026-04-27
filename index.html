@@ -5148,11 +5148,13 @@ async function snipToggleRecord() {
     $('snip-rec-btn').classList.remove('recording');
     return;
   }
+  if (typeof MediaRecorder === 'undefined') { showToast('Recording not supported on this browser'); return; }
   try {
     SnipR.stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     SnipR.chunks = [];
-    const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/ogg;codecs=opus';
-    SnipR.recorder = new MediaRecorder(SnipR.stream, { mimeType: mime });
+    const _mimes = ['audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus',''];
+    const mime = _mimes.find(m => m === '' || MediaRecorder.isTypeSupported(m));
+    SnipR.recorder = new MediaRecorder(SnipR.stream, mime ? { mimeType: mime } : undefined);
     SnipR.recorder.ondataavailable = e => { if (e.data.size > 0) SnipR.chunks.push(e.data); };
     SnipR.recorder.onstop = async () => {
       SnipR.blob = new Blob(SnipR.chunks, { type: SnipR.recorder.mimeType });
