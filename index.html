@@ -309,6 +309,10 @@ header {
 .tp-ver-dur   { font-family: var(--f-mono); font-size: 10px; color: var(--c-border); flex-shrink: 0; }
 .tp-ver-play  { font-size: 10px; color: var(--c-teal-pale); flex-shrink: 0; opacity: 0; }
 .tp-ver-row.active .tp-ver-play { opacity: 1; }
+.tp-ver-bubble { display:none; align-items:center; justify-content:center; flex-shrink:0; width:16px; }
+.tp-ver-bubble.has-comments { display:flex; color:var(--c-teal-pale); }
+.tp-ver-bubble.has-unread   { display:flex; color:var(--c-amber-lt); }
+.tp-ver-bubble.has-unread path { fill:currentColor; }
 /* snippet row swipe-delete */
 .tp-snip-inner { display: contents; }
 .tp-snip-del-reveal { position:absolute; left:0; top:0; bottom:0; width:60px; display:flex; align-items:center; justify-content:center; background:var(--c-accent); color:var(--c-text); font-size:20px; opacity:0; pointer-events:none; }
@@ -1055,7 +1059,8 @@ body.tab-view #tab-view-close { display:flex; }
                   onclick="waveSeek(event)"
                   onwheel="waveZoom(event)"
                   ontouchstart="waveTouchStart(event)"
-                  ontouchmove="waveTouchMove(event)"></canvas>
+                  ontouchmove="waveTouchMove(event)"
+                  ontouchend="waveTouchEnd(event)"></canvas>
           <div class="tp-wave-time" id="tp-wave-time">0:00 / —:——</div>
         </div>
         <div class="tp-bpm-tags-body" id="tp-bpm-tags-body"></div>
@@ -2176,6 +2181,29 @@ function initWaveSheet() {
     _WS.maxH = window.innerHeight - navH;
     _wsSetH(_WS.fixedH, false);
   });
+  // Allow swipe-down on the comments area to close the wave sheet
+  const _ca = $('tp-comments-area');
+  if (_ca && !_ca._wsDragInited) {
+    _ca._wsDragInited = true;
+    let _cTouch = null;
+    _ca.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1) { _cTouch = null; return; }
+      _cTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY, scrollTop: _ca.scrollTop };
+    }, { passive: true });
+    _ca.addEventListener('touchmove', e => {
+      if (!_cTouch) return;
+      const dy = e.touches[0].clientY - _cTouch.y;
+      const dx = Math.abs(e.touches[0].clientX - _cTouch.x);
+      if (_WS.drag) { e.preventDefault(); waveHandleDragMove(e); return; }
+      if (dy > 8 && dy > dx && _cTouch.scrollTop <= 0) {
+        e.preventDefault();
+        waveHandleDragStart({ preventDefault() {}, touches: [{ clientY: _cTouch.y }] });
+        waveHandleDragMove(e);
+      }
+    }, { passive: false });
+    _ca.addEventListener('touchend', () => { if (_WS.drag) waveHandleDragEnd(); _cTouch = null; }, { passive: true });
+  }
+
   if (!_WS._tabSwipeInited) {
     _WS._tabSwipeInited = true;
     const _TP_TABS = ['recordings','lyrics','structure','tabs','notes'];
@@ -2233,8 +2261,9 @@ function waveHandleDragMove(e) {
 
 function waveHandleDragEnd() {
   if (!_WS.drag) return;
-  const mid = _WS.fixedH + (_WS.maxH - _WS.fixedH) * 0.15;
-  _wsSetH(_WS.curH > mid ? _WS.maxH : _WS.fixedH, true);
+  const closingDown = _WS.curH < _WS.drag.startH;
+  const threshold = _WS.fixedH + (_WS.maxH - _WS.fixedH) * (closingDown ? 0.70 : 0.15);
+  _wsSetH(_WS.curH > threshold ? _WS.maxH : _WS.fixedH, true);
   _WS.drag = null;
 }
 
@@ -2667,6 +2696,22 @@ async function renameTrack(oldName, newName) {
   await Promise.all(saves);
 }
 
+/* ── VERSION COMMENT BUBBLES ─────────────────────────── */
+function updateVersionBubbles() {
+  const comments = S.tp.comments || [];
+  S.tp.versions.forEach(v => {
+    const el = document.getElementById(`tpvbub-${v.fileId}`);
+    if (!el) return;
+    const vComments = comments.filter(c => c.fileId === v.fileId);
+    if (!vComments.length) { el.className = 'tp-ver-bubble'; return; }
+    const lastSeen = localStorage.getItem(`bandapp_cSeen_${v.fileId}`) || '0';
+    const hasUnread = vComments.some(c => (c.createdAt || '0') > lastSeen);
+    el.className = 'tp-ver-bubble ' + (hasUnread ? 'has-unread' : 'has-comments');
+    const path = el.querySelector('path');
+    if (path) path.setAttribute('fill', hasUnread ? 'currentColor' : 'none');
+  });
+}
+
 /* ── VERSIONS LIST ───────────────────────────────────── */
 function renderVersionsList() {
   const body = $('tp-versions-body');
@@ -2695,6 +2740,7 @@ function renderVersionsList() {
           <div class="tp-ver-date">${fmtDate(v.sessionDate)}</div>
           <div class="tp-ver-type${v.sessionType === 'studio' ? ' studio' : ''}">${v.sessionType}</div>
         </div>
+        <div class="tp-ver-bubble" id="tpvbub-${v.fileId}" title="Comments"><svg width="13" height="12" viewBox="0 0 13 12" fill="none"><path d="M1 0h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4.5L2 11.5V9H1a1 1 0 0 1-1-1V1a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" fill="none"/></svg></div>
         <input class="tp-ver-title" type="text" value="${title.replace(/"/g,'&quot;')}" placeholder="add title…"
                onclick="event.stopPropagation()"
                onblur="saveVersionTitle('${v.fileId}', this.value)"
@@ -2843,6 +2889,7 @@ async function selectVersion(idx) {
   S.tp.versionIdx = idx;
   const v = S.tp.versions[idx];
   if (!v) return;
+  localStorage.setItem(`bandapp_cSeen_${v.fileId}`, new Date().toISOString());
 
   document.querySelectorAll('.tp-ver-row').forEach((r,i) => r.classList.toggle('active', i===idx));
   $('tp-ctrl-play').textContent = '…';
@@ -3259,8 +3306,23 @@ function waveZoom(e) {
 
 let _pinchD = null;
 function waveTouchStart(e) {
-  if (e.touches.length === 1) waveSeek({ clientX: e.touches[0].clientX, target: e.target });
-  if (e.touches.length === 2) _pinchD = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+  if (e.touches.length === 1) {
+    _WS._tapStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  } else {
+    _WS._tapStart = null;
+    if (e.touches.length === 2) _pinchD = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+  }
+}
+function waveTouchEnd(e) {
+  e.stopPropagation(); // prevent parent wrap's ontouchend firing too
+  const wasDrag = !!_WS.drag;
+  waveHandleDragEnd();
+  if (!wasDrag && _WS._tapStart && e.changedTouches.length === 1) {
+    const dx = Math.abs(e.changedTouches[0].clientX - _WS._tapStart.x);
+    const dy = Math.abs(e.changedTouches[0].clientY - _WS._tapStart.y);
+    if (dx < 10 && dy < 10) waveSeek({ clientX: e.changedTouches[0].clientX, target: e.target });
+  }
+  _WS._tapStart = null;
 }
 function waveTouchMove(e) {
   if (e.touches.length !== 2 || _pinchD === null) return;
@@ -3327,6 +3389,7 @@ function renderComments() {
     }
     body.appendChild(el);
   });
+  updateVersionBubbles();
 }
 
 // Highlight comments whose time range overlaps current playback position
