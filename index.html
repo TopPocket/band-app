@@ -562,8 +562,8 @@ header {
 .cd-people { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; overflow-x:auto; }
 .cd-filter-quick { font-family:var(--f-mono); font-size:10px; padding:4px 10px; border:1px solid var(--c-border); border-radius:5px; background:transparent; color:var(--c-teal-pale); cursor:pointer; transition:all 0.15s; white-space:nowrap; flex-shrink:0; }
 .cd-filter-quick.on { border-color:var(--c-amber); color:var(--c-amber-lt); background:rgba(192,120,64,0.15); }
-.cd-person-circle { width:24px; height:29px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; font-family:var(--f-mono); font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; border:1px solid var(--c-border); background:transparent; color:var(--c-teal-pale); cursor:pointer; transition:all 0.15s; flex-shrink:0; }
-.cd-person-circle.on { background:rgba(25,114,120,0.25); border-color:var(--c-teal); color:var(--c-text); }
+.cd-person-circle { width:24px; height:29px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; font-family:var(--f-mono); font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; border:1px solid var(--c-border); background:transparent; color:var(--c-amber-lt); cursor:pointer; transition:all 0.15s; flex-shrink:0; }
+.cd-person-circle.on { background:rgba(192,120,64,0.15); border-color:var(--c-amber); color:var(--c-amber-lt); }
 /* inline directed-to circles on comment cards */
 .cd-circle { display:inline-flex; align-items:center; justify-content:center; width:18px; height:22px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; border:1px solid var(--c-border); font-family:var(--f-mono); font-size:9px; font-weight:600; color:var(--c-teal-pale); flex-shrink:0; }
 .cd-circle-author { border-color:var(--c-amber); color:var(--c-amber-lt); }
@@ -3767,7 +3767,7 @@ async function savePerchToDrive(commentId, perches){
 /* ══════════════════════════════════════════════════════
    COMMENTS DISCOVERY
 ══════════════════════════════════════════════════════ */
-let _cdAllComments=[], _cdPeopleFilter=new Set(), _cdNestedOnly=false, _cdAudio=new Audio(), _cdPlayingId=null, _cdLooping=false;
+let _cdAllComments=[], _cdPeopleFilter=new Set(), _cdNestedOnly=false, _cdOnlyMe=false, _cdIncMe=false, _cdAudio=new Audio(), _cdPlayingId=null, _cdLooping=false;
 let _cdUndoBuffer=null, _cdUndoTimer=null;
 
 async function goComments(){
@@ -3782,14 +3782,20 @@ function buildCdPeopleFilter(){
   // "All" quick button
   const allBtn=document.createElement('button');
   allBtn.className='cd-filter-quick'; allBtn.textContent='All'; allBtn.id='cd-filter-all';
-  allBtn.onclick=()=>{ _cdPeopleFilter=new Set(CONFIG.BAND_MEMBERS); syncCdFilter(); renderCommentsList(); };
+  allBtn.onclick=()=>{ _cdPeopleFilter=new Set(CONFIG.BAND_MEMBERS); _cdOnlyMe=false; _cdIncMe=false; syncCdFilter(); renderCommentsList(); };
   el.appendChild(allBtn);
 
-  // "Only Me" quick button
+  // "Only Me" quick button — comments exclusively directed at me
   const meBtn=document.createElement('button');
   meBtn.className='cd-filter-quick'; meBtn.textContent='Only Me'; meBtn.id='cd-filter-me';
-  meBtn.onclick=()=>{ _cdPeopleFilter=new Set([S.user?.name].filter(Boolean)); syncCdFilter(); renderCommentsList(); };
+  meBtn.onclick=()=>{ _cdOnlyMe=!_cdOnlyMe; if(_cdOnlyMe){ _cdIncMe=false; _cdPeopleFilter=new Set(CONFIG.BAND_MEMBERS); } syncCdFilter(); renderCommentsList(); };
   el.appendChild(meBtn);
+
+  // "Inc Me" quick button — comments that include me as author or recipient
+  const incBtn=document.createElement('button');
+  incBtn.className='cd-filter-quick'; incBtn.textContent='Inc Me'; incBtn.id='cd-filter-incme';
+  incBtn.onclick=()=>{ _cdIncMe=!_cdIncMe; if(_cdIncMe){ _cdOnlyMe=false; _cdPeopleFilter=new Set(CONFIG.BAND_MEMBERS); } syncCdFilter(); renderCommentsList(); };
+  el.appendChild(incBtn);
 
   // "Nested" filter button
   const nestBtn=document.createElement('button');
@@ -3803,7 +3809,9 @@ function buildCdPeopleFilter(){
     const btn=document.createElement('button');
     btn.className='cd-person-circle'; btn.textContent=m[0]; btn.title=m; btn.dataset.member=m;
     btn.onclick=()=>{
+      _cdOnlyMe=false; _cdIncMe=false;
       if(_cdPeopleFilter.has(m)) _cdPeopleFilter.delete(m); else _cdPeopleFilter.add(m);
+      if(_cdPeopleFilter.size===0) _cdPeopleFilter=new Set(CONFIG.BAND_MEMBERS);
       syncCdFilter(); renderCommentsList();
     };
     el.appendChild(btn);
@@ -3819,11 +3827,11 @@ function syncCdFilter(){
     btn.classList.toggle('on', _cdPeopleFilter.has(btn.dataset.member));
   });
   // Update quick buttons
-  const allOn=all.every(m=>_cdPeopleFilter.has(m));
-  const meOnly=_cdPeopleFilter.size===1&&_cdPeopleFilter.has(S.user?.name);
-  const allBtn=$('cd-filter-all'), meBtn=$('cd-filter-me');
+  const allOn=all.every(m=>_cdPeopleFilter.has(m))&&!_cdOnlyMe&&!_cdIncMe;
+  const allBtn=$('cd-filter-all'), meBtn=$('cd-filter-me'), incBtn=$('cd-filter-incme');
   if(allBtn) allBtn.classList.toggle('on', allOn);
-  if(meBtn)  meBtn.classList.toggle('on', meOnly);
+  if(meBtn)  meBtn.classList.toggle('on', _cdOnlyMe);
+  if(incBtn) incBtn.classList.toggle('on', _cdIncMe);
 }
 
 async function loadAllComments(){
@@ -3850,9 +3858,14 @@ function renderCommentsList(){
   let list=[..._cdAllComments];
   // Song filter
   if(songFilter) list=list.filter(c=>c.songName===songFilter);
-  // Person filter — skip if empty or all members selected
-  if(_cdPeopleFilter.size>0 && _cdPeopleFilter.size<CONFIG.BAND_MEMBERS.length){
-    list=list.filter(c=>(c.directedTo||[]).some(p=>_cdPeopleFilter.has(p)));
+  // Person filter
+  const _me=S.user?.name;
+  if(_cdOnlyMe && _me){
+    list=list.filter(c=>(c.directedTo||[]).length>0&&(c.directedTo||[]).every(p=>p===_me));
+  }else if(_cdIncMe && _me){
+    list=list.filter(c=>c.author===_me||(c.directedTo||[]).includes(_me));
+  }else if(_cdPeopleFilter.size>0&&_cdPeopleFilter.size<CONFIG.BAND_MEMBERS.length){
+    list=list.filter(c=>_cdPeopleFilter.has(c.author));
   }
   // Nested-only filter
   if(_cdNestedOnly) list=list.filter(c=>(c.perches||[]).length>0);
