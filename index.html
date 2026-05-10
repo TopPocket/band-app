@@ -694,6 +694,18 @@ header {
 .an-card:hover { border-color:var(--c-teal); background:var(--c-surface2); }
 .an-card.soon { opacity:0.4; cursor:default; }
 .an-card.soon:hover { border-color:var(--c-border); background:var(--c-surface); }
+/* Dev notes widget */
+.dev-notes-widget { margin:4px 16px 14px; background:var(--c-surface); border:1px solid var(--c-border); border-radius:10px; padding:14px 16px; }
+.dev-notes-title { font-family:var(--f-display); font-size:13px; font-weight:600; color:var(--c-text); margin-bottom:10px; display:flex; align-items:center; gap:7px; }
+.dev-notes-types { display:flex; gap:7px; margin-bottom:10px; }
+.dev-notes-type-btn { font-family:var(--f-mono); font-size:10px; padding:3px 10px; border:1px solid var(--c-border); border-radius:10px; background:none; color:var(--c-teal-pale); cursor:pointer; transition:background 0.12s,border-color 0.12s; }
+.dev-notes-type-btn.active { background:var(--c-teal); border-color:var(--c-teal); color:var(--c-text); }
+.dev-notes-ta { width:100%; background:var(--c-bg); border:1px solid var(--c-border); border-radius:7px; color:var(--c-text); font-family:var(--f-sans); font-size:13px; padding:10px 12px; resize:none; height:76px; outline:none; box-sizing:border-box; transition:border-color 0.15s; }
+.dev-notes-ta:focus { border-color:var(--c-teal); }
+.dev-notes-footer { display:flex; justify-content:flex-end; margin-top:9px; }
+.dev-notes-send { font-family:var(--f-mono); font-size:11px; padding:7px 18px; background:var(--c-teal); border:none; border-radius:7px; color:var(--c-text); cursor:pointer; transition:background 0.12s; }
+.dev-notes-send:hover { background:var(--c-teal-lt); }
+.dev-notes-send:disabled { opacity:0.5; cursor:default; }
 
 /* ══ SONG PLUCKER ══ */
 #screen-plucker { overflow:hidden; }
@@ -1235,6 +1247,20 @@ body.tab-view #tab-view-close { display:flex; }
           <div class="an-card-label">Pluck Songs</div>
         </div>
       </div>
+      <!-- dev notes / feedback widget -->
+      <div class="dev-notes-widget">
+        <div class="dev-notes-title">𓅙 Dev Notes</div>
+        <div class="dev-notes-types">
+          <button class="dev-notes-type-btn active" id="dnt-bug"      onclick="dnSetType('bug')">🐛 Bug</button>
+          <button class="dev-notes-type-btn"        id="dnt-idea"     onclick="dnSetType('idea')">💡 Idea</button>
+          <button class="dev-notes-type-btn"        id="dnt-feedback" onclick="dnSetType('feedback')">𓅦 Feedback</button>
+        </div>
+        <textarea class="dev-notes-ta" id="dev-notes-ta" placeholder="Describe the bug or share your thoughts…"></textarea>
+        <div class="dev-notes-footer">
+          <button class="dev-notes-send" id="dev-notes-send" onclick="submitDevNote()">Send</button>
+        </div>
+      </div>
+
       <!-- tab bar -->
       <div class="an-tab-bar">
         <button class="an-tab active" data-antab="snippets"   onclick="anSwitchTab('snippets')">Snippets</button>
@@ -6882,6 +6908,48 @@ function openPlucker() {
 
 function plkClose() {
   showScreen('screen-addnotes');
+}
+
+/* ══════════════════════════════════════════════════════
+   DEV NOTES / FEEDBACK
+══════════════════════════════════════════════════════ */
+let _dnType = 'bug';
+
+function dnSetType(type) {
+  _dnType = type;
+  ['bug','idea','feedback'].forEach(t => $(`dnt-${t}`)?.classList.toggle('active', t === type));
+}
+
+async function submitDevNote() {
+  const ta   = $('dev-notes-ta');
+  const text = ta?.value?.trim();
+  if (!text) { showToast('Write something first'); return; }
+  const btn = $('dev-notes-send');
+  btn.disabled = true;
+  showLoading('Sending…');
+  try {
+    const metaId = S.folders['_meta'];
+    if (!metaId) throw new Error('Not connected to Drive — open Tracks first');
+    const files    = await Drive.list(metaId, { filesOnly: true });
+    const f        = files.find(f => f.name === 'dev-notes.json');
+    const existing = f ? await Drive.readJson(f.id) : [];
+    existing.push({
+      id:        'dn_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+      author:    S.user?.name || 'Unknown',
+      type:      _dnType,
+      text,
+      createdAt: new Date().toISOString(),
+      screen:    document.querySelector('.screen.active')?.id || '',
+    });
+    await Drive.writeJson(f?.id, existing, 'dev-notes.json', metaId);
+    ta.value = '';
+    showToast('Sent! Thanks 𓅦');
+  } catch(e) {
+    showToast('Could not send: ' + (e.message || e));
+  } finally {
+    hideLoading();
+    btn.disabled = false;
+  }
 }
 
 function plkFilePicked(file) {
