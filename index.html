@@ -2235,6 +2235,15 @@ function initWaveSheet() {
       }
     }, { passive: false });
     _ca.addEventListener('touchend', () => { if (_WS.drag) waveHandleDragEnd(); _cTouch = null; }, { passive: true });
+    // Mark comments seen when user actually reads them (scroll or tap)
+    const _markSeen = () => {
+      const fid = S.tp.versions[S.tp.versionIdx]?.fileId;
+      if (!fid) return;
+      localStorage.setItem(`bandapp_cSeen_${fid}`, new Date().toISOString());
+      updateVersionBubbles();
+    };
+    _ca.addEventListener('scroll', _markSeen, { passive: true });
+    _ca.addEventListener('click',  _markSeen, { passive: true });
   }
 
   if (!_WS._tabSwipeInited) {
@@ -2922,7 +2931,6 @@ async function selectVersion(idx) {
   S.tp.versionIdx = idx;
   const v = S.tp.versions[idx];
   if (!v) return;
-  localStorage.setItem(`bandapp_cSeen_${v.fileId}`, new Date().toISOString());
 
   document.querySelectorAll('.tp-ver-row').forEach((r,i) => r.classList.toggle('active', i===idx));
   $('tp-ctrl-play').textContent = '…';
