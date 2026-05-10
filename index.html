@@ -540,9 +540,9 @@ header {
 }
 
 /* ══ SESSION PLAYER PANEL ══ */
-.sess-player { flex-shrink:0; border-top:1px solid var(--c-border); background:var(--c-surface); display:none; flex-direction:column; max-height:60vh; overflow:hidden; }
+.sess-player { flex-shrink:0; border-top:1px solid var(--c-border); background:var(--c-surface); display:none; flex-direction:column; max-height:60vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
 .sess-player.visible { display:flex; }
-.sess-player-info { padding:7px 14px 0; display:flex; align-items:center; gap:8px; }
+.sess-player-info { padding:7px 14px 0; display:flex; align-items:center; gap:8px; flex-shrink:0; }
 .sess-player-title { flex:1; font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .sess-waveform-wrap { height:56px; position:relative; background:var(--c-bg); overflow:hidden; touch-action:none; flex-shrink:0; }
 #sess-waveform-canvas { width:100%; height:100%; display:block; cursor:crosshair; }
@@ -555,7 +555,7 @@ header {
 .sess-ctrl-btn.recording { background:rgba(196,69,54,0.2); border-color:var(--c-accent); color:var(--c-accent); }
 .sess-comments-toggle { display:flex; align-items:center; justify-content:space-between; padding:7px 14px; cursor:pointer; user-select:none; flex-shrink:0; }
 .sess-comments-label { font-family:var(--f-mono); font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:var(--c-amber-lt); opacity:0.7; }
-.sess-comments-body { padding:0 14px 10px; overflow-y:auto; -webkit-overflow-scrolling:touch; max-height:35vh; flex-shrink:0; }
+.sess-comments-body { padding:0 14px 10px; flex-shrink:0; }
 
 /* ══ COMMENTS DISCOVERY ══ */
 .cd-filter-bar { padding:10px 14px; display:flex; flex-direction:column; gap:8px; border-bottom:1px solid var(--c-border); flex-shrink:0; background:var(--c-surface); }
