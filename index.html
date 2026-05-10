@@ -718,6 +718,10 @@ header {
 .plk-label { font-family:var(--f-mono); font-size:10px; color:var(--c-text-dim); flex-shrink:0; }
 .plk-date-input { background:var(--c-surface); border:1px solid var(--c-border); border-radius:6px; color:var(--c-text); font-family:var(--f-mono); font-size:11px; padding:6px 10px; flex:1; outline:none; }
 .plk-date-input:focus { border-color:var(--c-teal); }
+.plk-analyse-row { display:none; }
+.plk-analyse-row.ready { display:flex; justify-content:flex-end; }
+.plk-analyse-btn { font-family:var(--f-mono); font-size:12px; padding:9px 22px; background:var(--c-teal); border:none; border-radius:8px; color:var(--c-text); cursor:pointer; font-weight:500; }
+.plk-analyse-btn:hover { background:var(--c-teal-lt); }
 .plk-wave-wrap { height:80px; position:relative; background:var(--c-bg); border-bottom:1px solid var(--c-border); cursor:crosshair; flex-shrink:0; touch-action:none; overflow:hidden; }
 #plk-canvas { width:100%; height:100%; display:block; }
 .plk-cursor-label { position:absolute; bottom:3px; left:8px; font-family:var(--f-mono); font-size:9px; color:var(--c-teal-pale); pointer-events:none; }
@@ -1376,6 +1380,9 @@ body.tab-view #tab-view-close { display:flex; }
       <div class="plk-date-row">
         <span class="plk-label">Session Date</span>
         <input type="date" class="plk-date-input" id="plk-date-input">
+      </div>
+      <div class="plk-analyse-row" id="plk-analyse-row">
+        <button class="plk-analyse-btn" onclick="plkAnalyse()">Analyse Recording ▶</button>
       </div>
     </div>
     <div class="plk-wave-wrap" id="plk-wave-wrap" style="display:none" onclick="_plkWaveClick(event)" ontouchstart="_plkWaveClick(event)">
@@ -6962,7 +6969,13 @@ function plkFilePicked(file) {
   $('plk-wave-wrap').style.display = 'none';
   $('plk-track-area').style.display = 'none';
   $('plk-export-bar').style.display = 'none';
-  _plkDecodeFile(file);
+  $('plk-analyse-row').classList.add('ready');
+}
+
+function plkAnalyse() {
+  if (!_PLK.file) { showToast('Pick an audio file first'); return; }
+  $('plk-analyse-row').classList.remove('ready');
+  _plkDecodeFile(_PLK.file);
 }
 
 async function _plkDecodeFile(file) {
@@ -6975,12 +6988,12 @@ async function _plkDecodeFile(file) {
     _PLK.audioBuffer = buffer;
     _PLK.duration = buffer.duration;
     hideLoading();
-    await _plkGenPeaks();
-    plkDrawWave();
     $('plk-wave-wrap').style.display = '';
     $('plk-track-area').style.display = '';
     $('plk-export-bar').style.display = '';
     $('plk-cursor-time').textContent = 'Cursor: 0:00';
+    await _plkGenPeaks(); // after canvas is visible so offsetWidth is correct
+    plkDrawWave();
   } catch(e) {
     hideLoading();
     showToast('Could not decode audio: ' + (e.message || e));
