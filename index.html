@@ -2271,8 +2271,12 @@ async function loadSongs() {
     const files = await Drive.list(metaId, { filesOnly: true });
     const f = files.find(f => f.name === 'songs.json');
     S.songs = f ? await Drive.readJson(f.id) : [];
+    const _preDedupLen = S.songs.length;
+    const _seenNames = new Set();
+    S.songs = S.songs.filter(s => { if (!s.name || _seenNames.has(s.name)) return false; _seenNames.add(s.name); return true; });
+    const _dedupChanged = S.songs.length !== _preDedupLen;
     await migrateEggsIfNeeded();
-    if (_ensureTrackIds()) await saveSongsJson(); // one-time ID migration
+    if (_ensureTrackIds() || _dedupChanged) await saveSongsJson(); // one-time ID migration + dedup cleanup
     renderSongList();
   } catch(e) {
     showToast('Could not load songs: ' + e.message);
@@ -2283,8 +2287,10 @@ async function loadSongs() {
 function renderSongList() {
   const list = $('song-list');
   list.innerHTML = '';
-  const realSongs = S.songs.filter(s => s.type !== 'egg' && s.name !== '__eggs__' && s.name);
-  const eggs      = S.songs.filter(s => s.type === 'egg' && s.name);
+  const _rSeen = new Set();
+  const realSongs = S.songs.filter(s => { if (s.type === 'egg' || s.name === '__eggs__' || !s.name || _rSeen.has(s.name)) return false; _rSeen.add(s.name); return true; });
+  const _eSeen = new Set();
+  const eggs      = S.songs.filter(s => { if (s.type !== 'egg' || !s.name || _eSeen.has(s.name)) return false; _eSeen.add(s.name); return true; });
 
   realSongs.forEach((song, i) => {
     const card = document.createElement('div');
@@ -4261,11 +4267,13 @@ async function openLyricsWriter() {
       setTimeout(() => document.getElementById('_egg-name-input')?.focus(), 50);
     });
     if (!songName) return;
-    const n = S.songs.filter(s => s.type === 'egg').length + 1;
-    const ne = { name: songName || `Egg ${n}`, type: 'egg', eggFileId: null, eggFileName: null,
-      sessionDate: new Date().toISOString().slice(0,10), notes: '' };
-    S.songs.push(ne);
-    await saveSongsJson();
+    if (!S.songs.find(s => s.name === songName)) {
+      const n = S.songs.filter(s => s.type === 'egg').length + 1;
+      const ne = { name: songName || `Egg ${n}`, type: 'egg', eggFileId: null, eggFileName: null,
+        sessionDate: new Date().toISOString().slice(0,10), notes: '' };
+      S.songs.push(ne);
+      await saveSongsJson();
+    }
   }
   if (!S.songs.find(s => s.name === songName)) return;
   lyrPanelOpen(songName);
