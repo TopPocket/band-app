@@ -219,6 +219,10 @@ header {
 .song-card-name { font-family: var(--f-display); font-size: 16px; font-weight: 600; }
 .song-card-sub  { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); margin-top: 2px; }
 .song-card.egg-card .song-card-name { color: var(--c-text-dim); }
+.song-card.egg-card { position: relative; overflow: hidden; }
+.egg-del-reveal { position:absolute; left:0; top:0; bottom:0; width:60px; display:flex; align-items:center; justify-content:center; background:var(--c-accent); color:var(--c-text); font-size:20px; opacity:0; pointer-events:none; }
+.egg-del-confirm { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(196,69,54,0.92); color:var(--c-text); font-family:var(--f-mono); font-size:13px; gap:12px; z-index:5; opacity:0; pointer-events:none; transition:opacity 0.15s; border-radius:8px; }
+.egg-del-confirm.show { opacity:1; pointer-events:auto; }
 
 /* ══ TRACK DETAIL ══ */
 #screen-track { overflow: hidden; }
@@ -2390,20 +2394,22 @@ function renderSongList() {
     const card = document.createElement('div');
     card.className = 'song-card';
     card.style.gap = '10px';
-    card.innerHTML = `
-      <div class="song-card-icon">𓅃</div>
-      <div class="song-card-info" style="flex:1">
-        <div class="song-card-name">${song.name}</div>
-        <div class="song-card-sub" id="scard-${i}">—</div>
-      </div>
-      <button class="egg-hatch-btn" onclick="event.stopPropagation();nestTrackFromList('${song.name.replace(/'/g, "\\'")}')">𓅨 Nest</button>
-      <div style="color:var(--c-border)">›</div>`;
-    card.onclick = () => openSong(song.name, i);
+    const sub = document.createElement('div');
+    sub.className = 'song-card-sub'; sub.id = `scard-${i}`; sub.textContent = '—';
+    const nestBtn = document.createElement('button');
+    nestBtn.className = 'egg-hatch-btn'; nestBtn.textContent = '𓅨 Nest';
+    nestBtn.addEventListener('click', e => { e.stopPropagation(); nestTrackFromList(song.name); });
+    const info = document.createElement('div'); info.className = 'song-card-info'; info.style.flex = '1';
+    info.innerHTML = `<div class="song-card-name">${song.name}</div>`;
+    info.appendChild(sub);
+    card.innerHTML = `<div class="song-card-icon">𓅃</div>`;
+    card.appendChild(info); card.appendChild(nestBtn);
+    card.insertAdjacentHTML('beforeend', `<div style="color:var(--c-border)">›</div>`);
+    card.addEventListener('click', () => openSong(song.name, i));
     list.appendChild(card);
     ensureTrackIndex().then(() => {
-      const el = $(`scard-${i}`);
-      const n  = (S.trackIndex[(song.name||'').toLowerCase()] || []).length;
-      if (el) el.textContent = n === 1 ? '1 version' : `${n} versions`;
+      const n = (S.trackIndex[(song.name||'').toLowerCase()] || []).length;
+      sub.textContent = n === 1 ? '1 version' : `${n} versions`;
     });
   });
 
@@ -2421,17 +2427,31 @@ function renderSongList() {
   } else {
     eggs.forEach((egg, ei) => {
       const card = document.createElement('div');
-      card.className = 'song-card';
+      card.className = 'song-card egg-card';
       card.style.gap = '10px';
-      card.innerHTML = `
-        <div class="song-card-icon" style="display:flex;align-items:center;"><div class="song-egg-icon"></div></div>
-        <div class="song-card-info" style="flex:1">
-          <div class="song-card-name">${egg.name}</div>
-          <div class="song-card-sub">${egg.sessionDate ? fmtDate(egg.sessionDate) : 'No date'}</div>
-        </div>
-        <button class="egg-hatch-btn" onclick="event.stopPropagation();openHatchConfirm('${egg.name}')">𓅣 Hatch</button>
-        <div style="color:var(--c-border)">›</div>`;
-      card.onclick = () => openSong(egg.name, ei, true);
+      // reveal strip (left edge, shows on swipe-right)
+      const reveal = document.createElement('div');
+      reveal.className = 'egg-del-reveal'; reveal.textContent = '🥚';
+      // confirm overlay
+      const conf = document.createElement('div');
+      conf.className = 'egg-del-confirm';
+      const smashYes = document.createElement('button');
+      smashYes.className = 'tp-snip-del-yes'; smashYes.textContent = 'Smash Egg';
+      smashYes.addEventListener('click', e => { e.stopPropagation(); smashEgg(egg.name); });
+      const smashNo = document.createElement('button');
+      smashNo.className = 'tp-snip-del-no'; smashNo.textContent = 'Keep';
+      smashNo.addEventListener('click', e => { e.stopPropagation(); conf.classList.remove('show'); });
+      conf.append('Smash Egg? ', smashYes, smashNo);
+      // card content
+      const hatchBtn = document.createElement('button');
+      hatchBtn.className = 'egg-hatch-btn'; hatchBtn.textContent = '𓅣 Hatch';
+      hatchBtn.addEventListener('click', e => { e.stopPropagation(); openHatchConfirm(egg.name); });
+      card.innerHTML = `<div class="song-card-icon" style="display:flex;align-items:center;"><div class="song-egg-icon"></div></div><div class="song-card-info" style="flex:1"><div class="song-card-name">${egg.name}</div><div class="song-card-sub">${egg.sessionDate ? fmtDate(egg.sessionDate) : 'No date'}</div></div>`;
+      card.appendChild(hatchBtn);
+      card.insertAdjacentHTML('beforeend', `<div style="color:var(--c-border)">›</div>`);
+      card.appendChild(reveal); card.appendChild(conf);
+      card.addEventListener('click', () => openSong(egg.name, ei, true));
+      _attachEggSwipe(card, conf, reveal);
       list.appendChild(card);
     });
   }
@@ -2681,16 +2701,12 @@ async function returnToNest() {
   });
   if (!confirmed) return;
   const entry = S.songs.find(s => s.name === name);
-  if (!entry) return;
-  showLoading('Returning to nest…');
-  try {
-    entry.type = 'egg';
-    delete entry.wasEgg;
-    await saveSongsJson();
-    hideLoading();
-    showToast('𓅨 Returned to nest');
-    backToTracks();
-  } catch(e) { hideLoading(); showToast('Failed: ' + _errMsg(e)); }
+  if (!entry) { showToast('Song not found'); return; }
+  entry.type = 'egg';
+  delete entry.wasEgg;
+  showToast('𓅨 Returned to nest');
+  backToTracks();
+  saveSongsJson().catch(e => showToast('Save failed: ' + _errMsg(e)));
 }
 
 async function nestTrackFromList(songName) {
@@ -2715,16 +2731,12 @@ async function nestTrackFromList(songName) {
   });
   if (!confirmed) return;
   const entry = S.songs.find(s => s.name === songName);
-  if (!entry) return;
-  showLoading('Returning to nest…');
-  try {
-    entry.type = 'egg';
-    delete entry.wasEgg;
-    await saveSongsJson();
-    hideLoading();
-    showToast('𓅨 Returned to nest');
-    renderSongList();
-  } catch(e) { hideLoading(); showToast('Failed: ' + _errMsg(e)); }
+  if (!entry) { showToast('Song not found'); return; }
+  entry.type = 'egg';
+  delete entry.wasEgg;
+  renderSongList();
+  showToast('𓅨 Returned to nest');
+  saveSongsJson().catch(e => showToast('Save failed: ' + _errMsg(e)));
 }
 
 /* ── TRACK IDS & RENAME CASCADE ─────────────────────── */
@@ -2980,6 +2992,42 @@ function _attachVerSwipe(row, fileId) {
 }
 
 function cancelHideVersion(fileId) { $(`tpverconf-${fileId}`)?.classList.remove('show'); }
+
+function _attachEggSwipe(card, conf, reveal) {
+  let sx = null, sy = null, sdx = 0, slocked = null;
+  card.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; sdx = 0; slocked = null;
+  }, { passive: true });
+  card.addEventListener('touchmove', e => {
+    if (sx === null || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
+    if (slocked === null) { if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return; slocked = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v'; }
+    if (slocked === 'v' || dx < 0) return;
+    sdx = dx;
+    const prog = Math.min(1, Math.abs(dx) / 120);
+    card.querySelectorAll(':not(.egg-del-reveal):not(.egg-del-confirm)').forEach(el => { if (el.parentElement === card) el.style.transform = `translateX(${dx}px)`; });
+    reveal.style.opacity = prog;
+  }, { passive: true });
+  card.addEventListener('touchend', () => {
+    if (sx === null) return; sx = null;
+    const committed = slocked === 'h' && Math.abs(sdx) > 120;
+    card.querySelectorAll(':not(.egg-del-reveal):not(.egg-del-confirm)').forEach(el => { if (el.parentElement === card) el.style.transform = ''; });
+    reveal.style.opacity = 0;
+    sdx = 0; slocked = null;
+    if (committed) conf.classList.add('show');
+  });
+}
+
+async function smashEgg(eggName) {
+  S.songs = S.songs.filter(s => s.name !== eggName);
+  S.snippets = (S.snippets || []).filter(s => s.songName !== eggName);
+  try {
+    await Promise.all([saveSongsJson(), saveSnippets()]);
+  } catch(e) { console.warn('Smash egg save failed', e); }
+  showToast('Egg smashed');
+  renderSongList();
+}
 
 async function confirmHideVersion(fileId) {
   $(`tpverconf-${fileId}`)?.classList.remove('show');
