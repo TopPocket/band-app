@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -5369,11 +5369,12 @@ function snipClose() {
   _snipWaStop();
   Object.assign(SnipR, { blob: null, peaks: [], duration: 0, trimStart: 0, trimEnd: 0,
     recording: false, looping: false, _knob: null, context: null, commentId: null, songName: null,
-    _waBuf: null, _waPlaying: false });
+    _waBuf: null, _waPlaying: false, _saving: false });
+
   $('snip-rec-btn').classList.remove('recording');
   $('snip-play-btn').textContent = '▶\uFE0E';
   $('snip-loop-btn').classList.remove('active');
-  const sb = $('snip-save-btn'); sb.disabled = true; sb.style.opacity = '0.35';
+  const sb = $('snip-save-btn'); if (sb) { sb.disabled = true; sb.textContent = 'Save'; sb.style.opacity = '0.35'; }
   $('snip-ks').style.transform = ''; $('snip-ke').style.transform = '';
   $('snip-ts-lbl').textContent = '0:00.0'; $('snip-te-lbl').textContent = '—'; $('snip-cur-lbl').textContent = '0:00.0';
   $('snip-panel').classList.remove('open');
@@ -5891,15 +5892,20 @@ function ltClose() {
     _LT._blobUrlUsed = null;
     _LT._waBuf = null;
   }
-  Object.assign(_LT, { commentId:null, _waPlaying:false, _waSrc:null, _knob:null });
+  Object.assign(_LT, { commentId:null, _waPlaying:false, _waSrc:null, _knob:null, _saving:false });
+  const btn = $('lt-save-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Save Snippet'; btn.style.opacity = '1'; }
   $('lt-play-btn').textContent = '▶︎';
   $('lt-modal').classList.remove('open');
 }
 
 async function ltSaveAsSnippet() {
+  if (_LT._saving) return;
   const srcUrl = _LT._overrideUrl || S.tp.blobUrl;
   if (!_LT._waBuf || !srcUrl) return;
-  showLoading('Trimming & saving…');
+  _LT._saving = true;
+  const btn = $('lt-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; btn.style.opacity = '0.6'; }
   try {
     await loadSnippets();
     const metaId = S.folders._meta;
@@ -5919,10 +5925,14 @@ async function ltSaveAsSnippet() {
     };
     S.snippets.push(entry);
     await saveSnippets();
-    hideLoading(); showToast('Snippet saved!');
+    showToast('Snippet saved!');
     ltClose();
     if (S.tp.songName === entry.songName) renderVersionsList();
-  } catch(e) { hideLoading(); showToast('Save failed: ' + _errMsg(e)); }
+  } catch(e) {
+    showToast('Save failed: ' + _errMsg(e));
+    _LT._saving = false;
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Snippet'; btn.style.opacity = '1'; }
+  }
 }
 
 window.addEventListener('resize', () => { if ($('lt-modal')?.classList.contains('open')) _ltResizeCanvas(); });
@@ -6396,7 +6406,9 @@ async function _trimBlobToWav(blob, trimStart, trimEnd) {
 }
 
 async function snipSave() {
-  if (!SnipR.blob) return;
+  if (!SnipR.blob || SnipR._saving) return;
+  SnipR._saving = true;
+  const sb = $('snip-save-btn'); if (sb) { sb.disabled = true; sb.textContent = 'Saving…'; }
   if (!S.songs?.length) { showLoading('Loading…'); await loadSongs(); hideLoading(); }
   let songName = SnipR.songName;
   if (!songName) {
@@ -7353,7 +7365,7 @@ async function _plkLoadLamejs() {
   <div class="lt-nav">
     <button onclick="ltClose()" style="background:none;border:none;color:var(--c-teal-pale);font-family:var(--f-mono);font-size:13px;cursor:pointer;padding:4px 8px;">✕</button>
     <div id="lt-title" style="font-family:var(--f-mono);font-size:12px;color:var(--c-teal-pale);">Loop &amp; Trim</div>
-    <button onclick="ltSaveAsSnippet()" style="background:var(--c-teal);border:none;border-radius:5px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;padding:6px 12px;cursor:pointer;">Save Snippet</button>
+    <button id="lt-save-btn" onclick="ltSaveAsSnippet()" style="background:var(--c-teal);border:none;border-radius:5px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;padding:6px 12px;cursor:pointer;">Save Snippet</button>
   </div>
   <div class="lt-body">
     <canvas id="lt-canvas"></canvas>
