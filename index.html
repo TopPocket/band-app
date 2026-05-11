@@ -89,7 +89,8 @@ header {
 .back-btn { font-family: var(--f-mono); font-size: 11px; color: var(--c-teal-pale); cursor: pointer;
   display: flex; align-items: center; gap: 5px; background: none; border: none; }
 .back-btn:hover { color: var(--c-text); }
-.screen-nav-title { font-family: var(--f-display); font-size: 16px; font-weight: 600; }
+.screen-nav-title { font-family: var(--f-display); font-size: 16px; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tp-song-nav { flex-shrink: 0; }
 
 /* ══ AUTH SCREEN ══ */
 #screen-auth { align-items: center; justify-content: center; }
@@ -2388,12 +2389,14 @@ function renderSongList() {
   realSongs.forEach((song, i) => {
     const card = document.createElement('div');
     card.className = 'song-card';
+    card.style.gap = '10px';
     card.innerHTML = `
       <div class="song-card-icon">𓅃</div>
-      <div class="song-card-info">
+      <div class="song-card-info" style="flex:1">
         <div class="song-card-name">${song.name}</div>
         <div class="song-card-sub" id="scard-${i}">—</div>
       </div>
+      <button class="egg-hatch-btn" onclick="event.stopPropagation();nestTrackFromList('${song.name.replace(/'/g, "\\'")}')">𓅨 Nest</button>
       <div style="color:var(--c-border)">›</div>`;
     card.onclick = () => openSong(song.name, i);
     list.appendChild(card);
@@ -2687,6 +2690,40 @@ async function returnToNest() {
     hideLoading();
     showToast('𓅨 Returned to nest');
     backToTracks();
+  } catch(e) { hideLoading(); showToast('Failed: ' + _errMsg(e)); }
+}
+
+async function nestTrackFromList(songName) {
+  const confirmed = await new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:400;background:rgba(26,46,44,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)';
+    overlay.innerHTML = `
+      <div style="background:var(--c-surface);border:1px solid var(--c-border);border-radius:14px;padding:28px 22px 22px;max-width:280px;width:90%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px">
+        <svg viewBox="0 0 20 15" width="56" height="42" fill="none" style="color:var(--c-teal-pale)"><ellipse cx="6" cy="9" rx="2.2" ry="2.7" fill="currentColor" opacity="0.7"/><ellipse cx="14" cy="9" rx="2.2" ry="2.7" fill="currentColor" opacity="0.7"/><ellipse cx="10" cy="8" rx="2.4" ry="2.9" fill="currentColor"/><path d="M2,12 Q4,9.5 10,9.5 Q16,9.5 18,12 Q14,14.5 10,14.5 Q6,14.5 2,12Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M4.5,13.5 Q10,11.8 15.5,13.5" stroke="currentColor" stroke-width="0.9" opacity="0.5"/></svg>
+        <div style="font-family:var(--f-mono);font-size:12px;color:var(--c-amber-lt)">${songName.replace(/</g,'&lt;')}</div>
+        <div style="font-family:var(--f-sans);font-size:13px;color:var(--c-teal-pale)">Return this track to the nest?</div>
+        <div style="display:flex;gap:10px;width:100%">
+          <button style="flex:1;padding:10px 4px;background:none;border:1px solid var(--c-border);border-radius:7px;color:var(--c-teal-pale);font-family:var(--f-mono);font-size:11px;cursor:pointer" id="_ntfl-fly">Fly Free</button>
+          <button style="flex:1;padding:10px 4px;background:var(--c-amber);border:none;border-radius:7px;color:var(--c-bg);font-family:var(--f-mono);font-size:11px;cursor:pointer" id="_ntfl-ret">𓅨 Return to nest</button>
+        </div>
+      </div>`;
+    const close = v => { document.body.removeChild(overlay); resolve(v); };
+    overlay.querySelector('#_ntfl-fly').addEventListener('click', () => close(false));
+    overlay.querySelector('#_ntfl-ret').addEventListener('click', () => close(true));
+    overlay.addEventListener('keydown', e => { if (e.key === 'Escape') close(false); });
+    document.body.appendChild(overlay);
+  });
+  if (!confirmed) return;
+  const entry = S.songs.find(s => s.name === songName);
+  if (!entry) return;
+  showLoading('Returning to nest…');
+  try {
+    entry.type = 'egg';
+    delete entry.wasEgg;
+    await saveSongsJson();
+    hideLoading();
+    showToast('𓅨 Returned to nest');
+    renderSongList();
   } catch(e) { hideLoading(); showToast('Failed: ' + _errMsg(e)); }
 }
 
