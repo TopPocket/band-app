@@ -900,6 +900,149 @@ body.tab-view #tab-view-close { display:flex; }
 .tp-pinned-lbl { font-family:var(--f-mono); font-size:9px; color:var(--c-teal-pale); text-transform:uppercase; letter-spacing:0.08em; }
 #tp-pinned-bar { display:flex; align-items:flex-end; overflow-x:auto; }
 
+/* ══ DOODLE BOARD ══ */
+#doodle-board {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--c-bg);
+  display: flex; flex-direction: column;
+  transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none;
+}
+#doodle-board.open { transform: translateY(0); pointer-events: auto; }
+#db-header {
+  display: flex; align-items: center; padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--c-border); flex-shrink: 0; gap: 12px;
+}
+#db-title {
+  flex: 1; font-family: var(--f-display); font-size: 17px; color: var(--c-text);
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#db-close-btn {
+  flex-shrink: 0; background: none; border: 1px solid var(--c-border);
+  border-radius: 50%; width: 30px; height: 30px; font-size: 14px;
+  cursor: pointer; color: var(--c-teal-pale);
+  display: flex; align-items: center; justify-content: center;
+}
+#db-body {
+  flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+  align-items: center; padding: 24px 16px 12px; gap: 0;
+}
+#db-spine-wrap { width: 100%; overflow-x: auto; padding: 8px 0 4px; }
+#db-spine { display: flex; align-items: flex-end; flex-wrap: nowrap; min-height: 70px; }
+/* Larger dots for doodle board spine */
+#db-spine .struct-dot      { width: 18px; height: 18px; }
+#db-spine .struct-dot.half { height: 9px; border-radius: 9px 9px 0 0; }
+#db-spine .struct-dots-row { gap: 7px; padding: 6px 4px 10px; }
+#db-spine .struct-label    { font-size: 10px; padding-bottom: 10px; }
+#db-spine .struct-section  { border-left-width: 2px; padding: 0 6px; }
+#db-spine .struct-cursor-el { height: 26px; }
+/* Hold-label and half-dot float shown on key hold */
+.db-key-hold-label {
+  position: fixed; background: var(--c-surface2); border: 1px solid var(--c-teal);
+  border-radius: 6px; padding: 5px 12px; font-family: var(--f-mono); font-size: 11px;
+  color: var(--c-text); pointer-events: none; z-index: 215;
+  transform: translateX(-50%); opacity: 0; transition: opacity 0.12s;
+  white-space: nowrap;
+}
+.db-key-hold-label.show { opacity: 1; }
+.db-half-dot-float {
+  position: fixed; border-radius: 50% 50% 0 0;
+  width: 22px; height: 11px;
+  pointer-events: none; z-index: 215;
+  transform: translateX(-50%);
+  opacity: 0; transition: opacity 0.12s;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+}
+.db-half-dot-float.show   { opacity: 0.8; }
+.db-half-dot-float.active { opacity: 1; box-shadow: 0 0 0 2px rgba(255,255,255,0.7); }
+/* Bottom panel */
+#db-bottom {
+  flex-shrink: 0; padding: 0 12px 8px;
+  border-top: 1px solid var(--c-border);
+}
+#db-keyboard {
+  display: flex; gap: 4px; padding: 8px 0 4px; flex-wrap: nowrap;
+  touch-action: none;
+}
+#db-keyboard.locked { display: none; }
+.db-key {
+  flex: 1; min-width: 28px; padding: 11px 2px;
+  border: 1px solid; border-radius: 6px;
+  font-family: var(--f-mono); font-size: 14px; font-weight: 700;
+  cursor: pointer; text-align: center; background: var(--c-surface2);
+  -webkit-user-select: none; user-select: none; touch-action: none;
+}
+.db-key:active { filter: brightness(1.35); transform: scale(0.93); }
+.db-key-del {
+  flex: 0 0 36px; padding: 11px 2px; border: 1px solid var(--c-border);
+  border-radius: 6px; font-size: 16px; cursor: pointer; text-align: center;
+  background: var(--c-surface2); color: var(--c-accent);
+  -webkit-user-select: none; user-select: none;
+}
+.db-key-del:active { transform: scale(0.93); }
+.db-key-add {
+  flex: 0 0 30px; padding: 11px 2px; border: 1px dashed var(--c-border);
+  border-radius: 6px; font-size: 14px; cursor: pointer; text-align: center;
+  background: none; color: var(--c-teal-pale);
+  -webkit-user-select: none; user-select: none;
+}
+.db-key-add:active { background: var(--c-surface2); }
+#db-actions {
+  display: flex; gap: 6px; padding: 4px 0 6px;
+}
+#db-actions.locked { display: none; }
+#db-locked-bar {
+  display: none; flex-direction: row; align-items: center; gap: 8px; padding: 6px 0 6px;
+}
+#db-locked-bar.show { display: flex; }
+.db-act-btn {
+  flex: 1; padding: 8px 4px; border: none; border-radius: 6px;
+  font-family: var(--f-mono); font-size: 11px; cursor: pointer; text-align: center;
+}
+#db-transport-row {
+  display: flex; justify-content: flex-end; align-items: center;
+  gap: 5px; padding: 5px 0 0; border-top: 1px solid rgba(46,70,68,0.3);
+}
+.db-transport-btn {
+  background: var(--c-surface); border: 1px solid var(--c-border);
+  border-radius: 6px; padding: 7px 11px; font-size: 14px;
+  cursor: pointer; color: var(--c-text);
+  -webkit-user-select: none; user-select: none;
+}
+.db-transport-btn:active { background: var(--c-surface2); }
+#db-transport-play {
+  border-color: var(--c-teal); color: var(--c-teal); padding: 7px 15px;
+}
+/* Dot menu popup */
+#db-dot-menu {
+  position: fixed; z-index: 210; background: var(--c-surface);
+  border: 1px solid var(--c-teal); border-radius: 10px;
+  padding: 4px; min-width: 155px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.12s, transform 0.12s;
+  transform: scale(0.95) translateY(4px);
+}
+#db-dot-menu.open {
+  opacity: 1; pointer-events: auto; transform: scale(1) translateY(0);
+}
+.db-dot-menu-btn {
+  display: block; width: 100%; padding: 9px 14px;
+  border: none; border-radius: 7px; background: none;
+  font-family: var(--f-mono); font-size: 12px;
+  color: var(--c-text); text-align: left; cursor: pointer;
+}
+.db-dot-menu-btn:hover, .db-dot-menu-btn:active { background: var(--c-surface2); }
+.db-dot-menu-btn.db-menu-edit   { color: var(--c-teal); }
+.db-dot-menu-btn.db-menu-cancel { color: var(--c-text-dim); font-size: 11px; }
+/* Doodle board open button in track nav */
+.tp-doodle-btn {
+  padding: 5px 8px; border: 1px solid var(--c-border); border-radius: 6px;
+  font-size: 13px; cursor: pointer; background: var(--c-surface2);
+  color: var(--c-teal-pale); flex-shrink: 0; font-family: var(--f-mono);
+}
+.tp-doodle-btn:active { background: var(--c-surface); }
+
 /* ══ TOAST ══ */
 .toast {
   position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
@@ -1028,6 +1171,7 @@ body.tab-view #tab-view-close { display:flex; }
       <div class="tp-song-nav">
         <button class="tp-hatch-btn" id="tp-hatch-btn" style="display:none" onclick="openHatchConfirm()">𓅣 Hatch</button>
         <button class="tp-hatch-btn" id="tp-nest-btn" style="display:none" onclick="returnToNest()">𓅨 Nest</button>
+        <button class="tp-doodle-btn" onclick="openDoodleBoard()" title="Doodle Board">✎</button>
         <button class="tp-song-nav-btn" id="tp-prev-song" onclick="tpPrevSong()">‹</button>
         <button class="tp-song-nav-btn" id="tp-next-song" onclick="tpNextSong()">›</button>
       </div>
@@ -1527,6 +1671,45 @@ body.tab-view #tab-view-close { display:flex; }
 
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
+
+<!-- ── DOODLE BOARD ── -->
+<div id="doodle-board">
+  <div id="db-header">
+    <div id="db-title">—</div>
+    <button id="db-close-btn" onclick="closeDoodleBoard()">✕</button>
+  </div>
+  <div id="db-body">
+    <div id="db-spine-wrap">
+      <div id="db-spine" class="struct-bar"></div>
+    </div>
+    <div style="flex:1"></div>
+  </div>
+  <div id="db-bottom">
+    <div id="db-keyboard"></div>
+    <div id="db-actions">
+      <button class="db-act-btn" style="background:var(--c-surface2);color:var(--c-teal-pale);border:1px solid var(--c-border)" onclick="dbClear()">Clear</button>
+      <button class="db-act-btn" style="background:var(--c-teal);color:var(--c-text)" onclick="dbSaveAndLock()">Save &amp; Lock</button>
+    </div>
+    <div id="db-locked-bar">
+      <span style="flex:1;font-family:var(--f-mono);font-size:11px;color:var(--c-teal-pale)">Structure locked</span>
+      <button class="db-act-btn" style="flex:0 0 auto;background:var(--c-surface2);color:var(--c-teal-pale);border:1px solid var(--c-border);padding:7px 14px" onclick="dbUnlock()">Edit</button>
+    </div>
+    <div id="db-transport-row">
+      <button class="db-transport-btn" onclick="tpPrevVersion();dbSyncPlayBtn()">⏮&#xFE0E;</button>
+      <button class="db-transport-btn" id="db-transport-play" onclick="tpTogglePlay();dbSyncPlayBtn()">▶&#xFE0E;</button>
+      <button class="db-transport-btn" onclick="tpNextVersion();dbSyncPlayBtn()">⏭&#xFE0E;</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DOODLE DOT MENU ── -->
+<div id="db-dot-menu">
+  <button class="db-dot-menu-btn" onclick="dbDotMenuNote()">+ Note</button>
+  <button class="db-dot-menu-btn" onclick="dbDotMenuTab()">+ Tab</button>
+  <button class="db-dot-menu-btn" onclick="dbDotMenuSnip()">+ Snip</button>
+  <button class="db-dot-menu-btn db-menu-edit" onclick="dbDotMenuEdit()">Edit structure</button>
+  <button class="db-dot-menu-btn db-menu-cancel" onclick="dbCloseDotMenu()">Cancel</button>
+</div>
 
 <script>
 /* ══════════════════════════════════════════════════════
@@ -2918,7 +3101,7 @@ function renderVersionsList() {
           </div>
         </div>
         <div class="tp-ver-star${starred?' starred':''}" title="Star" onclick="toggleStar(event,'${v.fileId}')">★</div>
-        <div class="tp-ver-dur" id="tpvdur-${origIdx}">—</div>
+        <div class="tp-ver-dur" id="tpvdur-${origIdx}">${songEntry?.versionDurations?.[v.fileId] ? fmt(songEntry.versionDurations[v.fileId]) : '—'}</div>
         <div class="tp-ver-bubble" id="tpvbub-${v.fileId}" title="Comments"><svg width="13" height="12" viewBox="0 0 13 12" fill="none"><path d="M1 0h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4.5L2 11.5V9H1a1 1 0 0 1-1-1V1a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" fill="none"/></svg></div>`;
       const delReveal  = document.createElement('div'); delReveal.className = 'tp-ver-del-reveal'; delReveal.textContent = '𓅮';
       const delConfirm = document.createElement('div');
@@ -3122,8 +3305,19 @@ async function selectVersion(idx) {
     }).catch(() => {});
 
     S.tp.audio.addEventListener('loadedmetadata', () => {
+      const dur = S.tp.audio.duration;
+      if (isNaN(dur)) return;
       const el = $(`tpvdur-${idx}`);
-      if (el) el.textContent = fmt(S.tp.audio.duration);
+      if (el) el.textContent = fmt(dur);
+      // Cache in songs.json for instant display on next load
+      const entry = S.songs.find(s => s.name === S.tp.songName);
+      if (entry) {
+        if (!entry.versionDurations) entry.versionDurations = {};
+        if (!entry.versionDurations[v.fileId]) {
+          entry.versionDurations[v.fileId] = dur;
+          saveSongsJson().catch(() => {});
+        }
+      }
     }, { once: true });
 
     renderComments(); // re-highlight for current version
@@ -4983,6 +5177,309 @@ async function tpStructDelete() {
     renderVersionsList();
     renderPinnedStruct();
   } catch(e) { hideLoading(); showToast('Delete failed: ' + _errMsg(e)); }
+}
+
+/* ══════════════════════════════════════════════════════
+   DOODLE BOARD
+══════════════════════════════════════════════════════ */
+const STRUCT_NAMES = { I:'Intro', V:'Verse', C:'Chorus', B:'Bridge', O:'Outro', X:'Misc', S:'Solo' };
+const CUSTOM_TILE_COLORS = ['#E878A0', '#78C8E8', '#98D040'];
+
+const DB = {
+  songName: null, bars: [], locked: false, cursor: 0, customTiles: [],
+  _dotMenuBarIdx: -1, _syncInterval: null,
+};
+
+function dbGetTileColor(type) {
+  const upper = type.toUpperCase();
+  const std = STRUCT_COLORS[upper];
+  if (std) return std;
+  const ci = DB.customTiles.indexOf(upper);
+  return ci >= 0 ? CUSTOM_TILE_COLORS[ci % CUSTOM_TILE_COLORS.length] : '#888888';
+}
+
+function openDoodleBoard() {
+  const song = S.songs?.find(s => s.name === S.tp?.songName);
+  if (!song) return;
+  DB.songName = S.tp.songName;
+  const d = song.doodle || {};
+  DB.bars        = Array.isArray(d.bars)        ? [...d.bars]        : [];
+  DB.locked      = !!d.locked;
+  DB.customTiles = Array.isArray(d.customTiles) ? [...d.customTiles] : [];
+  DB.cursor      = DB.bars.length;
+  DB._dotMenuBarIdx = -1;
+  $('db-title').textContent = S.tp.songName;
+  dbRenderSpine();
+  dbRenderKeyboard();
+  dbUpdateLockState();
+  dbSyncPlayBtn();
+  if (DB._syncInterval) clearInterval(DB._syncInterval);
+  DB._syncInterval = setInterval(dbSyncPlayBtn, 500);
+  $('doodle-board').classList.add('open');
+}
+
+function closeDoodleBoard() {
+  dbCloseDotMenu();
+  if (DB._syncInterval) { clearInterval(DB._syncInterval); DB._syncInterval = null; }
+  $('doodle-board').classList.remove('open');
+  DB.songName = null;
+}
+
+function dbRenderSpine() {
+  const c = $('db-spine');
+  if (!c) return;
+  c.innerHTML = '';
+  if (!DB.bars.length) {
+    if (!DB.locked) {
+      const hint = document.createElement('div');
+      hint.style.cssText = 'font-family:var(--f-mono);font-size:11px;color:var(--c-teal-pale);padding:12px 4px;opacity:0.7';
+      hint.textContent = 'Tap keys below to build structure…';
+      c.appendChild(hint);
+    }
+    return;
+  }
+  const onDotClick = DB.locked
+    ? (idx, dotEl) => dbShowDotMenu(dotEl, idx)
+    : (idx) => { DB.cursor = idx + 1; dbRenderSpine(); };
+  c.appendChild(_buildDbSpineFrag(DB.bars, DB.locked ? -1 : DB.cursor, onDotClick));
+}
+
+function _buildDbSpineFrag(bars, cursor, onDotClick) {
+  const frag = document.createDocumentFragment();
+  if (!bars.length) return frag;
+  const normBars = bars.map(b => b.toUpperCase());
+  const sections = deriveSections(normBars);
+  const labels   = getLabels(sections);
+  let gi = 0;
+  sections.forEach((sec, si) => {
+    const isLast = si === sections.length - 1;
+    const secEl  = document.createElement('div');
+    secEl.className = 'struct-section';
+    const row = document.createElement('div');
+    row.className = 'struct-dots-row';
+    for (let b = 0; b < sec.bars; b++) {
+      if (cursor >= 0 && gi === cursor) row.appendChild(_makeCursorEl());
+      const origType = bars[gi];
+      const isHalf   = origType === origType.toLowerCase() && origType !== origType.toUpperCase();
+      const dot = document.createElement('span');
+      dot.className = 'struct-dot db-dot' + (isHalf ? ' half' : '');
+      dot.style.background = dbGetTileColor(origType);
+      if (onDotClick) {
+        const ci = gi;
+        dot.addEventListener('click', e => { e.stopPropagation(); onDotClick(ci, dot); });
+      }
+      row.appendChild(dot);
+      gi++;
+    }
+    if (isLast && cursor >= 0 && gi === cursor) row.appendChild(_makeCursorEl());
+    const lbl = document.createElement('div');
+    lbl.className = 'struct-label';
+    lbl.textContent = labels[si];
+    secEl.appendChild(row); secEl.appendChild(lbl);
+    frag.appendChild(secEl);
+  });
+  return frag;
+}
+
+function dbRenderKeyboard() {
+  const kb = $('db-keyboard');
+  if (!kb) return;
+  kb.innerHTML = '';
+  const stdKeys = [
+    { type:'I', color:'#4A9AA8' }, { type:'V', color:'#C07840' },
+    { type:'C', color:'#D04848' }, { type:'B', color:'#5A9868' },
+    { type:'O', color:'#7A90B8' }, { type:'X', color:'#9070A8' },
+    { type:'S', color:'#C8B840' },
+  ];
+  const allKeys = [...stdKeys];
+  DB.customTiles.forEach((t, i) => allKeys.push({ type: t, color: CUSTOM_TILE_COLORS[i % CUSTOM_TILE_COLORS.length] }));
+  allKeys.forEach(({ type, color }) => {
+    const btn = document.createElement('button');
+    btn.className = 'db-key';
+    btn.textContent = type;
+    btn.style.borderColor = color;
+    btn.style.color = color;
+    _dbAttachKeyHold(btn, type, color);
+    kb.appendChild(btn);
+  });
+  if (DB.customTiles.length < 3) {
+    const addBtn = document.createElement('button');
+    addBtn.className = 'db-key-add'; addBtn.textContent = '+'; addBtn.title = 'Add custom tile';
+    addBtn.addEventListener('click', dbAddCustomTile);
+    kb.appendChild(addBtn);
+  }
+  const delBtn = document.createElement('button');
+  delBtn.className = 'db-key-del'; delBtn.textContent = '⌫';
+  delBtn.addEventListener('click', dbDeleteBar);
+  kb.appendChild(delBtn);
+}
+
+function _dbAttachKeyHold(btn, type, color) {
+  let holdTimer = null, labelEl = null, floatEl = null;
+  let holdFired = false, halfActivated = false, startY = 0;
+  let _lastTouchTime = 0;
+
+  function cleanup() {
+    clearTimeout(holdTimer); holdTimer = null;
+    holdFired = false; halfActivated = false;
+    labelEl?.remove(); labelEl = null;
+    floatEl?.remove(); floatEl = null;
+  }
+
+  function onMove(me) {
+    if (!holdFired) return;
+    const t = me.touches?.[0] || me;
+    const dy = startY - t.clientY;
+    if (floatEl) {
+      halfActivated = dy > 35;
+      floatEl.classList.toggle('active', halfActivated);
+    }
+  }
+
+  function onUp() {
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onUp);
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    const wasHold = holdFired, wasHalf = halfActivated;
+    cleanup();
+    if (!wasHold) { dbPressKey(type, false); }
+    else if (wasHalf) { dbPressKey(type, true); }
+  }
+
+  function onDown(e) {
+    if (e.type === 'touchstart') { e.preventDefault(); _lastTouchTime = Date.now(); }
+    const touch = e.touches?.[0] || e;
+    startY = touch.clientY;
+    holdFired = false; halfActivated = false;
+    holdTimer = setTimeout(() => {
+      holdFired = true;
+      const rect = btn.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      labelEl = document.createElement('div');
+      labelEl.className = 'db-key-hold-label show';
+      labelEl.textContent = STRUCT_NAMES[type] || ('Tile: ' + type);
+      labelEl.style.left = cx + 'px';
+      labelEl.style.top  = (rect.top - 46) + 'px';
+      document.body.appendChild(labelEl);
+      floatEl = document.createElement('div');
+      floatEl.className = 'db-half-dot-float show';
+      floatEl.style.background = color;
+      floatEl.style.left = cx + 'px';
+      floatEl.style.top  = (rect.top - 22) + 'px';
+      document.body.appendChild(floatEl);
+    }, 300);
+    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchend',  onUp,   { once: true });
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp,   { once: true });
+  }
+
+  btn.addEventListener('touchstart', onDown, { passive: false });
+  btn.addEventListener('mousedown', onDown);
+  /* prevent double-press on touch (synthetic click fires after touchend) */
+  btn.addEventListener('click', () => { if (Date.now() - _lastTouchTime < 600) return; /* desktop handled in mousedown/up */ });
+}
+
+function dbPressKey(type, half) {
+  DB.bars.splice(DB.cursor, 0, half ? type.toLowerCase() : type);
+  DB.cursor++;
+  dbRenderSpine();
+}
+
+function dbDeleteBar() {
+  if (!DB.cursor) return;
+  DB.bars.splice(--DB.cursor, 1);
+  dbRenderSpine();
+}
+
+function dbClear() {
+  if (DB.bars.length && !confirm('Clear all bars?')) return;
+  DB.bars = []; DB.cursor = 0;
+  dbRenderSpine();
+}
+
+async function dbSaveAndLock() {
+  if (!DB.bars.length) { showToast('Add some bars first'); return; }
+  DB.locked = true;
+  dbUpdateLockState();
+  await _dbPersist();
+  showToast('Structure saved & locked');
+}
+
+async function dbUnlock() {
+  DB.locked = false;
+  DB.cursor = DB.bars.length;
+  dbUpdateLockState();
+  dbCloseDotMenu();
+  await _dbPersist();
+}
+
+async function _dbPersist() {
+  const song = S.songs?.find(s => s.name === DB.songName);
+  if (!song) return;
+  if (!song.doodle) song.doodle = {};
+  song.doodle.bars        = [...DB.bars];
+  song.doodle.locked      = DB.locked;
+  song.doodle.customTiles = [...DB.customTiles];
+  try { await saveSongsJson(); }
+  catch(e) { showToast('Save failed: ' + _errMsg(e)); }
+}
+
+function dbUpdateLockState() {
+  $('db-keyboard')?.classList.toggle('locked', DB.locked);
+  $('db-actions')?.classList.toggle('locked', DB.locked);
+  $('db-locked-bar')?.classList.toggle('show', DB.locked);
+  dbRenderSpine();
+}
+
+function dbShowDotMenu(dotEl, barIdx) {
+  dbCloseDotMenu();
+  const menu = $('db-dot-menu');
+  if (!menu) return;
+  DB._dotMenuBarIdx = barIdx;
+  const rect = dotEl.getBoundingClientRect();
+  let top  = rect.top - 220;
+  if (top < 60) top = rect.bottom + 10;
+  let left = rect.left + rect.width / 2 - 77;
+  if (left < 8) left = 8;
+  if (left + 165 > window.innerWidth) left = window.innerWidth - 173;
+  menu.style.left = left + 'px';
+  menu.style.top  = top  + 'px';
+  menu.classList.add('open');
+  setTimeout(() => document.addEventListener('click', _dbMenuOutsideClick, { once: true }), 20);
+}
+
+function _dbMenuOutsideClick(e) {
+  if (!$('db-dot-menu')?.contains(e.target)) dbCloseDotMenu();
+}
+
+function dbCloseDotMenu() {
+  $('db-dot-menu')?.classList.remove('open');
+  DB._dotMenuBarIdx = -1;
+}
+
+function dbDotMenuNote()  { dbCloseDotMenu(); showToast('Notes pinning coming in Step 2'); }
+function dbDotMenuTab()   { dbCloseDotMenu(); showToast('Tab pinning coming in Step 2'); }
+function dbDotMenuSnip()  { dbCloseDotMenu(); showToast('Snippet pinning coming in Step 2'); }
+function dbDotMenuEdit()  { dbUnlock(); }
+
+function dbAddCustomTile() {
+  if (DB.customTiles.length >= 3) { showToast('Maximum 3 custom tiles'); return; }
+  const existing = [...Object.keys(STRUCT_COLORS), ...DB.customTiles];
+  const raw    = (prompt('Enter a single letter (A–Z) for your custom tile:') || '').trim();
+  const letter = raw.toUpperCase()[0];
+  if (!letter || !/[A-Z]/.test(letter)) { if (raw) showToast('Must be a single letter A–Z'); return; }
+  if (existing.includes(letter)) { showToast(`'${letter}' is already in use`); return; }
+  DB.customTiles.push(letter);
+  dbRenderKeyboard();
+}
+
+function dbSyncPlayBtn() {
+  const btn = $('db-transport-play');
+  if (!btn) return;
+  const playing = S.tp?.audio && !S.tp.audio.paused;
+  btn.innerHTML = playing ? '⏸&#xFE0E;' : '▶&#xFE0E;';
 }
 
 function sePressKey(type) {
