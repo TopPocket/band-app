@@ -1473,7 +1473,7 @@ body.tab-view #tab-view-close { display:flex; }
 <!-- ── COMMENT PANEL ── -->
 <div class="comment-panel" id="comment-panel">
   <div class="comment-panel-inner">
-    <div class="comment-panel-hdr">New Comment</div>
+    <div class="comment-panel-hdr" id="comment-panel-hdr">New Comment</div>
     <div class="comment-panel-time" id="comment-panel-time">@ 0:00</div>
     <textarea class="comment-textarea" id="comment-textarea" placeholder="What did you hear?"></textarea>
     <div class="comment-members" id="comment-members"></div>
@@ -3556,16 +3556,21 @@ function renderComments() {
       </div>
       <div class="tp-comment-text">${c.text}</div>`;
     el.addEventListener('click', () => { S.tp.audio.currentTime = c.startTime; S.tp.audio.play().catch(()=>{}); });
+    const actions = document.createElement('div');
+    actions.className = 'tp-comment-actions';
+    const editBtn = document.createElement('button');
+    editBtn.className = 'tp-comment-act-btn';
+    editBtn.textContent = '✎ Edit';
+    editBtn.addEventListener('click', e => { e.stopPropagation(); showEditCommentPanel(c.id); });
+    actions.appendChild(editBtn);
     if (c.endTime && c.endTime > c.startTime + 0.5) {
-      const actions = document.createElement('div');
-      actions.className = 'tp-comment-actions';
-      const btn = document.createElement('button');
-      btn.className = 'tp-comment-act-btn';
-      btn.textContent = '✂ Loop & Trim';
-      btn.addEventListener('click', e => { e.stopPropagation(); openLoopTrim(c.id); });
-      actions.appendChild(btn);
-      inner.appendChild(actions);
+      const ltBtn = document.createElement('button');
+      ltBtn.className = 'tp-comment-act-btn';
+      ltBtn.textContent = '✂ Loop & Trim';
+      ltBtn.addEventListener('click', e => { e.stopPropagation(); openLoopTrim(c.id); });
+      actions.appendChild(ltBtn);
     }
+    inner.appendChild(actions);
     const delReveal = document.createElement('div');
     delReveal.className = 'tp-comment-del-reveal';
     delReveal.textContent = '𓅮';
@@ -3652,11 +3657,13 @@ function showCommentPanel(start, end) {
   panel.dataset.start = start;
   panel.dataset.end   = end ?? '';
 
+  panel.dataset.editId = '';
+  $('comment-panel-hdr').textContent = 'New Comment';
   const membersEl = $('comment-members');
   membersEl.innerHTML = '';
   CONFIG.BAND_MEMBERS.forEach(m => {
     const btn = document.createElement('button');
-    btn.className   = 'comment-member-btn on';
+    btn.className   = 'comment-member-btn';
     btn.textContent = `${m[0]}${MEMBER_BIRDS[m]||''}`;
     btn.title       = m;
     btn.onclick     = () => btn.classList.toggle('on');
@@ -3667,15 +3674,56 @@ function showCommentPanel(start, end) {
   panel.classList.add('visible');
   setTimeout(() => $('comment-textarea').focus(), 100);
 }
+
+function showEditCommentPanel(commentId) {
+  const c = S.tp.comments.find(c => c.id === commentId)
+         || _cdAllComments.find(c => c.id === commentId);
+  if (!c) return;
+  const panel = $('comment-panel');
+  $('comment-panel-hdr').textContent = 'Edit Comment';
+  $('comment-panel-time').textContent = c.endTime
+    ? `${fmt(c.startTime)} → ${fmt(c.endTime)}`
+    : `@ ${fmt(c.startTime)}`;
+  panel.dataset.editId = commentId;
+  panel.dataset.start  = c.startTime;
+  panel.dataset.end    = c.endTime || '';
+  $('comment-textarea').value = c.text;
+  const membersEl = $('comment-members');
+  membersEl.innerHTML = '';
+  CONFIG.BAND_MEMBERS.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className   = 'comment-member-btn' + ((c.directedTo || []).includes(m) ? ' on' : '');
+    btn.textContent = `${m[0]}${MEMBER_BIRDS[m]||''}`;
+    btn.title       = m;
+    btn.onclick     = () => btn.classList.toggle('on');
+    membersEl.appendChild(btn);
+  });
+  panel.classList.add('visible');
+  setTimeout(() => $('comment-textarea').focus(), 100);
+}
 function hideCommentPanel() { $('comment-panel').classList.remove('visible'); }
 
 async function submitComment() {
   const text = $('comment-textarea').value.trim();
   if (!text) { showToast('Add some text first'); return; }
   const panel    = $('comment-panel');
+  const directed = [...$('comment-members').querySelectorAll('.on')].map(b => b.title);
+  const editId   = panel.dataset.editId;
+
+  if (editId) {
+    const cAll = _cdAllComments.find(c => c.id === editId);
+    const cTp  = S.tp.comments.find(c => c.id === editId);
+    if (cAll) { cAll.text = text; cAll.directedTo = directed; }
+    if (cTp)  { cTp.text  = text; cTp.directedTo  = directed; }
+    hideCommentPanel();
+    try { await saveCommentsJson(); } catch(e) { showToast('Save failed: ' + _errMsg(e)); return; }
+    renderComments(); drawWave();
+    showToast('Comment updated');
+    return;
+  }
+
   const start    = parseFloat(panel.dataset.start);
   const end      = panel.dataset.end ? parseFloat(panel.dataset.end) : null;
-  const directed = [...$('comment-members').querySelectorAll('.on')].map(b => b.title);
   const isSess   = panel.dataset.context === 'session';
 
   let songName, fileId, version, sessionDate;
