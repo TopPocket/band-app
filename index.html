@@ -321,24 +321,26 @@ header {
 .tp-versions-body { }
 .tp-ver-row {
   display: flex; align-items: center; gap: 10px;
-  padding: 9px 14px; cursor: pointer; border-bottom: 1px solid rgba(46,70,68,0.4);
+  padding: 12px 14px; cursor: pointer; border-bottom: 1px solid rgba(46,70,68,0.4);
   position: relative; overflow: hidden;
   transition: background 0.15s;
 }
 .tp-ver-row:hover  { background: rgba(25,114,120,0.06); }
 .tp-ver-row.active { background: rgba(25,114,120,0.12); }
-.tp-ver-badge {
-  font-family: var(--f-mono); font-size: 11px; font-weight: 500; flex-shrink: 0;
-  background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 4px; padding: 2px 8px; color: var(--c-teal-pale);
-}
-.tp-ver-row.active .tp-ver-badge { background: var(--c-teal); border-color: var(--c-teal); color: var(--c-text); }
-.tp-ver-info  { flex: 1; display: flex; flex-direction: column; gap: 1px; }
-.tp-ver-date  { font-family: var(--f-mono); font-size: 11px; color: var(--c-text-dim); }
-.tp-ver-type  { font-family: var(--f-mono); font-size: 9px; color: var(--c-border); text-transform: uppercase; letter-spacing: 0.06em; }
-.tp-ver-type.studio { color: #4BBDD4; }
-.tp-ver-dur   { font-family: var(--f-mono); font-size: 10px; color: var(--c-border); flex-shrink: 0; }
-.tp-ver-play  { font-size: 10px; color: var(--c-teal-pale); flex-shrink: 0; opacity: 0; }
-.tp-ver-row.active .tp-ver-play { opacity: 1; }
+/* date block — mirrors session-date-block */
+.tp-ver-dateblock { display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:36px; }
+.tp-ver-day   { font-family:var(--f-display); font-size:18px; font-weight:700; line-height:1; }
+.tp-ver-month { font-family:var(--f-mono); font-size:8px; text-transform:uppercase; letter-spacing:0.1em; color:var(--c-teal-pale); }
+.tp-ver-year  { font-family:var(--f-mono); font-size:8px; color:#6B8E8C; }
+.tp-ver-row.active .tp-ver-day { color:var(--c-teal); }
+/* info column */
+.tp-ver-info  { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.tp-ver-type  { font-family:var(--f-mono); font-size:9px; color:var(--c-teal-pale); text-transform:uppercase; letter-spacing:0.06em; }
+.tp-ver-type.studio { color:#4BBDD4; }
+.tp-ver-vrow  { display:flex; align-items:center; gap:2px; min-width:0; }
+.tp-ver-vnum  { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); white-space:nowrap; flex-shrink:0; }
+/* duration — larger and brighter */
+.tp-ver-dur   { font-family:var(--f-mono); font-size:12px; color:var(--c-text); flex-shrink:0; }
 .tp-ver-bubble { display:none; align-items:center; justify-content:center; flex-shrink:0; width:16px; }
 .tp-ver-bubble.has-comments { display:flex; color:var(--c-teal-pale); }
 .tp-ver-bubble.has-unread   { display:flex; color:var(--c-amber-lt); }
@@ -2518,7 +2520,8 @@ async function ensureTrackIndex() {
       files.filter(f => f.name.toLowerCase().endsWith('.mp3')).forEach(f => {
         const parts   = f.name.replace(/\.mp3$/i,'').split(/\s*-\s*/);
         const key     = (parts[0]||'').trim().toLowerCase();
-        const version = parseInt(parts[1]) || 1;
+        const _vp     = parseInt(parts[1]);
+        const version = (_vp > 0 && _vp < 1000) ? _vp : 1;
         if (!key) return;
         if (!index[key]) index[key] = [];
         index[key].push({ fileId: f.id, fileName: f.name, version, sessionDate: sess.date, sessionType: sess.type });
@@ -2894,30 +2897,35 @@ function renderVersionsList() {
       row.className = 'tp-ver-row';
       row.id = `tpver-${origIdx}`;
       const starred = (songEntry?.starredVersions || []).includes(v.fileId);
-      const badge   = S.tp.isEgg ? 'Egg' : `V${v.version}`;
       const title   = versionTitles[v.fileId] || '';
-      const hasStruct = S.structures?.some(s => s.fileId === v.fileId);
+      const dp      = fmtDateParts(v.sessionDate || '2000-01-01');
+      const typeLabel = v.sessionType === 'studio' ? 'Studio' : v.sessionType === 'rehearsal' ? 'Rehearsal' : (v.sessionType || '');
+      const vnum    = S.tp.isEgg ? '' : `V${v.version} —`;
       row.innerHTML = `
-        <div class="tp-ver-badge">${badge}</div>
-        <div class="tp-ver-info">
-          <div class="tp-ver-date">${fmtDate(v.sessionDate)}</div>
-          <div class="tp-ver-type${v.sessionType === 'studio' ? ' studio' : ''}">${v.sessionType}</div>
+        <div class="tp-ver-dateblock">
+          <div class="tp-ver-day">${dp.day}</div>
+          <div class="tp-ver-month">${dp.month}</div>
+          <div class="tp-ver-year">${dp.year}</div>
         </div>
-        <div class="tp-ver-bubble" id="tpvbub-${v.fileId}" title="Comments"><svg width="13" height="12" viewBox="0 0 13 12" fill="none"><path d="M1 0h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4.5L2 11.5V9H1a1 1 0 0 1-1-1V1a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" fill="none"/></svg></div>
-        <input class="tp-ver-title" type="text" value="${title.replace(/"/g,'&quot;')}" placeholder="add title…"
-               onclick="event.stopPropagation()"
-               onblur="saveVersionTitle('${v.fileId}', this.value)"
-               onkeydown="if(event.key==='Enter')this.blur()">
-        <div class="tp-ver-dur" id="tpvdur-${origIdx}">—</div>
+        <div class="tp-ver-info">
+          <div class="tp-ver-type${v.sessionType === 'studio' ? ' studio' : ''}">${typeLabel}</div>
+          <div class="tp-ver-vrow">
+            ${vnum ? `<span class="tp-ver-vnum">${vnum}</span>` : ''}
+            <input class="tp-ver-title" type="text" value="${title.replace(/"/g,'&quot;')}" placeholder="add note…"
+                   onclick="event.stopPropagation()"
+                   onblur="saveVersionTitle('${v.fileId}', this.value)"
+                   onkeydown="if(event.key==='Enter')this.blur()">
+          </div>
+        </div>
         <div class="tp-ver-star${starred?' starred':''}" title="Star" onclick="toggleStar(event,'${v.fileId}')">★</div>
-        <div class="tp-ver-struct${hasStruct?' has-struct':''}" title="Structure" onclick="tpToggleStruct(event,'${v.fileId}')">⬡</div>
-        <div class="tp-ver-play">▶</div>`;
+        <div class="tp-ver-dur" id="tpvdur-${origIdx}">—</div>
+        <div class="tp-ver-bubble" id="tpvbub-${v.fileId}" title="Comments"><svg width="13" height="12" viewBox="0 0 13 12" fill="none"><path d="M1 0h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4.5L2 11.5V9H1a1 1 0 0 1-1-1V1a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" fill="none"/></svg></div>`;
       const delReveal  = document.createElement('div'); delReveal.className = 'tp-ver-del-reveal'; delReveal.textContent = '𓅮';
       const delConfirm = document.createElement('div');
       delConfirm.className = 'tp-ver-del-confirm'; delConfirm.id = `tpverconf-${v.fileId}`;
       delConfirm.innerHTML = `Hide version? <button class="tp-snip-del-yes" onclick="confirmHideVersion('${v.fileId}')">Hide</button> <button class="tp-snip-del-no" onclick="cancelHideVersion('${v.fileId}')">Keep</button>`;
       row.appendChild(delReveal); row.appendChild(delConfirm);
-      row.onclick = e => { if (e.target.closest('.tp-ver-star,.tp-ver-struct,.tp-ver-title,.tp-ver-del-confirm')) return; selectVersion(origIdx); };
+      row.onclick = e => { if (e.target.closest('.tp-ver-star,.tp-ver-title,.tp-ver-del-confirm')) return; selectVersion(origIdx); };
       _attachVerSwipe(row, v.fileId);
       body.appendChild(row);
     });
@@ -2935,22 +2943,24 @@ function renderVersionsList() {
     row.className = 'tp-ver-row';
     row.id = `tpsnip-${sn.id}`;
     const dur  = sn.trimEnd > 0 ? fmt(sn.trimEnd - sn.trimStart) : (sn.duration ? fmt(sn.duration) : '—');
-    const date = sn.createdAt ? fmtDate(sn.createdAt.slice(0, 10)) : '—';
     const auth = (sn.author || '?')[0];
     const title = sn.title || '';
+    const sdp  = sn.createdAt ? fmtDateParts(sn.createdAt.slice(0, 10)) : { day: '—', month: '—', year: '—' };
     row.innerHTML = `
-      <div class="tp-ver-badge" style="border-color:var(--c-amber);color:var(--c-amber)">Snip</div>
-      <div class="tp-ver-info">
-        <div class="tp-ver-date">${date}</div>
-        <div class="tp-ver-type">snippet <span class="tp-snip-author">${auth}</span></div>
+      <div class="tp-ver-dateblock">
+        <div class="tp-ver-day">${sdp.day}</div>
+        <div class="tp-ver-month">${sdp.month}</div>
+        <div class="tp-ver-year">${sdp.year}</div>
       </div>
-      <input class="tp-ver-title" type="text" value="${title.replace(/"/g,'&quot;')}" placeholder="add title…"
-             onclick="event.stopPropagation()"
-             onblur="saveSnippetTitle('${sn.id}', this.value)"
-             onkeydown="if(event.key==='Enter')this.blur()">
+      <div class="tp-ver-info">
+        <div class="tp-ver-type">Snippet <span class="tp-snip-author">${auth}</span></div>
+        <input class="tp-ver-title" type="text" value="${title.replace(/"/g,'&quot;')}" placeholder="add title…"
+               onclick="event.stopPropagation()"
+               onblur="saveSnippetTitle('${sn.id}', this.value)"
+               onkeydown="if(event.key==='Enter')this.blur()">
+      </div>
       <div class="tp-ver-dur">${dur}</div>
-      ${sn.bpm ? `<div class="tp-snip-metro-icon" id="snip-mi-${sn.id}" title="Metronome (${sn.bpm} bpm)" onclick="event.stopPropagation();toggleSnipMetro('${sn.id}')">♩</div>` : ''}
-      <div class="tp-ver-play">▶</div>`;
+      ${sn.bpm ? `<div class="tp-snip-metro-icon" id="snip-mi-${sn.id}" title="Metronome (${sn.bpm} bpm)" onclick="event.stopPropagation();toggleSnipMetro('${sn.id}')">♩</div>` : ''}`;
     const delReveal  = document.createElement('div'); delReveal.className = 'tp-snip-del-reveal'; delReveal.textContent = '𓅮';
     const delConfirm = document.createElement('div');
     delConfirm.className = 'tp-snip-del-confirm'; delConfirm.id = `tpsnipconf-${sn.id}`;
