@@ -3687,7 +3687,8 @@ function showCommentPanel(start, end) {
   panel.dataset.start = start;
   panel.dataset.end   = end ?? '';
 
-  panel.dataset.editId = '';
+  panel.dataset.editId  = '';
+  panel.dataset.editCtx = '';
   $('comment-panel-hdr').textContent = 'New Comment';
   const membersEl = $('comment-members');
   membersEl.innerHTML = '';
@@ -3745,9 +3746,11 @@ async function submitComment() {
     const cTp  = S.tp.comments.find(c => c.id === editId);
     if (cAll) { cAll.text = text; cAll.directedTo = directed; }
     if (cTp)  { cTp.text  = text; cTp.directedTo  = directed; }
+    const ctx = panel.dataset.editCtx || 'tp';
     hideCommentPanel();
     try { await saveCommentsJson(); } catch(e) { showToast('Save failed: ' + _errMsg(e)); return; }
-    renderComments(); drawWave();
+    if (ctx === 'cd') { renderCommentsList(); }
+    else { renderComments(); drawWave(); }
     showToast('Comment updated');
     return;
   }
@@ -4040,25 +4043,23 @@ async function goComments(){
 
 function buildCdPeopleFilter(){
   const el=$('cd-people'); el.innerHTML='';
-  // Ensure sane initial state — all members selected = no author filter
-  if(_cdPeopleFilter.size===0&&!_cdOnlyMe&&!_cdIncMe) _cdPeopleFilter=new Set(CONFIG.BAND_MEMBERS);
 
-  // "All" quick button
+  // "All" quick button — empty filter = show everything
   const allBtn=document.createElement('button');
   allBtn.className='cd-filter-quick'; allBtn.textContent='All'; allBtn.id='cd-filter-all';
-  allBtn.onclick=()=>{ _cdPeopleFilter=new Set(CONFIG.BAND_MEMBERS); _cdOnlyMe=false; _cdIncMe=false; syncCdFilter(); renderCommentsList(); };
+  allBtn.onclick=()=>{ _cdPeopleFilter=new Set(); _cdOnlyMe=false; _cdIncMe=false; syncCdFilter(); renderCommentsList(); };
   el.appendChild(allBtn);
 
   // "Only Me" quick button — comments exclusively directed at me
   const meBtn=document.createElement('button');
   meBtn.className='cd-filter-quick'; meBtn.textContent='Only Me'; meBtn.id='cd-filter-me';
-  meBtn.onclick=()=>{ _cdOnlyMe=!_cdOnlyMe; if(_cdOnlyMe){ _cdIncMe=false; _cdPeopleFilter=new Set(CONFIG.BAND_MEMBERS); } syncCdFilter(); renderCommentsList(); };
+  meBtn.onclick=()=>{ _cdOnlyMe=!_cdOnlyMe; if(_cdOnlyMe){ _cdIncMe=false; _cdPeopleFilter=new Set(); } syncCdFilter(); renderCommentsList(); };
   el.appendChild(meBtn);
 
   // "Inc Me" quick button — comments that include me as author or recipient
   const incBtn=document.createElement('button');
   incBtn.className='cd-filter-quick'; incBtn.textContent='Inc Me'; incBtn.id='cd-filter-incme';
-  incBtn.onclick=()=>{ _cdIncMe=!_cdIncMe; if(_cdIncMe){ _cdOnlyMe=false; _cdPeopleFilter=new Set(CONFIG.BAND_MEMBERS); } syncCdFilter(); renderCommentsList(); };
+  incBtn.onclick=()=>{ _cdIncMe=!_cdIncMe; if(_cdIncMe){ _cdOnlyMe=false; _cdPeopleFilter=new Set(); } syncCdFilter(); renderCommentsList(); };
   el.appendChild(incBtn);
 
   // Individual letter circles (filter by author)
@@ -4083,7 +4084,7 @@ function syncCdFilter(){
     btn.classList.toggle('on', _cdPeopleFilter.has(btn.dataset.member));
   });
   // Update quick buttons
-  const allOn=all.every(m=>_cdPeopleFilter.has(m))&&!_cdOnlyMe&&!_cdIncMe;
+  const allOn=_cdPeopleFilter.size===0&&!_cdOnlyMe&&!_cdIncMe;
   const allBtn=$('cd-filter-all'), meBtn=$('cd-filter-me'), incBtn=$('cd-filter-incme');
   if(allBtn) allBtn.classList.toggle('on', allOn);
   if(meBtn)  meBtn.classList.toggle('on', _cdOnlyMe);
@@ -4120,7 +4121,7 @@ function renderCommentsList(){
     list=list.filter(c=>(c.directedTo||[]).length>0&&(c.directedTo||[]).every(p=>p===_me));
   }else if(_cdIncMe && _me){
     list=list.filter(c=>c.author===_me||(c.directedTo||[]).includes(_me));
-  }else if(_cdPeopleFilter.size<CONFIG.BAND_MEMBERS.length){
+  }else if(_cdPeopleFilter.size>0){
     list=list.filter(c=>_cdPeopleFilter.has(c.author));
   }
   // Newest first
@@ -4133,6 +4134,11 @@ function renderCommentsList(){
     return;
   }
   list.forEach(c=>container.appendChild(buildCommentCard(c)));
+}
+
+function cdEditComment(commentId) {
+  $('comment-panel').dataset.editCtx = 'cd';
+  showEditCommentPanel(commentId);
 }
 
 function buildCommentCard(c){
@@ -4158,6 +4164,7 @@ function buildCommentCard(c){
           ? `<button class="cd-action-btn" id="cdlt-${c.id}" onclick="openLoopTrimCd('${c.id}')">✂ Loop &amp; Trim</button>`
           : `<button class="cd-action-btn" id="cdloop-${c.id}" onclick="cdToggleLoop('${c.id}')">⟳ Loop</button>`}
         <button class="cd-action-btn${isPerched?' perched':''}" id="cdperch-${c.id}" onclick="cdTogglePerch('${c.id}')">${NEST_SVG} ${(c.perches||[]).length||''}</button>
+        <button class="cd-action-btn" onclick="cdEditComment('${c.id}')">✎ Edit</button>
       </div>
     </div>
     <div class="cd-delete-reveal" id="cddel-${c.id}">𓅓</div>
