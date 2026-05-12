@@ -28,6 +28,31 @@
   --f-sans:      'DM Sans', sans-serif;
 }
 
+html[data-theme="light"] {
+  --c-bg:        #EDDDD4;
+  --c-surface:   #E2CFC3;
+  --c-surface2:  #D6C1B2;
+  --c-teal:      #197278;
+  --c-teal-lt:   #1F5052;
+  --c-teal-pale: #2D6B6E;
+  --c-text:      #1A2E2C;
+  --c-text-dim:  #8B5020;
+  --c-amber:     #9B6030;
+  --c-amber-lt:  #7D4A22;
+  --c-accent:    #C4503A;
+  --c-accent-dk: #7D3220;
+  --c-border:    #C8B5A5;
+}
+#theme-toggle-btn {
+  position: absolute; bottom: 20px; right: 20px;
+  background: none; border: 1px solid var(--c-border); border-radius: 50%;
+  width: 36px; height: 36px; font-size: 17px; cursor: pointer;
+  color: var(--c-teal-pale); display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.15s, color 0.15s; flex-shrink: 0;
+}
+#theme-toggle-btn:hover { border-color: var(--c-teal-pale); color: var(--c-text); }
+#screen-home { position: relative; }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
 body {
@@ -883,6 +908,10 @@ body.tab-view #tab-view-close { display:flex; }
 }
 .toast.show { opacity: 1; }
 </style>
+<script>
+  const _st = localStorage.getItem('ng-theme');
+  if (_st === 'light') document.documentElement.dataset.theme = 'light';
+</script>
 </head>
 <body>
 
@@ -966,6 +995,7 @@ body.tab-view #tab-view-close { display:flex; }
         <div class="nav-card-arrow">›</div>
       </div>
     </div>
+    <button id="theme-toggle-btn" onclick="toggleTheme()" title="Switch to light mode">☀</button>
   </div>
 
   <!-- ── SESSIONS LIST ── -->
@@ -4381,8 +4411,23 @@ async function cdSubmitReply(cid){
 /* ══════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════ */
+function toggleTheme() {
+  const isLight = document.documentElement.dataset.theme === 'light';
+  document.documentElement.dataset.theme = isLight ? 'dark' : 'light';
+  localStorage.setItem('ng-theme', document.documentElement.dataset.theme);
+  updateThemeBtn();
+}
+function updateThemeBtn() {
+  const btn = $('theme-toggle-btn');
+  if (!btn) return;
+  const isLight = document.documentElement.dataset.theme === 'light';
+  btn.textContent = isLight ? '☾' : '☀';
+  btn.title = isLight ? 'Switch to dark mode' : 'Switch to light mode';
+}
+
 window.onload = () => {
   showLoading('Starting up…');
+  updateThemeBtn();
   buildNamePicker();
   // Tab canvas click — jump cursor
   $('tab-canvas')?.addEventListener('click', e => {
