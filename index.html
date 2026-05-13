@@ -1838,7 +1838,9 @@ body.tab-view #tab-view-close { display:flex; }
 <div id="db-dot-menu">
   <button class="db-dot-menu-btn" onclick="dbDotMenuNote()">+ Note</button>
   <button class="db-dot-menu-btn" onclick="dbDotMenuTab()">+ Tab</button>
+  <button class="db-dot-menu-btn" onclick="dbDotMenuNewTab()">+ New Tab</button>
   <button class="db-dot-menu-btn" onclick="dbDotMenuSnip()">+ Snip</button>
+  <button class="db-dot-menu-btn" onclick="dbDotMenuRecordSnip()">+ Record Snip</button>
   <button class="db-dot-menu-btn db-menu-edit" onclick="dbDotMenuEdit()">Edit structure</button>
   <button class="db-dot-menu-btn db-menu-cancel" onclick="dbCloseDotMenu()">Cancel</button>
 </div>
@@ -5369,6 +5371,7 @@ const DB = {
   songName: null, bars: [], locked: false, cursor: 0, customTiles: [], pins: [],
   _dotMenuBarIdx: -1, _syncInterval: null,
   _anchoringPinId: null, _noteEditPinId: null, _noteTargetBarIdx: null,
+  _awaitingNewTabBarIdx: null, _awaitingNewSnipBarIdx: null,
 };
 
 function dbGetTileColor(type) {
@@ -5379,7 +5382,7 @@ function dbGetTileColor(type) {
   return ci >= 0 ? CUSTOM_TILE_COLORS[ci % CUSTOM_TILE_COLORS.length] : '#888888';
 }
 
-function openDoodleBoard() {
+async function openDoodleBoard() {
   const song = S.songs?.find(s => s.name === S.tp?.songName);
   if (!song) return;
   DB.songName = S.tp.songName;
@@ -5388,6 +5391,12 @@ function openDoodleBoard() {
   DB.locked      = !!d.locked;
   DB.customTiles = Array.isArray(d.customTiles) ? [...d.customTiles] : [];
   DB.pins        = Array.isArray(d.pins)        ? d.pins.map(p => ({...p})) : [];
+  // Seed bars from pinned structure when the doodle has none yet
+  if (!DB.bars.length && song.pinnedStructureId) {
+    if (!S.structuresLoaded) { showLoading('Loading…'); await loadStructures(); hideLoading(); }
+    const pinned = S.structures?.find(s => s.id === song.pinnedStructureId);
+    if (pinned?.bars?.length) DB.bars = [...pinned.bars];
+  }
   DB.cursor      = DB.bars.length;
   DB._dotMenuBarIdx = -1; DB._anchoringPinId = null;
   $('db-title').textContent = S.tp.songName;
@@ -5731,6 +5740,25 @@ function dbSubmitNote() {
 
 function dbDotMenuEdit()  { dbUnlock(); }
 
+async function dbDotMenuNewTab() {
+  const barIdx = DB._dotMenuBarIdx;
+  dbCloseDotMenu();
+  // Hide overlay without clearing DB state so we can restore it after save
+  $('doodle-board').classList.remove('open');
+  const picked = await _simplePickerModal('Instrument', ['Bass', 'Guitar'], 'Bass');
+  if (picked === null) { $('doodle-board').classList.add('open'); return; }
+  DB._awaitingNewTabBarIdx = barIdx;
+  TE.instrument = picked.toLowerCase();
+  openTabEditor(null);
+}
+
+function dbDotMenuRecordSnip() {
+  const barIdx = DB._dotMenuBarIdx;
+  dbCloseDotMenu();
+  DB._awaitingNewSnipBarIdx = barIdx;
+  openSnipRecorder('doodle', null, DB.songName);
+}
+
 function dbAddCustomTile() {
   if (DB.customTiles.length >= 3) { showToast('Maximum 3 custom tiles'); return; }
   const existing = [...Object.keys(STRUCT_COLORS), ...DB.customTiles];
@@ -5774,45 +5802,63 @@ function dbRenderPins() {
   svg.style.cssText = `position:absolute;top:0;left:0;width:${inner.scrollWidth}px;height:${inner.scrollHeight + 10}px;pointer-events:none;overflow:visible`;
   inner.appendChild(svg);
 
+  const PIN_R = 12;
+  const MIN_SPACING = PIN_R * 2 + 4; // minimum gap between pin centres
+
+  // Group pins by bar index, compute each pin's ideal x centred on its dot
   const byBar = {};
   DB.pins.forEach(pin => {
     const k = pin.barIdx != null ? pin.barIdx : '__free__';
     (byBar[k] = byBar[k] || []).push(pin);
   });
 
-  const PIN_R = 12;
-
-  Object.entries(byBar).forEach(([bk, pins]) => {
+  const allPins = [];
+  let freeX = 20;
+  Object.entries(byBar).forEach(([bk, grpPins]) => {
     const bi  = bk === '__free__' ? -1 : parseInt(bk);
     const dot = bi >= 0 && bi < dotCtrs.length ? dotCtrs[bi] : null;
-
-    pins.forEach((pin, pi) => {
-      const spread = (pi - (pins.length - 1) / 2) * 30;
-      const pinCx = dot ? dot.x + spread : 30 + pi * 30;
-      const pinCy = 22;
-
-      const el = document.createElement('div');
-      el.className = 'db-pin' + (pin.barIdx == null ? ' unanchored' : '');
-      el.dataset.pinId = pin.id;
-      el.style.left = (pinCx - PIN_R) + 'px';
-      el.style.top  = (pinCy - PIN_R) + 'px';
-      el.textContent = pin.type === 'note' ? 'N' : pin.type === 'tab' ? 'T' : '▸';
-      inner.appendChild(el);
-      _dbAttachPinInteraction(el, pin);
-
-      if (dot) {
-        const x1 = pinCx, y1 = pinCy + PIN_R;
-        const x2 = dot.x,  y2 = dot.y - 10;
-        const mid = (y1 + y2) / 2;
-        const path = document.createElementNS(svgNS, 'path');
-        path.setAttribute('d', `M${x1},${y1} C${x1},${mid} ${x2},${mid} ${x2},${y2}`);
-        path.setAttribute('stroke', '#C4503A');
-        path.setAttribute('stroke-width', '1.5');
-        path.setAttribute('fill', 'none');
-        path.setAttribute('opacity', '0.5');
-        svg.appendChild(path);
-      }
+    grpPins.forEach((pin, pi) => {
+      const spread = (pi - (grpPins.length - 1) / 2) * MIN_SPACING;
+      const cx = dot ? dot.x + spread : freeX + pi * MIN_SPACING;
+      allPins.push({ pin, cx, dot });
     });
+    if (!dot) freeX += grpPins.length * MIN_SPACING + 10;
+  });
+
+  // Sort by x, then resolve overlaps across all groups with forward+backward passes
+  allPins.sort((a, b) => a.cx - b.cx);
+  for (let i = 1; i < allPins.length; i++) {
+    if (allPins[i].cx < allPins[i-1].cx + MIN_SPACING)
+      allPins[i].cx = allPins[i-1].cx + MIN_SPACING;
+  }
+  for (let i = allPins.length - 2; i >= 0; i--) {
+    if (allPins[i].cx > allPins[i+1].cx - MIN_SPACING)
+      allPins[i].cx = allPins[i+1].cx - MIN_SPACING;
+  }
+
+  const pinCy = 22;
+  allPins.forEach(({ pin, cx, dot }) => {
+    const el = document.createElement('div');
+    el.className = 'db-pin' + (pin.barIdx == null ? ' unanchored' : '');
+    el.dataset.pinId = pin.id;
+    el.style.left = (cx - PIN_R) + 'px';
+    el.style.top  = (pinCy - PIN_R) + 'px';
+    el.textContent = pin.type === 'note' ? 'N' : pin.type === 'tab' ? 'T' : '▸';
+    inner.appendChild(el);
+    _dbAttachPinInteraction(el, pin);
+
+    if (dot) {
+      const x1 = cx, y1 = pinCy + PIN_R;
+      const x2 = dot.x, y2 = dot.y - 10;
+      const mid = (y1 + y2) / 2;
+      const path = document.createElementNS(svgNS, 'path');
+      path.setAttribute('d', `M${x1},${y1} C${x1},${mid} ${x2},${mid} ${x2},${y2}`);
+      path.setAttribute('stroke', '#C4503A');
+      path.setAttribute('stroke-width', '1.5');
+      path.setAttribute('fill', 'none');
+      path.setAttribute('opacity', '0.5');
+      svg.appendChild(path);
+    }
   });
 }
 
@@ -7832,7 +7878,12 @@ async function snipSave() {
       _saveLyricsAnnotation({ type: 'snippet', start, end, snipId: entry.id }, annSong, annCtx);
       _pendingAnnSnip = null;
     }
+    const _dbSnipBarIdx = DB._awaitingNewSnipBarIdx;
+    if (_dbSnipBarIdx != null) DB._awaitingNewSnipBarIdx = null;
     snipClose();
+    if (_dbSnipBarIdx != null) {
+      dbPickItem('snip', entry.id, entry.fileName || 'Snippet', _dbSnipBarIdx);
+    }
   } catch(e) { hideLoading(); showToast('Save failed: ' + _errMsg(e)); }
 }
 
@@ -8256,6 +8307,12 @@ async function tabSave() {
         showScreen(ret);
         if (ret === 'screen-track') renderSongTabsData();
         else renderAnTabsList();
+        if (DB._awaitingNewTabBarIdx != null && DB.songName && DB.songName === TE.songName) {
+          const pendingIdx = DB._awaitingNewTabBarIdx;
+          DB._awaitingNewTabBarIdx = null;
+          $('doodle-board').classList.add('open');
+          dbPickItem('tab', tabData.id, tabData.title || 'Untitled tab', pendingIdx);
+        }
       } catch(e) { hideLoading(); showToast('Save failed: ' + (e?.message||e)); }
       resolve();
     };
