@@ -3304,21 +3304,27 @@ async function selectVersion(idx) {
       drawWave();
     }).catch(() => {});
 
-    S.tp.audio.addEventListener('loadedmetadata', () => {
+    if (S.tp._metaListener) {
+      S.tp.audio.removeEventListener('loadedmetadata', S.tp._metaListener);
+      S.tp._metaListener = null;
+    }
+    const _capturedIdx = idx, _capturedFileId = v.fileId;
+    S.tp._metaListener = () => {
+      S.tp._metaListener = null;
       const dur = S.tp.audio.duration;
       if (isNaN(dur)) return;
-      const el = $(`tpvdur-${idx}`);
+      const el = $(`tpvdur-${_capturedIdx}`);
       if (el) el.textContent = fmt(dur);
-      // Cache in songs.json for instant display on next load
       const entry = S.songs.find(s => s.name === S.tp.songName);
       if (entry) {
         if (!entry.versionDurations) entry.versionDurations = {};
-        if (!entry.versionDurations[v.fileId]) {
-          entry.versionDurations[v.fileId] = dur;
+        if (!entry.versionDurations[_capturedFileId]) {
+          entry.versionDurations[_capturedFileId] = dur;
           saveSongsJson().catch(() => {});
         }
       }
-    }, { once: true });
+    };
+    S.tp.audio.addEventListener('loadedmetadata', S.tp._metaListener, { once: true });
 
     renderComments(); // re-highlight for current version
     renderBpmTags();
