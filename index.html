@@ -2572,6 +2572,7 @@ Object.assign(S, {
 async function goTracks() {
   showScreen('screen-tracks');
   if (S.songs.length === 0) await loadSongs();
+  scanAllDurations().catch(() => {});
 }
 
 /* ── WAVE SHEET (draggable bottom panel) ─────────────── */
@@ -3410,7 +3411,51 @@ async function confirmDeleteSnippet(snipId, ctx) {
   showToast('Snippet deleted');
 }
 
+function getDurationFromBlob(blob) {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(blob);
+    const a = new Audio();
+    a.addEventListener('loadedmetadata', () => { URL.revokeObjectURL(url); resolve(isNaN(a.duration) ? null : a.duration); }, { once: true });
+    a.addEventListener('error', () => { URL.revokeObjectURL(url); resolve(null); }, { once: true });
+    a.src = url;
+  });
+}
+
+async function scanAllDurations() {
+  if (!S.gapiReady) return;
+  try { await ensureTrackIndex(); } catch(e) { return; }
+  const toScan = [];
+  for (const song of S.songs) {
+    if (!song.name || song.type === 'egg') continue;
+    const versions = S.trackIndex?.[song.name.toLowerCase()] || [];
+    const durs = song.versionDurations || {};
+    for (const v of versions) {
+      if (!durs[v.fileId]) toScan.push({ song, fileId: v.fileId });
+    }
+  }
+  if (!toScan.length) return;
+  let dirty = false;
+  for (const { song, fileId } of toScan) {
+    try {
+      const blob = await Drive.fetchBlob(fileId);
+      const dur = await getDurationFromBlob(blob);
+      if (dur != null) {
+        if (!song.versionDurations) song.versionDurations = {};
+        song.versionDurations[fileId] = dur;
+        dirty = true;
+      }
+    } catch(e) {}
+  }
+  if (dirty) saveSongsJson().catch(() => {});
+}
+
 async function selectVersion(idx) {
+  // Remove stale listener before any async work so it can't fire with wrong audio
+  if (S.tp._metaListener) {
+    S.tp.audio.removeEventListener('loadedmetadata', S.tp._metaListener);
+    S.tp._metaListener = null;
+  }
+
   S.tp.versionIdx = idx;
   const v = S.tp.versions[idx];
   if (!v) return;
@@ -3436,18 +3481,15 @@ async function selectVersion(idx) {
       drawWave();
     }).catch(() => {});
 
-    if (S.tp._metaListener) {
-      S.tp.audio.removeEventListener('loadedmetadata', S.tp._metaListener);
-      S.tp._metaListener = null;
-    }
-    const _capturedIdx = idx, _capturedFileId = v.fileId;
+    // Capture song name at registration time — S.tp.songName may change if user navigates away
+    const _capturedIdx = idx, _capturedFileId = v.fileId, _capturedSong = S.tp.songName;
     S.tp._metaListener = () => {
       S.tp._metaListener = null;
       const dur = S.tp.audio.duration;
       if (isNaN(dur)) return;
       const el = $(`tpvdur-${_capturedIdx}`);
       if (el) el.textContent = fmt(dur);
-      const entry = S.songs.find(s => s.name === S.tp.songName);
+      const entry = S.songs.find(s => s.name === _capturedSong);
       if (entry) {
         if (!entry.versionDurations) entry.versionDurations = {};
         if (!entry.versionDurations[_capturedFileId]) {
@@ -8068,11 +8110,24 @@ async function impStartUpload() {
         const newFileName=t.isEgg?`Egg - ${songName} - ${sess.date}.mp3`:`${songName} - ${t.version} - ${sess.date}.mp3`;
         lbl.textContent=`${done+1}/${total}: ${newFileName}`;
         try{
-          await Drive.uploadFile(t.file,t.file.type||'audio/mpeg',newFileName,folder.id);
+          const uploadedId = await Drive.uploadFile(t.file,t.file.type||'audio/mpeg',newFileName,folder.id);
           addLog(`  ✓ ${newFileName}`);
           if(!t.isEgg&&!existingNames.has(songName.toLowerCase())){
             existingNames.add(songName.toLowerCase());
             newSongs.push({name:songName,type:'track',sessionDate:sess.date});
+          }
+          // Cache duration from local file — no re-download needed
+          if(!t.isEgg && uploadedId) {
+            try {
+              const dur = await getDurationFromBlob(t.file);
+              if (dur != null) {
+                const songEntry = S.songs.find(s => s.name === songName) || newSongs.find(s => s.name === songName);
+                if (songEntry) {
+                  if (!songEntry.versionDurations) songEntry.versionDurations = {};
+                  songEntry.versionDurations[uploadedId] = dur;
+                }
+              }
+            } catch(e) {}
           }
         }catch(e){addLog(`  ✗ ${t.fileName}: ${e.message}`,false);}
         done++; fill.style.width=((done/total)*100).toFixed(1)+'%';
