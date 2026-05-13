@@ -927,7 +927,6 @@ body.tab-view #tab-view-close { display:flex; }
   flex: 1; overflow-y: auto; display: flex; flex-direction: column;
   align-items: center; padding: 24px 16px 12px; gap: 0;
 }
-#db-spine-wrap { width: 100%; overflow-x: auto; padding: 8px 0 4px; }
 #db-spine { display: flex; align-items: flex-end; flex-wrap: nowrap; min-height: 70px; }
 /* Larger dots for doodle board spine */
 #db-spine .struct-dot      { width: 18px; height: 18px; }
@@ -1042,6 +1041,102 @@ body.tab-view #tab-view-close { display:flex; }
   color: var(--c-teal-pale); flex-shrink: 0; font-family: var(--f-mono);
 }
 .tp-doodle-btn:active { background: var(--c-surface); }
+/* ── DB Pins ── */
+#db-spine-wrap  { width: 100%; overflow-x: auto; }
+#db-spine-inner { position: relative; display: inline-flex; flex-direction: column; min-width: 100%; padding: 4px 0; }
+#db-pins-zone   { min-height: 80px; position: relative; }
+#db-pins-svg    { position: absolute; top: 0; left: 0; pointer-events: none; overflow: visible; }
+.db-pin {
+  position: absolute; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--c-accent);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-mono); font-size: 9px; font-weight: 700; color: #fff;
+  cursor: pointer; -webkit-user-select: none; user-select: none; z-index: 2;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5); transition: transform 0.08s;
+}
+.db-pin:active { transform: scale(0.87); }
+.db-pin.unanchored { background: transparent; border: 2px solid var(--c-accent); color: var(--c-accent); box-shadow: none; }
+/* Pin content display (slides down from top of doodle board) */
+#db-pin-display {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 265;
+  background: var(--c-surface); border-bottom: 1px solid var(--c-border);
+  border-radius: 0 0 12px 12px; padding: 18px 16px 16px;
+  max-height: 44vh; overflow-y: auto;
+  transform: translateY(-110%); transition: transform 0.25s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+}
+#db-pin-display.open { transform: translateY(0); }
+#db-pin-display-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+#db-pin-display-type { font-family: var(--f-mono); font-size: 9px; color: var(--c-teal-pale); text-transform: uppercase; letter-spacing: 0.06em; }
+#db-pin-display-close { background: none; border: none; color: var(--c-teal-pale); font-size: 16px; cursor: pointer; padding: 0 4px; }
+#db-pin-display-body { font-family: var(--f-mono); font-size: 13px; color: var(--c-text); white-space: pre-wrap; line-height: 1.6; }
+/* Pin context menu */
+#db-pin-menu {
+  position: fixed; z-index: 270; background: var(--c-surface);
+  border: 1px solid var(--c-accent); border-radius: 10px; padding: 4px; min-width: 155px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.12s, transform 0.12s; transform: scale(0.95) translateY(4px);
+}
+#db-pin-menu.open { opacity: 1; pointer-events: auto; transform: scale(1) translateY(0); }
+.db-pin-menu-btn {
+  display: block; width: 100%; padding: 9px 14px; border: none; border-radius: 7px;
+  background: none; font-family: var(--f-mono); font-size: 12px;
+  color: var(--c-text); text-align: left; cursor: pointer;
+}
+.db-pin-menu-btn:hover, .db-pin-menu-btn:active { background: var(--c-surface2); }
+.db-pin-menu-btn.danger { color: var(--c-accent); }
+.db-pin-menu-btn.muted  { color: var(--c-text-dim); font-size: 11px; }
+/* Note input modal */
+#db-note-modal {
+  position: fixed; inset: 0; z-index: 270;
+  background: rgba(26,46,44,0.78); backdrop-filter: blur(3px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+#db-note-modal.open { display: flex; }
+#db-note-inner {
+  background: var(--c-surface); border-radius: 12px; border: 1px solid var(--c-border);
+  padding: 18px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 10px;
+}
+#db-note-hdr { display: flex; align-items: center; justify-content: space-between; }
+#db-note-hdr-title { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--c-teal-pale); }
+#db-note-textarea {
+  background: var(--c-surface2); border: 1px solid var(--c-border); border-radius: 7px;
+  color: var(--c-text); font-family: var(--f-mono); font-size: 13px;
+  padding: 10px 12px; resize: none; min-height: 90px;
+}
+#db-note-textarea:focus { outline: none; border-color: var(--c-teal); }
+.db-note-btns { display: flex; gap: 8px; }
+/* Snip / tab pick sheet */
+#db-pick-sheet {
+  position: fixed; inset: 0; z-index: 270;
+  background: rgba(26,46,44,0.72);
+  display: none; align-items: flex-end;
+}
+#db-pick-sheet.open { display: flex; }
+#db-pick-inner {
+  background: var(--c-surface); border-radius: 12px 12px 0 0;
+  width: 100%; max-height: 60vh; display: flex; flex-direction: column;
+}
+#db-pick-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 10px; border-bottom: 1px solid var(--c-border); flex-shrink: 0;
+}
+#db-pick-title { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--c-teal-pale); }
+#db-pick-close { background: none; border: none; color: var(--c-teal-pale); font-size: 16px; cursor: pointer; }
+#db-pick-list { overflow-y: auto; flex: 1; }
+.db-pick-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid rgba(46,70,68,0.3); cursor: pointer; }
+.db-pick-item:active { background: var(--c-surface2); }
+.db-pick-item-name { font-family: var(--f-mono); font-size: 12px; color: var(--c-text); flex: 1; }
+.db-pick-item-sub  { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); }
+/* Anchor mode banner */
+#db-anchor-banner {
+  position: fixed; top: 56px; left: 0; right: 0; z-index: 265;
+  background: var(--c-accent); color: #fff;
+  font-family: var(--f-mono); font-size: 11px;
+  padding: 10px 16px; display: none; align-items: center; justify-content: center; gap: 14px;
+}
+#db-anchor-banner.show { display: flex; }
 
 /* ══ TOAST ══ */
 .toast {
@@ -1673,6 +1768,40 @@ body.tab-view #tab-view-close { display:flex; }
 <div class="toast" id="toast"></div>
 
 <!-- ── DOODLE BOARD ── -->
+<div id="db-pin-display">
+  <div id="db-pin-display-hdr">
+    <span id="db-pin-display-type">Note</span>
+    <button id="db-pin-display-close" onclick="dbClosePinDisplay()">✕</button>
+  </div>
+  <div id="db-pin-display-body"></div>
+</div>
+<div id="db-anchor-banner">
+  <span>Tap a dot to anchor</span>
+  <button style="background:none;border:1px solid rgba(255,255,255,0.5);border-radius:4px;color:#fff;font-family:var(--f-mono);font-size:11px;padding:4px 9px;cursor:pointer" onclick="dbCancelAnchorMode()">Cancel</button>
+</div>
+<div id="db-pin-menu"><div id="db-pin-menu-body"></div></div>
+<div id="db-note-modal">
+  <div id="db-note-inner">
+    <div id="db-note-hdr">
+      <span id="db-note-hdr-title">Add Note</span>
+      <button style="background:none;border:none;color:var(--c-teal-pale);font-size:16px;cursor:pointer" onclick="$('db-note-modal').classList.remove('open')">✕</button>
+    </div>
+    <textarea id="db-note-textarea" placeholder="Type your note…"></textarea>
+    <div class="db-note-btns">
+      <button class="db-act-btn" style="background:var(--c-surface2);color:var(--c-teal-pale);border:1px solid var(--c-border)" onclick="$('db-note-modal').classList.remove('open')">Cancel</button>
+      <button class="db-act-btn" style="background:var(--c-teal);color:var(--c-text)" onclick="dbSubmitNote()">OK</button>
+    </div>
+  </div>
+</div>
+<div id="db-pick-sheet">
+  <div id="db-pick-inner">
+    <div id="db-pick-header">
+      <span id="db-pick-title">Pick</span>
+      <button id="db-pick-close" onclick="$('db-pick-sheet').classList.remove('open')">✕</button>
+    </div>
+    <div id="db-pick-list"></div>
+  </div>
+</div>
 <div id="doodle-board">
   <div id="db-header">
     <div id="db-title">—</div>
@@ -1680,7 +1809,10 @@ body.tab-view #tab-view-close { display:flex; }
   </div>
   <div id="db-body">
     <div id="db-spine-wrap">
-      <div id="db-spine" class="struct-bar"></div>
+      <div id="db-spine-inner">
+        <div id="db-pins-zone"></div>
+        <div id="db-spine" class="struct-bar"></div>
+      </div>
     </div>
     <div style="flex:1"></div>
   </div>
@@ -5192,8 +5324,9 @@ const STRUCT_NAMES = { I:'Intro', V:'Verse', C:'Chorus', B:'Bridge', O:'Outro', 
 const CUSTOM_TILE_COLORS = ['#E878A0', '#78C8E8', '#98D040'];
 
 const DB = {
-  songName: null, bars: [], locked: false, cursor: 0, customTiles: [],
+  songName: null, bars: [], locked: false, cursor: 0, customTiles: [], pins: [],
   _dotMenuBarIdx: -1, _syncInterval: null,
+  _anchoringPinId: null, _noteEditPinId: null, _noteTargetBarIdx: null,
 };
 
 function dbGetTileColor(type) {
@@ -5212,8 +5345,9 @@ function openDoodleBoard() {
   DB.bars        = Array.isArray(d.bars)        ? [...d.bars]        : [];
   DB.locked      = !!d.locked;
   DB.customTiles = Array.isArray(d.customTiles) ? [...d.customTiles] : [];
+  DB.pins        = Array.isArray(d.pins)        ? d.pins.map(p => ({...p})) : [];
   DB.cursor      = DB.bars.length;
-  DB._dotMenuBarIdx = -1;
+  DB._dotMenuBarIdx = -1; DB._anchoringPinId = null;
   $('db-title').textContent = S.tp.songName;
   dbRenderSpine();
   dbRenderKeyboard();
@@ -5225,7 +5359,9 @@ function openDoodleBoard() {
 }
 
 function closeDoodleBoard() {
-  dbCloseDotMenu();
+  dbCloseDotMenu(); dbClosePinDisplay(); dbClosePinMenu(); dbCancelAnchorMode();
+  $('db-note-modal').classList.remove('open');
+  $('db-pick-sheet').classList.remove('open');
   if (DB._syncInterval) { clearInterval(DB._syncInterval); DB._syncInterval = null; }
   $('doodle-board').classList.remove('open');
   DB.songName = null;
@@ -5245,9 +5381,10 @@ function dbRenderSpine() {
     return;
   }
   const onDotClick = DB.locked
-    ? (idx, dotEl) => dbShowDotMenu(dotEl, idx)
+    ? (idx, dotEl) => { if (DB._anchoringPinId) dbAnchorPinToDot(idx); else dbShowDotMenu(dotEl, idx); }
     : (idx) => { DB.cursor = idx + 1; dbRenderSpine(); };
   c.appendChild(_buildDbSpineFrag(DB.bars, DB.locked ? -1 : DB.cursor, onDotClick));
+  if (DB.locked) requestAnimationFrame(dbRenderPins);
 }
 
 function _buildDbSpineFrag(bars, cursor, onDotClick) {
@@ -5407,6 +5544,13 @@ function dbClear() {
 
 async function dbSaveAndLock() {
   if (!DB.bars.length) { showToast('Add some bars first'); return; }
+  // Warn if any pins reference dots that no longer exist
+  const orphaned = DB.pins.filter(p => p.barIdx != null && p.barIdx >= DB.bars.length);
+  if (orphaned.length) {
+    const n = orphaned.length;
+    if (!confirm(`${n} pin${n > 1 ? 's' : ''} will be unanchored because their dots were removed. Continue?`)) return;
+    orphaned.forEach(p => { p.barIdx = null; });
+  }
   DB.locked = true;
   dbUpdateLockState();
   await _dbPersist();
@@ -5428,6 +5572,7 @@ async function _dbPersist() {
   song.doodle.bars        = [...DB.bars];
   song.doodle.locked      = DB.locked;
   song.doodle.customTiles = [...DB.customTiles];
+  song.doodle.pins        = DB.pins.map(p => ({...p}));
   try { await saveSongsJson(); }
   catch(e) { showToast('Save failed: ' + _errMsg(e)); }
 }
@@ -5465,9 +5610,83 @@ function dbCloseDotMenu() {
   DB._dotMenuBarIdx = -1;
 }
 
-function dbDotMenuNote()  { dbCloseDotMenu(); showToast('Notes pinning coming in Step 2'); }
-function dbDotMenuTab()   { dbCloseDotMenu(); showToast('Tab pinning coming in Step 2'); }
-function dbDotMenuSnip()  { dbCloseDotMenu(); showToast('Snippet pinning coming in Step 2'); }
+function dbDotMenuNote() {
+  const barIdx = DB._dotMenuBarIdx;
+  dbCloseDotMenu();
+  DB._noteEditPinId = null; DB._noteTargetBarIdx = barIdx;
+  $('db-note-hdr-title').textContent = 'Add Note';
+  $('db-note-textarea').value = '';
+  $('db-note-modal').classList.add('open');
+  setTimeout(() => $('db-note-textarea').focus(), 120);
+}
+
+async function dbDotMenuSnip() {
+  const barIdx = DB._dotMenuBarIdx;
+  dbCloseDotMenu();
+  if (!S.snippetsLoaded) { showLoading('Loading…'); await loadSnippets(); hideLoading(); }
+  const snips = (S.snippets || []).filter(s => s.songName === DB.songName && !s.commentId);
+  if (!snips.length) { showToast('No snippets for this track'); return; }
+  $('db-pick-title').textContent = 'Pick a Snippet';
+  const list = $('db-pick-list');
+  list.innerHTML = '';
+  snips.forEach(sn => {
+    const item = document.createElement('div');
+    item.className = 'db-pick-item';
+    const name = sn.title || sn.fileName || 'Snippet';
+    const sub  = sn.duration ? fmt(sn.duration) : '';
+    item.innerHTML = `<div class="db-pick-item-name">${name}</div><div class="db-pick-item-sub">${sub}</div>`;
+    item.addEventListener('click', () => dbPickItem('snip', sn.id, name, barIdx));
+    list.appendChild(item);
+  });
+  $('db-pick-sheet').classList.add('open');
+}
+
+async function dbDotMenuTab() {
+  const barIdx = DB._dotMenuBarIdx;
+  dbCloseDotMenu();
+  if (!S.tabsLoaded) { showLoading('Loading…'); await loadTabs(); hideLoading(); }
+  const tabs = (S.tabs || []).filter(t => t.songName === DB.songName || !t.songName);
+  tabs.sort((a, b) => (b.songName === DB.songName ? 1 : 0) - (a.songName === DB.songName ? 1 : 0));
+  if (!tabs.length) { showToast('No tabs found — create tabs in the Feathers page first'); return; }
+  $('db-pick-title').textContent = 'Pick a Tab';
+  const list = $('db-pick-list');
+  list.innerHTML = '';
+  tabs.forEach(tab => {
+    const item = document.createElement('div');
+    item.className = 'db-pick-item';
+    const name = tab.title || 'Untitled';
+    item.innerHTML = `<div class="db-pick-item-name">${name}</div><div class="db-pick-item-sub">${tab.instrument || ''}</div>`;
+    item.addEventListener('click', () => dbPickItem('tab', tab.id, name, barIdx));
+    list.appendChild(item);
+  });
+  $('db-pick-sheet').classList.add('open');
+}
+
+function dbPickItem(type, itemId, label, barIdx) {
+  $('db-pick-sheet').classList.remove('open');
+  const pin = { id: 'pin_' + Date.now().toString(36), type, barIdx };
+  if (type === 'snip') { pin.snippetId = itemId; pin.snippetTitle = label; }
+  else if (type === 'tab') { pin.tabId = itemId; pin.tabTitle = label; }
+  DB.pins.push(pin);
+  dbRenderPins();
+  _dbPersist();
+}
+
+function dbSubmitNote() {
+  const text = $('db-note-textarea').value.trim();
+  if (!text) return;
+  $('db-note-modal').classList.remove('open');
+  if (DB._noteEditPinId) {
+    const pin = DB.pins.find(p => p.id === DB._noteEditPinId);
+    if (pin) pin.text = text;
+  } else {
+    DB.pins.push({ id: 'pin_' + Date.now().toString(36), type: 'note', barIdx: DB._noteTargetBarIdx, text });
+  }
+  DB._noteEditPinId = null;
+  dbRenderPins();
+  _dbPersist();
+}
+
 function dbDotMenuEdit()  { dbUnlock(); }
 
 function dbAddCustomTile() {
@@ -5486,6 +5705,189 @@ function dbSyncPlayBtn() {
   if (!btn) return;
   const playing = S.tp?.audio && !S.tp.audio.paused;
   btn.innerHTML = playing ? '⏸&#xFE0E;' : '▶&#xFE0E;';
+}
+
+/* ── Pin rendering ── */
+function dbRenderPins() {
+  const inner = $('db-spine-inner');
+  const spine = $('db-spine');
+  if (!inner || !spine) return;
+  inner.querySelectorAll('.db-pin').forEach(e => e.remove());
+  inner.querySelector('#db-pins-svg')?.remove();
+  if (!DB.locked || !DB.pins.length) return;
+
+  const innerRect = inner.getBoundingClientRect();
+  const pinsZone  = $('db-pins-zone');
+  const pzH = pinsZone ? pinsZone.offsetHeight : 80;
+
+  const dotEls  = [...spine.querySelectorAll('.db-dot')];
+  const dotCtrs = dotEls.map(d => {
+    const r = d.getBoundingClientRect();
+    return { x: r.left - innerRect.left + r.width/2, y: r.top - innerRect.top + r.height/2 };
+  });
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.id = 'db-pins-svg';
+  svg.style.cssText = `position:absolute;top:0;left:0;width:${inner.scrollWidth}px;height:${inner.scrollHeight + 10}px;pointer-events:none;overflow:visible`;
+  inner.appendChild(svg);
+
+  const byBar = {};
+  DB.pins.forEach(pin => {
+    const k = pin.barIdx != null ? pin.barIdx : '__free__';
+    (byBar[k] = byBar[k] || []).push(pin);
+  });
+
+  const PIN_R = 12;
+
+  Object.entries(byBar).forEach(([bk, pins]) => {
+    const bi  = bk === '__free__' ? -1 : parseInt(bk);
+    const dot = bi >= 0 && bi < dotCtrs.length ? dotCtrs[bi] : null;
+
+    pins.forEach((pin, pi) => {
+      const spread = (pi - (pins.length - 1) / 2) * 30;
+      const pinCx = dot ? dot.x + spread : 30 + pi * 30;
+      const pinCy = 22;
+
+      const el = document.createElement('div');
+      el.className = 'db-pin' + (pin.barIdx == null ? ' unanchored' : '');
+      el.dataset.pinId = pin.id;
+      el.style.left = (pinCx - PIN_R) + 'px';
+      el.style.top  = (pinCy - PIN_R) + 'px';
+      el.textContent = pin.type === 'note' ? 'N' : pin.type === 'tab' ? 'T' : '▸';
+      inner.appendChild(el);
+      _dbAttachPinInteraction(el, pin);
+
+      if (dot) {
+        const x1 = pinCx, y1 = pinCy + PIN_R;
+        const x2 = dot.x,  y2 = dot.y - 10;
+        const mid = (y1 + y2) / 2;
+        const path = document.createElementNS(svgNS, 'path');
+        path.setAttribute('d', `M${x1},${y1} C${x1},${mid} ${x2},${mid} ${x2},${y2}`);
+        path.setAttribute('stroke', '#C4503A');
+        path.setAttribute('stroke-width', '1.5');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('opacity', '0.5');
+        svg.appendChild(path);
+      }
+    });
+  });
+}
+
+function _dbAttachPinInteraction(el, pin) {
+  let holdTimer = null, holdFired = false, lastTouch = 0;
+
+  function onDown(e) {
+    e.stopPropagation();
+    if (e.type === 'touchstart') { lastTouch = Date.now(); e.preventDefault(); }
+    holdFired = false;
+    holdTimer = setTimeout(() => { holdFired = true; dbShowPinMenu(pin, el); }, 400);
+  }
+  function onUp(e) {
+    e.stopPropagation();
+    clearTimeout(holdTimer);
+    if (!holdFired) dbTapPin(pin);
+    holdFired = false;
+  }
+  el.addEventListener('touchstart', onDown, { passive: false });
+  el.addEventListener('touchend',   onUp,   { passive: false });
+  el.addEventListener('mousedown',  onDown);
+  el.addEventListener('mouseup',    onUp);
+  el.addEventListener('click', e => e.stopPropagation());
+}
+
+async function dbTapPin(pin) {
+  if (DB._anchoringPinId) return; // tap-to-anchor mode — ignore pin taps
+  if (pin.type === 'note') {
+    $('db-pin-display-type').textContent = 'Note';
+    $('db-pin-display-body').textContent = pin.text || '(empty)';
+    $('db-pin-display').classList.add('open');
+  } else if (pin.type === 'tab') {
+    if (!S.tabsLoaded) { showLoading('…'); await loadTabs(); hideLoading(); }
+    const tab = S.tabs?.find(t => t.id === pin.tabId);
+    if (!tab) { showToast('Tab not found'); return; }
+    tabViewTab(pin.tabId);
+  } else if (pin.type === 'snip') {
+    if (!S.snippetsLoaded) { showLoading('…'); await loadSnippets(); hideLoading(); }
+    anPlaySnippet(pin.snippetId);
+  }
+}
+
+function dbClosePinDisplay() { $('db-pin-display')?.classList.remove('open'); }
+
+function dbShowPinMenu(pin, el) {
+  dbClosePinMenu();
+  DB._pinMenuPinId = pin.id;
+  const menu = $('db-pin-menu');
+  const body = $('db-pin-menu-body');
+  if (!menu || !body) return;
+
+  body.innerHTML = '';
+  const addBtn = (text, cls, fn) => {
+    const btn = document.createElement('button');
+    btn.className = 'db-pin-menu-btn' + (cls ? ' ' + cls : '');
+    btn.textContent = text;
+    btn.addEventListener('click', () => { dbClosePinMenu(); fn(); });
+    body.appendChild(btn);
+  };
+
+  if (pin.type === 'note') addBtn('Edit note', '', () => dbEditNote(pin.id));
+  if (pin.barIdx == null)  addBtn('Anchor to dot', '', () => dbStartAnchorMode(pin.id));
+  addBtn(pin.type === 'snip' ? 'Remove from board' : 'Delete', 'danger', () => dbDeletePin(pin.id));
+  addBtn('Cancel', 'muted', () => {});
+
+  const rect = el.getBoundingClientRect();
+  let top  = rect.top - (body.children.length * 42 + 20);
+  if (top < 60) top = rect.bottom + 8;
+  let left = rect.left + rect.width / 2 - 77;
+  left = Math.max(8, Math.min(left, window.innerWidth - 165));
+  menu.style.top  = top  + 'px';
+  menu.style.left = left + 'px';
+  menu.classList.add('open');
+  setTimeout(() => document.addEventListener('click', _dbPinMenuOutside, { once: true }), 20);
+}
+
+function _dbPinMenuOutside(e) { if (!$('db-pin-menu')?.contains(e.target)) dbClosePinMenu(); }
+function dbClosePinMenu() { $('db-pin-menu')?.classList.remove('open'); DB._pinMenuPinId = null; }
+
+function dbEditNote(pinId) {
+  const pin = DB.pins.find(p => p.id === pinId);
+  if (!pin) return;
+  DB._noteEditPinId = pinId;
+  DB._noteTargetBarIdx = pin.barIdx;
+  $('db-note-hdr-title').textContent = 'Edit Note';
+  $('db-note-textarea').value = pin.text || '';
+  $('db-note-modal').classList.add('open');
+  setTimeout(() => $('db-note-textarea').focus(), 120);
+}
+
+async function dbDeletePin(pinId) {
+  DB.pins = DB.pins.filter(p => p.id !== pinId);
+  dbRenderPins();
+  await _dbPersist();
+  showToast('Pin removed');
+}
+
+function dbStartAnchorMode(pinId) {
+  DB._anchoringPinId = pinId;
+  $('db-anchor-banner')?.classList.add('show');
+}
+
+function dbCancelAnchorMode() {
+  DB._anchoringPinId = null;
+  $('db-anchor-banner')?.classList.remove('show');
+}
+
+function dbAnchorPinToDot(dotIdx) {
+  const pinId = DB._anchoringPinId;
+  dbCancelAnchorMode();
+  if (!confirm('Anchor pin to this dot?')) return;
+  const pin = DB.pins.find(p => p.id === pinId);
+  if (!pin) return;
+  pin.barIdx = dotIdx;
+  dbRenderPins();
+  _dbPersist();
+  showToast('Anchored');
 }
 
 function sePressKey(type) {
