@@ -2574,7 +2574,6 @@ Object.assign(S, {
 async function goTracks() {
   showScreen('screen-tracks');
   if (S.songs.length === 0) await loadSongs();
-  scanAllDurations().catch(() => {});
 }
 
 /* ── WAVE SHEET (draggable bottom panel) ─────────────── */
@@ -4423,6 +4422,7 @@ let _cdUndoBuffer=null, _cdUndoTimer=null;
 
 async function goComments(){
   showScreen('screen-comments');
+  _cdOnlyMe = false; _cdIncMe = false; _cdPeopleFilter = new Set();
   buildCdPeopleFilter();
   await loadAllComments();
 }
@@ -4481,24 +4481,30 @@ async function loadAllComments(){
   showLoading('Loading comments…');
   try{
     const metaId=S.folders['_meta'];
-    if(!metaId){_cdAllComments=[];renderCommentsList();return;}
+    if(!metaId){ console.warn('loadAllComments: _meta folder not found'); _cdAllComments=[];renderCommentsList();return;}
     const files=await Drive.list(metaId,{filesOnly:true});
     const f=files.find(f=>f.name==='comments.json');
-    _cdAllComments=f?await Drive.readJson(f.id):[];
+    if(f){
+      const raw=await Drive.readJson(f.id);
+      _cdAllComments=Array.isArray(raw)?raw:[];
+      if(!Array.isArray(raw)) console.warn('loadAllComments: comments.json returned non-array',typeof raw);
+    } else {
+      _cdAllComments=[];
+    }
     // Populate song dropdown
     const sel=$('cd-song-select');
     sel.innerHTML='<option value="">All Songs</option>';
     const songNames=[...new Set(_cdAllComments.map(c=>c.songName).filter(Boolean))].sort();
     songNames.forEach(n=>{const opt=document.createElement('option');opt.value=n;opt.textContent=n;sel.appendChild(opt);});
     renderCommentsList();
-  }catch(e){ showToast('Could not load comments: '+e.message); }
+  }catch(e){ console.error('loadAllComments error',e); showToast('Could not load comments: '+e.message); }
   finally{ hideLoading(); }
 }
 
 function renderCommentsList(){
   const songFilter=$('cd-song-select').value;
   const me=S.user?.name||'';
-  let list=[..._cdAllComments];
+  let list=Array.isArray(_cdAllComments)?[..._cdAllComments]:[];
   // Song filter
   if(songFilter) list=list.filter(c=>c.songName===songFilter);
   // Person filter
