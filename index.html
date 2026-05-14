@@ -1948,6 +1948,7 @@ const Drive = {
     let q = `'${parentId}' in parents and trashed = false`;
     if (opts.foldersOnly) q += ` and mimeType = 'application/vnd.google-apps.folder'`;
     if (opts.filesOnly)   q += ` and mimeType != 'application/vnd.google-apps.folder'`;
+    if (opts.name)        q += ` and name = '${opts.name}'`;
     const res = await gapi.client.drive.files.list({
       q,
       fields: 'files(id, name, mimeType, size, modifiedTime)',
@@ -3113,9 +3114,8 @@ function _ensureTrackIds() {
 async function saveCommentsJson() {
   const metaId = S.folders._meta;
   if (!metaId) return;
-  const files = await Drive.list(metaId, { filesOnly: true });
-  const f = files.find(f => f.name === 'comments.json');
-  await Drive.writeJson(f?.id, _cdAllComments, 'comments.json', metaId);
+  const files = await Drive.list(metaId, { filesOnly: true, name: 'comments.json' });
+  await Drive.writeJson(files[0]?.id, _cdAllComments, 'comments.json', metaId);
 }
 
 /** Rename a track and cascade the new name to every dependent JSON file.
@@ -3148,9 +3148,8 @@ async function renameTrack(oldName, newName) {
   if (!_cdAllComments.length) {
     const metaId = S.folders._meta;
     if (metaId) {
-      const files = await Drive.list(metaId, { filesOnly: true });
-      const f = files.find(f => f.name === 'comments.json');
-      if (f) _cdAllComments = await Drive.readJson(f.id);
+      const cf = (await Drive.list(metaId, { filesOnly: true, name: 'comments.json' }))[0];
+      if (cf) { const raw = await Drive.readJson(cf.id); if (Array.isArray(raw)) _cdAllComments = raw; }
     }
   }
   let commentDirty = false;
@@ -3493,7 +3492,7 @@ async function selectVersion(idx) {
       const entry = S.songs.find(s => s.name === _capturedSong);
       if (entry) {
         if (!entry.versionDurations) entry.versionDurations = {};
-        if (!entry.versionDurations[_capturedFileId]) {
+        if (entry.versionDurations[_capturedFileId] !== dur) {
           entry.versionDurations[_capturedFileId] = dur;
           saveSongsJson().catch(() => {});
         }
@@ -3933,9 +3932,8 @@ async function loadSongComments(songName) {
   try {
     const metaId = S.folders['_meta'];
     if (!metaId) { S.tp.comments = []; return; }
-    const files = await Drive.list(metaId, { filesOnly: true });
-    const f     = files.find(f => f.name === 'comments.json');
-    const all   = f ? await Drive.readJson(f.id) : [];
+    const files = await Drive.list(metaId, { filesOnly: true, name: 'comments.json' });
+    const all   = files[0] ? await Drive.readJson(files[0].id) : [];
     S.tp.comments = all.filter(c => c.songName?.toLowerCase() === songName.toLowerCase());
   } catch(e) { S.tp.comments = []; }
   renderComments();
@@ -4167,10 +4165,10 @@ async function submitComment() {
   hideCommentPanel();
   try {
     const metaId = S.folders['_meta'];
-    const files  = await Drive.list(metaId, { filesOnly: true });
-    const existing = files.find(f => f.name === 'comments.json');
+    const existing = (await Drive.list(metaId, { filesOnly: true, name: 'comments.json' }))[0];
     let all = [];
     if (existing) { try { all = await Drive.readJson(existing.id); } catch(e) {} }
+    if (!Array.isArray(all)) all = [];
     all.push(comment);
     await Drive.writeJson(existing?.id, all, 'comments.json', metaId);
     if (isSess) {
@@ -4293,9 +4291,8 @@ async function loadSessComments(track){
   SessPlayer.comments=[];
   try{
     const metaId=S.folders['_meta']; if(!metaId){renderSessComments();return;}
-    const files=await Drive.list(metaId,{filesOnly:true});
-    const f=files.find(f=>f.name==='comments.json');
-    const all=f?await Drive.readJson(f.id):[];
+    const _cf=await Drive.list(metaId,{filesOnly:true,name:'comments.json'});
+    const all=_cf[0]?await Drive.readJson(_cf[0].id):[];
     SessPlayer.comments=all.filter(c=>c.fileId===track.fileId||(c.songName?.toLowerCase()===track.title?.toLowerCase()&&c.sessionDate===track.sessionDate));
   }catch(e){}
   renderSessComments();
@@ -4405,12 +4402,11 @@ async function tpTogglePerch(e, commentId){
 async function savePerchToDrive(commentId, perches){
   try{
     const metaId=S.folders['_meta'];
-    const files=await Drive.list(metaId,{filesOnly:true});
-    const f=files.find(f=>f.name==='comments.json');
-    if(!f) return;
-    const all=await Drive.readJson(f.id);
+    const cf=(await Drive.list(metaId,{filesOnly:true,name:'comments.json'}))[0];
+    if(!cf) return;
+    const all=await Drive.readJson(cf.id);
     const c=all.find(c=>c.id===commentId); if(c) c.perches=perches;
-    await Drive.writeJson(f.id,all,'comments.json',metaId);
+    await Drive.writeJson(cf.id,all,'comments.json',metaId);
   }catch(ex){ console.warn('Perch save failed',ex); }
 }
 
@@ -4482,8 +4478,8 @@ async function loadAllComments(){
   try{
     const metaId=S.folders['_meta'];
     if(!metaId){ console.warn('loadAllComments: _meta folder not found'); _cdAllComments=[];renderCommentsList();return;}
-    const files=await Drive.list(metaId,{filesOnly:true});
-    const f=files.find(f=>f.name==='comments.json');
+    const files=await Drive.list(metaId,{filesOnly:true,name:'comments.json'});
+    const f=files[0];
     if(f){
       const raw=await Drive.readJson(f.id);
       _cdAllComments=Array.isArray(raw)?raw:[];
@@ -4755,9 +4751,8 @@ async function commitDelete(){
   _cdUndoBuffer=null;
   try{
     const metaId=S.folders['_meta'];
-    const files=await Drive.list(metaId,{filesOnly:true});
-    const f=files.find(f=>f.name==='comments.json');
-    if(f) await Drive.writeJson(f.id,_cdAllComments,'comments.json',metaId);
+    const cf=(await Drive.list(metaId,{filesOnly:true,name:'comments.json'}))[0];
+    if(cf) await Drive.writeJson(cf.id,_cdAllComments,'comments.json',metaId);
   }catch(e){ console.warn('Delete commit failed',e); }
 }
 
@@ -4789,9 +4784,8 @@ async function cdSubmitReply(cid){
   c.replies.push(reply);
   try{
     const metaId=S.folders['_meta'];
-    const files=await Drive.list(metaId,{filesOnly:true});
-    const f=files.find(f=>f.name==='comments.json');
-    await Drive.writeJson(f?.id,_cdAllComments,'comments.json',metaId);
+    const cf=(await Drive.list(metaId,{filesOnly:true,name:'comments.json'}))[0];
+    await Drive.writeJson(cf?.id,_cdAllComments,'comments.json',metaId);
     // Refresh reply section
     const repliesEl=$(`cdreplies-${cid}`);
     if(repliesEl){
