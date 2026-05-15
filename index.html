@@ -3110,10 +3110,20 @@ function _ensureTrackIds() {
   return changed;
 }
 
+async function ensureCommentsLoaded() {
+  if (_cdCommentsLoaded) return;
+  const metaId = S.folders._meta;
+  if (!metaId) return;
+  const cf = (await Drive.list(metaId, { filesOnly: true, name: 'comments.json' }))[0];
+  if (cf) { const raw = await Drive.readJson(cf.id); if (Array.isArray(raw)) _cdAllComments = raw; }
+  _cdCommentsLoaded = true;
+}
+
 /** Save comments.json (extracted helper so renameTrack can use it). */
 async function saveCommentsJson() {
   const metaId = S.folders._meta;
   if (!metaId) return;
+  await ensureCommentsLoaded();
   const files = await Drive.list(metaId, { filesOnly: true, name: 'comments.json' });
   await Drive.writeJson(files[0]?.id, _cdAllComments, 'comments.json', metaId);
 }
@@ -3144,14 +3154,7 @@ async function renameTrack(oldName, newName) {
   (S.tabs || []).forEach(t => { if (t.songName === oldName) { t.songName = newName; tabDirty = true; } });
 
   // ── 5. comments.json ────────────────────────────────
-  // Load if not already in memory
-  if (!_cdAllComments.length) {
-    const metaId = S.folders._meta;
-    if (metaId) {
-      const cf = (await Drive.list(metaId, { filesOnly: true, name: 'comments.json' }))[0];
-      if (cf) { const raw = await Drive.readJson(cf.id); if (Array.isArray(raw)) _cdAllComments = raw; }
-    }
-  }
+  await ensureCommentsLoaded();
   let commentDirty = false;
   _cdAllComments.forEach(c => { if (c.songName === oldName) { c.songName = newName; commentDirty = true; } });
 
@@ -4019,6 +4022,7 @@ function renderComments() {
 }
 async function confirmTpCommentDelete(cid) {
   $('tpcconf-' + cid)?.classList.remove('show');
+  await ensureCommentsLoaded();
   _cdAllComments = _cdAllComments.filter(c => c.id !== cid);
   S.tp.comments = S.tp.comments.filter(c => c.id !== cid);
   try { await saveCommentsJson(); } catch(e) { console.warn('Comment delete failed', e); }
@@ -4125,6 +4129,7 @@ async function submitComment() {
   const editId   = panel.dataset.editId;
 
   if (editId) {
+    await ensureCommentsLoaded();
     const cAll = _cdAllComments.find(c => c.id === editId);
     const cTp  = S.tp.comments.find(c => c.id === editId);
     if (cAll) { cAll.text = text; cAll.directedTo = directed; }
@@ -4413,7 +4418,7 @@ async function savePerchToDrive(commentId, perches){
 /* ══════════════════════════════════════════════════════
    COMMENTS DISCOVERY
 ══════════════════════════════════════════════════════ */
-let _cdAllComments=[], _cdPeopleFilter=new Set(), _cdOnlyMe=false, _cdIncMe=false, _cdAudio=new Audio(), _cdPlayingId=null, _cdLooping=false;
+let _cdAllComments=[], _cdCommentsLoaded=false, _cdPeopleFilter=new Set(), _cdOnlyMe=false, _cdIncMe=false, _cdAudio=new Audio(), _cdPlayingId=null, _cdLooping=false;
 let _cdUndoBuffer=null, _cdUndoTimer=null;
 
 async function goComments(){
@@ -4487,6 +4492,7 @@ async function loadAllComments(){
     } else {
       _cdAllComments=[];
     }
+    _cdCommentsLoaded=true;
     // Populate song dropdown
     const sel=$('cd-song-select');
     sel.innerHTML='<option value="">All Songs</option>';
