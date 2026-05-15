@@ -927,22 +927,24 @@ body.tab-view #tab-view-close { display:flex; }
 }
 #doodle-board.open { transform: translateY(0); pointer-events: auto; }
 #db-header {
-  display: flex; align-items: center; padding: 14px 16px 12px;
-  border-bottom: 1px solid var(--c-border); flex-shrink: 0; gap: 12px;
+  display: flex; align-items: center; padding: 10px 56px 8px 14px;
+  flex-shrink: 0; gap: 8px;
 }
 #db-title {
-  flex: 1; font-family: var(--f-display); font-size: 17px; color: var(--c-text);
+  flex: 0 1 auto; font-family: var(--f-display); font-size: 15px; color: var(--c-teal-pale);
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 #db-close-btn {
-  flex-shrink: 0; background: none; border: 1px solid var(--c-border);
-  border-radius: 50%; width: 30px; height: 30px; font-size: 14px;
+  position: absolute; top: 10px; right: 12px; z-index: 5;
+  background: var(--c-surface); border: 1px solid var(--c-border);
+  border-radius: 50%; width: 32px; height: 32px; font-size: 14px;
   cursor: pointer; color: var(--c-teal-pale);
   display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 #db-body {
   flex: 1; overflow-y: auto; display: flex; flex-direction: column;
-  align-items: center; padding: 24px 16px 12px; gap: 0;
+  align-items: flex-start; padding: 8px 14px 10px; gap: 0;
 }
 #db-spine { display: flex; align-items: flex-end; flex-wrap: nowrap; min-height: 56px; }
 /* Doodle board spine dots */
@@ -1849,7 +1851,6 @@ body.tab-view #tab-view-close { display:flex; }
         <div id="db-spine" class="struct-bar"></div>
       </div>
     </div>
-    <div style="flex:1"></div>
   </div>
   <div id="db-bottom">
     <div id="db-keyboard"></div>
