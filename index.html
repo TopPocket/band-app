@@ -673,6 +673,16 @@ header {
 .tp-hatch-btn { background:none; border:1px solid var(--c-border); border-radius:5px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:11px; cursor:pointer; padding:4px 10px; }
 .tp-hatch-btn:hover { border-color:var(--c-amber-lt); color:var(--c-amber-lt); }
 #tp-title[contenteditable="true"] { background:var(--c-surface2); border-radius:4px; padding:2px 6px; outline:1px solid var(--c-teal); cursor:text; }
+@media (max-width:600px) {
+  #screen-track #tp-title {
+    position: fixed; bottom: calc(var(--wave-sheet-h,162px) + 6px); left: 12px;
+    font-size: 11px; font-weight: 600; max-width: 52%; z-index: 25;
+    background: var(--c-surface); border: 1px solid var(--c-border);
+    border-radius: 5px; padding: 3px 8px;
+    pointer-events: auto; flex: none; min-width: 0;
+  }
+  #screen-track .screen-nav { justify-content: space-between; }
+}
 .promote-actions { display:flex; gap:8px; margin-top:4px; }
 
 /* ══ PERCH REACTION ══ */
@@ -934,14 +944,14 @@ body.tab-view #tab-view-close { display:flex; }
   flex: 1; overflow-y: auto; display: flex; flex-direction: column;
   align-items: center; padding: 24px 16px 12px; gap: 0;
 }
-#db-spine { display: flex; align-items: flex-end; flex-wrap: nowrap; min-height: 70px; }
-/* Larger dots for doodle board spine */
-#db-spine .struct-dot      { width: 18px; height: 18px; }
-#db-spine .struct-dot.half { height: 9px; border-radius: 9px 9px 0 0; }
-#db-spine .struct-dots-row { gap: 7px; padding: 6px 4px 10px; }
-#db-spine .struct-label    { font-size: 10px; padding-bottom: 10px; }
-#db-spine .struct-section  { border-left-width: 2px; padding: 0 6px; }
-#db-spine .struct-cursor-el { height: 26px; }
+#db-spine { display: flex; align-items: flex-end; flex-wrap: nowrap; min-height: 56px; }
+/* Doodle board spine dots */
+#db-spine .struct-dot      { width: 14px; height: 14px; }
+#db-spine .struct-dot.half { height: 7px; border-radius: 7px 7px 0 0; }
+#db-spine .struct-dots-row { gap: 5px; padding: 4px 3px 7px; }
+#db-spine .struct-label    { font-size: 9px; padding-bottom: 7px; }
+#db-spine .struct-section  { border-left-width: 2px; padding: 0 4px; }
+#db-spine .struct-cursor-el { height: 20px; }
 /* Hold-label and half-dot float shown on key hold */
 .db-key-hold-label {
   position: fixed; background: var(--c-surface2); border: 1px solid var(--c-teal);
@@ -953,7 +963,7 @@ body.tab-view #tab-view-close { display:flex; }
 .db-key-hold-label.show { opacity: 1; }
 .db-half-dot-float {
   position: fixed; border-radius: 50% 50% 0 0;
-  width: 22px; height: 11px;
+  width: 18px; height: 9px;
   pointer-events: none; z-index: 215;
   transform: translateX(-50%);
   opacity: 0; transition: opacity 0.12s;
@@ -1018,6 +1028,23 @@ body.tab-view #tab-view-close { display:flex; }
 .db-transport-btn:active { background: var(--c-surface2); }
 #db-transport-play {
   border-color: var(--c-teal); color: var(--c-teal); padding: 7px 15px;
+}
+/* Landscape mobile: collapse keyboard + actions to one row */
+.db-act-ico { display: none; }
+@media (orientation:landscape) and (max-height:520px) {
+  #db-body { padding: 8px 12px 6px; }
+  #db-bottom { display: flex; flex-direction: row; align-items: center; padding: 0 8px 4px; gap: 0; border-top: 1px solid var(--c-border); }
+  #db-keyboard { flex: 1; padding: 4px 0; gap: 3px; }
+  .db-key { padding: 8px 1px; font-size: 12px; min-width: 20px; }
+  .db-key-del { flex: 0 0 28px; padding: 8px 1px; font-size: 13px; }
+  .db-key-add { flex: 0 0 24px; padding: 8px 1px; font-size: 12px; }
+  #db-actions { flex: 0 0 auto; flex-direction: row; padding: 4px 0 4px 8px; gap: 4px; border-left: 1px solid var(--c-border); margin-left: 6px; }
+  .db-act-btn { flex: 0 0 auto; padding: 8px 10px; font-size: 15px; }
+  .db-act-txt { display: none; }
+  .db-act-ico { display: inline; }
+  #db-transport-row { padding: 4px 0 0; border-top: none; border-left: 1px solid var(--c-border); margin-left: 4px; padding-left: 6px; }
+  #db-locked-bar { padding: 4px 0; }
+  #db-spine { min-height: 40px; }
 }
 /* Dot menu popup */
 #db-dot-menu {
@@ -1827,8 +1854,8 @@ body.tab-view #tab-view-close { display:flex; }
   <div id="db-bottom">
     <div id="db-keyboard"></div>
     <div id="db-actions">
-      <button class="db-act-btn" style="background:var(--c-surface2);color:var(--c-teal-pale);border:1px solid var(--c-border)" onclick="dbClear()">Clear</button>
-      <button class="db-act-btn" style="background:var(--c-teal);color:var(--c-text)" onclick="dbSaveAndLock()">Save &amp; Lock</button>
+      <button class="db-act-btn" style="background:var(--c-surface2);color:var(--c-teal-pale);border:1px solid var(--c-border)" onclick="dbClear()"><span class="db-act-txt">Clear</span><span class="db-act-ico">✕</span></button>
+      <button class="db-act-btn" style="background:var(--c-teal);color:var(--c-text)" onclick="dbSaveAndLock()"><span class="db-act-txt">Save &amp; Lock</span><span class="db-act-ico">💾</span></button>
     </div>
     <div id="db-locked-bar">
       <span style="flex:1;font-family:var(--f-mono);font-size:11px;color:var(--c-teal-pale)">Structure locked</span>
@@ -5430,6 +5457,93 @@ function dbGetTileColor(type) {
   return ci >= 0 ? CUSTOM_TILE_COLORS[ci % CUSTOM_TILE_COLORS.length] : '#888888';
 }
 
+/* ── Zoom / pan state for doodle board spine ── */
+let _dbZoom = 1, _dbPanDx = 0;
+
+function _dbApplyTransform() {
+  const inner = $('db-spine-inner');
+  const wrap  = $('db-spine-wrap');
+  if (!inner || !wrap) return;
+  if (_dbZoom <= 1) {
+    inner.style.transform = '';
+    wrap.style.overflowX = 'auto';
+    wrap.style.cursor = '';
+  } else {
+    const minDx = -(inner.scrollWidth * _dbZoom - wrap.clientWidth);
+    _dbPanDx = Math.max(Math.min(0, _dbPanDx), Math.min(0, minDx));
+    inner.style.transformOrigin = '0 0';
+    inner.style.transform = `translateX(${_dbPanDx}px) scale(${_dbZoom})`;
+    wrap.style.overflowX = 'hidden';
+    wrap.style.cursor = 'grab';
+  }
+}
+
+function _dbInitZoomPan() {
+  _dbZoom = 1; _dbPanDx = 0;
+  _dbApplyTransform();
+  const wrap = $('db-spine-wrap');
+  if (!wrap || wrap._zpInited) return;
+  wrap._zpInited = true;
+
+  let pt0 = null, pt1 = null;
+  let startDist, startZoom, startDx, startMidX;
+  let panStart = null, panStartDx;
+
+  function getTouches(e) { return [...e.touches]; }
+
+  wrap.addEventListener('touchstart', e => {
+    const ts = getTouches(e);
+    if (ts.length === 2) {
+      e.preventDefault();
+      pt0 = ts[0]; pt1 = ts[1];
+      startDist  = Math.hypot(pt1.clientX - pt0.clientX, pt1.clientY - pt0.clientY);
+      startZoom  = _dbZoom;
+      startDx    = _dbPanDx;
+      startMidX  = (pt0.clientX + pt1.clientX) / 2 - wrap.getBoundingClientRect().left;
+      panStart   = null;
+    } else if (ts.length === 1 && _dbZoom > 1) {
+      panStart   = ts[0].clientX;
+      panStartDx = _dbPanDx;
+    }
+  }, { passive: false });
+
+  wrap.addEventListener('touchmove', e => {
+    const ts = getTouches(e);
+    if (ts.length >= 2 && startDist) {
+      e.preventDefault();
+      const d = Math.hypot(ts[1].clientX - ts[0].clientX, ts[1].clientY - ts[0].clientY);
+      const newZoom = Math.max(1, Math.min(6, startZoom * (d / startDist)));
+      // zoom around the original midpoint
+      const origX   = (startMidX - startDx) / startZoom;
+      _dbZoom  = newZoom;
+      _dbPanDx = startMidX - origX * _dbZoom;
+      _dbApplyTransform();
+    } else if (ts.length === 1 && panStart !== null && _dbZoom > 1) {
+      e.preventDefault();
+      _dbPanDx = panStartDx + (ts[0].clientX - panStart);
+      _dbApplyTransform();
+    }
+  }, { passive: false });
+
+  wrap.addEventListener('touchend', e => {
+    if (e.touches.length < 2) { startDist = 0; pt0 = pt1 = null; }
+    if (e.touches.length < 1) { panStart = null; }
+    if (e.touches.length === 0 && _dbZoom <= 1) { _dbZoom = 1; _dbPanDx = 0; _dbApplyTransform(); }
+  }, { passive: true });
+
+  // Ctrl+wheel zoom on desktop
+  wrap.addEventListener('wheel', e => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    const rect = wrap.getBoundingClientRect();
+    const cx   = e.clientX - rect.left;
+    const origX = (cx - _dbPanDx) / _dbZoom;
+    _dbZoom  = Math.max(1, Math.min(6, _dbZoom * (e.deltaY > 0 ? 0.9 : 1.1)));
+    _dbPanDx = cx - origX * _dbZoom;
+    _dbApplyTransform();
+  }, { passive: false });
+}
+
 async function openDoodleBoard() {
   const song = S.songs?.find(s => s.name === S.tp?.songName);
   if (!song) return;
@@ -5455,6 +5569,7 @@ async function openDoodleBoard() {
   if (DB._syncInterval) clearInterval(DB._syncInterval);
   DB._syncInterval = setInterval(dbSyncPlayBtn, 500);
   $('doodle-board').classList.add('open');
+  requestAnimationFrame(_dbInitZoomPan);
 }
 
 function closeDoodleBoard() {
@@ -5463,6 +5578,7 @@ function closeDoodleBoard() {
   $('db-pick-sheet').classList.remove('open');
   if (DB._syncInterval) { clearInterval(DB._syncInterval); DB._syncInterval = null; }
   $('doodle-board').classList.remove('open');
+  _dbZoom = 1; _dbPanDx = 0; _dbApplyTransform();
   DB.songName = null;
   // Refresh structure tab if currently visible
   if ($('tp-tabcontent-structure')?.classList.contains('active')) {
@@ -5627,16 +5743,34 @@ function _dbAttachKeyHold(btn, type, color) {
   btn.addEventListener('click', () => { if (Date.now() - _lastTouchTime < 600) return; /* desktop handled in mousedown/up */ });
 }
 
+function _dbScrollToCursor() {
+  requestAnimationFrame(() => {
+    const wrap = $('db-spine-wrap');
+    const cur  = wrap?.querySelector('.struct-cursor-el');
+    if (!wrap || !cur) return;
+    if (_dbZoom <= 1) {
+      cur.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
+    } else {
+      const wr = wrap.getBoundingClientRect(), cr = cur.getBoundingClientRect();
+      const margin = 24;
+      if (cr.left < wr.left + margin)        { _dbPanDx += wr.left + margin - cr.left; _dbApplyTransform(); }
+      else if (cr.right > wr.right - margin) { _dbPanDx -= cr.right - (wr.right - margin); _dbApplyTransform(); }
+    }
+  });
+}
+
 function dbPressKey(type, half) {
   DB.bars.splice(DB.cursor, 0, half ? type.toLowerCase() : type);
   DB.cursor++;
   dbRenderSpine();
+  _dbScrollToCursor();
 }
 
 function dbDeleteBar() {
   if (!DB.cursor) return;
   DB.bars.splice(--DB.cursor, 1);
   dbRenderSpine();
+  _dbScrollToCursor();
 }
 
 function dbClear() {
