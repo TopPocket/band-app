@@ -1254,6 +1254,7 @@ body.tab-view #tab-view-close { display:flex; }
     <div class="screen-nav">
       <button class="back-btn" onclick="showScreen('screen-home')">‹ Home</button>
       <div class="screen-nav-title">Tracks</div>
+      <button class="tp-hatch-btn" onclick="scanAllDurations(true)" title="Download all tracks and populate duration fields">⟳ Durations</button>
     </div>
     <div class="scroll-area"><div id="song-list"></div></div>
   </div>
@@ -2847,6 +2848,11 @@ async function ensureTrackIndex() {
     } catch(e) {}
   }));
 
+  // Deduplicate by fileId (same file could appear across multiple scanned folders)
+  Object.keys(index).forEach(key => {
+    const seen = new Set();
+    index[key] = index[key].filter(v => { if (seen.has(v.fileId)) return false; seen.add(v.fileId); return true; });
+  });
   Object.values(index).forEach(arr =>
     arr.sort((a,b) => { const d = b.sessionDate.localeCompare(a.sessionDate); return d||a.version-b.version; })
   );
@@ -3424,7 +3430,7 @@ function getDurationFromBlob(blob) {
   });
 }
 
-async function scanAllDurations() {
+async function scanAllDurations(force = false) {
   if (!S.gapiReady) return;
   try { await ensureTrackIndex(); } catch(e) { return; }
   const toScan = [];
@@ -3433,11 +3439,12 @@ async function scanAllDurations() {
     const versions = S.trackIndex?.[song.name.toLowerCase()] || [];
     const durs = song.versionDurations || {};
     for (const v of versions) {
-      if (!durs[v.fileId]) toScan.push({ song, fileId: v.fileId });
+      if (force || !durs[v.fileId]) toScan.push({ song, fileId: v.fileId });
     }
   }
-  if (!toScan.length) return;
-  let dirty = false;
+  if (!toScan.length) { showToast('All durations already cached'); return; }
+  let done = 0, dirty = false;
+  showToast(`Scanning ${toScan.length} track${toScan.length>1?'s':''}…`);
   for (const { song, fileId } of toScan) {
     try {
       const blob = await Drive.fetchBlob(fileId);
@@ -3448,8 +3455,14 @@ async function scanAllDurations() {
         dirty = true;
       }
     } catch(e) {}
+    done++;
+    if (done % 5 === 0 || done === toScan.length) showToast(`Scanned ${done}/${toScan.length}…`);
   }
-  if (dirty) saveSongsJson().catch(() => {});
+  if (dirty) {
+    await saveSongsJson().catch(() => {});
+    showToast(`Done — ${done} track${done>1?'s':''} scanned`);
+    if (S.tp.songName) renderVersionsList();
+  }
 }
 
 async function selectVersion(idx) {
