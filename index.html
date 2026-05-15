@@ -879,6 +879,13 @@ body.tab-view #tab-view-close { display:flex; }
 .struct-bar.mini .struct-dot { width:7px; height:7px; }
 .struct-bar.mini .struct-label { font-size:8px; padding-bottom:2px; }
 .struct-bar.mini .struct-cursor-el { height:12px; }
+@media (max-width:600px) {
+  .struct-bar.mini .struct-section { padding:0 1px; }
+  .struct-bar.mini .struct-dots-row { gap:2px; padding:1px 1px 2px; }
+  .struct-bar.mini .struct-dot { width:5px; height:5px; }
+  .struct-bar.mini .struct-label { font-size:7px; padding-bottom:1px; }
+  .struct-bar.mini .struct-cursor-el { height:9px; }
+}
 /* Version row struct icon */
 .tp-ver-struct { font-size:13px; cursor:pointer; flex-shrink:0; padding:2px 3px; opacity:0.25; transition:opacity 0.15s; -webkit-user-select:none; }
 .tp-ver-struct.has-struct { opacity:0.8; color:var(--c-teal-pale); }
@@ -3547,36 +3554,46 @@ function tpSwitchTab(tab) {
   if (tab === 'lyrics') { _lyricsCtx.songName = S.tp.songName; const _lyrEntry = S.songs.find(s => s.name === S.tp.songName); $('tp-lyrics-text').value = _lyrEntry?.notes || ''; _lyrRender('tp'); _lyrSetMode('tp', 'view'); }
 }
 
+function _makeStructItem(bars, label, structId, isPinned) {
+  const item = document.createElement('div');
+  item.style.cssText = 'padding:8px 12px 6px;border-bottom:1px solid var(--c-border)';
+  const barEl = document.createElement('div');
+  barEl.className = 'struct-bar mini';
+  barEl.style.pointerEvents = 'none';
+  barEl.appendChild(buildStructDOM(bars));
+  const meta = document.createElement('div');
+  meta.style.cssText = 'display:flex;align-items:center;gap:6px;margin-top:5px';
+  meta.innerHTML = `<span style="font-family:var(--f-mono);font-size:9px;color:var(--c-teal-pale)">${label}</span>
+    <button onclick="tpPinStructFromTab('${structId}')"
+            style="margin-left:auto;background:none;border:1px solid ${isPinned?'var(--c-amber)':'var(--c-border)'};border-radius:4px;color:${isPinned?'var(--c-amber-lt)':'var(--c-teal-pale)'};font-family:var(--f-mono);font-size:9px;padding:2px 8px;cursor:pointer">
+      ${isPinned ? '✓ pinned' : 'pin'}</button>`;
+  item.appendChild(barEl);
+  item.appendChild(meta);
+  _fitStructBar(barEl);
+  return item;
+}
+
 function renderStructureTabList() {
   const el = $('tp-struct-list');
   if (!el) return;
   el.innerHTML = '';
+  const songEntry = S.songs.find(s => s.name === S.tp.songName);
+  const pinned = songEntry?.pinnedStructureId;
+
+  // Doodle board structure (stored in song.doodle, not structures.json)
+  if (songEntry?.doodle?.bars?.length) {
+    el.appendChild(_makeStructItem(songEntry.doodle.bars, 'Doodle Board', '__doodle__', pinned === '__doodle__'));
+  }
+
   const songVersionIds = new Set((S.tp.versions || []).map(v => v.fileId));
   const relevant = (S.structures || []).filter(s => songVersionIds.has(s.fileId));
-  if (!relevant.length) {
+  if (!relevant.length && !songEntry?.doodle?.bars?.length) {
     el.innerHTML = '<div style="padding:12px 14px;font-family:var(--f-mono);font-size:11px;color:var(--c-border)">No structures saved for this song\'s versions yet.</div>';
     return;
   }
-  const pinned = S.songs.find(s => s.name === S.tp.songName)?.pinnedStructureId;
   relevant.forEach(struct => {
     const v = S.tp.versions.find(v => v.fileId === struct.fileId);
-    const isPin = pinned === struct.id;
-    const item = document.createElement('div');
-    item.style.cssText = 'padding:8px 12px 6px;border-bottom:1px solid var(--c-border)';
-    const barEl = document.createElement('div');
-    barEl.className = 'struct-bar mini';
-    barEl.style.pointerEvents = 'none';
-    barEl.appendChild(buildStructDOM(struct.bars));
-    const meta = document.createElement('div');
-    meta.style.cssText = 'display:flex;align-items:center;gap:6px;margin-top:5px';
-    meta.innerHTML = `<span style="font-family:var(--f-mono);font-size:9px;color:var(--c-teal-pale)">${v ? fmtDate(v.sessionDate) : '—'} · ${v?.sessionType||''}</span>
-      <button onclick="tpPinStructFromTab('${struct.id}')"
-              style="margin-left:auto;background:none;border:1px solid ${isPin?'var(--c-amber)':'var(--c-border)'};border-radius:4px;color:${isPin?'var(--c-amber-lt)':'var(--c-teal-pale)'};font-family:var(--f-mono);font-size:9px;padding:2px 8px;cursor:pointer">
-        ${isPin ? '✓ pinned' : 'pin'}</button>`;
-    item.appendChild(barEl);
-    item.appendChild(meta);
-    _fitStructBar(barEl);
-    el.appendChild(item);
+    el.appendChild(_makeStructItem(struct.bars, `${v ? fmtDate(v.sessionDate) : '—'} · ${v?.sessionType||''}`, struct.id, pinned === struct.id));
   });
 }
 
@@ -4548,6 +4565,15 @@ function cdEditComment(commentId) {
   showEditCommentPanel(commentId);
 }
 
+function cdShareWA(cid) {
+  const c = _cdAllComments.find(x => x.id === cid);
+  if (!c) return;
+  const timeStr = c.endTime ? `${fmt(c.startTime)}–${fmt(c.endTime)}` : fmt(c.startTime);
+  const to = (c.directedTo||[]).length ? ` → ${c.directedTo.join(', ')}` : '';
+  const text = `${c.songName} · V${c.version} · ${timeStr}${to}\n"${c.text}"\n— ${c.author}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+
 function buildCommentCard(c){
   const card=document.createElement('div');
   card.className='cd-comment-card'; card.id='cdcard-'+c.id;
@@ -4572,6 +4598,7 @@ function buildCommentCard(c){
           : `<button class="cd-action-btn" id="cdloop-${c.id}" onclick="cdToggleLoop('${c.id}')">⟳ Loop</button>`}
         <button class="cd-action-btn${isPerched?' perched':''}" id="cdperch-${c.id}" onclick="cdTogglePerch('${c.id}')">${NEST_SVG} ${(c.perches||[]).length||''}</button>
         <button class="cd-action-btn" onclick="cdEditComment('${c.id}')">✎ Edit</button>
+        <button class="cd-action-btn" onclick="cdShareWA('${c.id}')">WhatsApp</button>
       </div>
     </div>
     <div class="cd-delete-reveal" id="cddel-${c.id}">𓅓</div>
@@ -5286,10 +5313,12 @@ function renderPinnedStruct() {
   if (!el || !barEl) return;
   const songEntry = S.songs?.find(s => s.name === S.tp?.songName);
   const pinnedId  = songEntry?.pinnedStructureId;
-  const struct    = pinnedId ? S.structures?.find(s => s.id === pinnedId) : null;
-  if (!struct) { el.style.display = 'none'; return; }
+  const bars = pinnedId === '__doodle__'
+    ? (songEntry?.doodle?.bars || null)
+    : (pinnedId ? S.structures?.find(s => s.id === pinnedId)?.bars ?? null : null);
+  if (!bars?.length) { el.style.display = 'none'; return; }
   barEl.innerHTML = '';
-  barEl.appendChild(buildStructDOM(struct.bars));
+  barEl.appendChild(buildStructDOM(bars));
   el.style.display = 'block';
   _fitStructBar(barEl);
 }
@@ -5435,6 +5464,10 @@ function closeDoodleBoard() {
   if (DB._syncInterval) { clearInterval(DB._syncInterval); DB._syncInterval = null; }
   $('doodle-board').classList.remove('open');
   DB.songName = null;
+  // Refresh structure tab if currently visible
+  if ($('tp-tabcontent-structure')?.classList.contains('active')) {
+    renderPinnedStruct(); renderStructureTabList();
+  }
 }
 
 function dbRenderSpine() {
