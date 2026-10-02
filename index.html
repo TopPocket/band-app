@@ -6429,33 +6429,75 @@ function _tabNoteParts(n) {
   return n.modPos === 'before' ? { pre: mod, num, post: '' } : { pre: '', num, post: mod };
 }
 
-// ASCII tab lines; each slot column is padded so fret numbers stay vertically aligned
-function _tabAsciiLines(tab) {
+// ASCII tab lines. Slots have a fixed width set by the fret numbers only; symbols sit in
+// the dash gap between notes (13p11, 5/7, /5) so timing stays aligned across strings.
+// The gap before a slot is the last char of the previous slot (or the lead char of a row).
+// maxW > 0 breaks the tab into several rows of at most that many chars (for phone screens).
+function _tabAsciiLines(tab, maxW = 0) {
   const strings = tab.instrument === 'guitar' ? 6 : 4;
   const tuning  = tab.instrument === 'guitar' ? ['E','A','D','G','B','e'] : ['E','A','D','G'];
   const maxSlot = tab.notes.reduce((m, n) => Math.max(m, n.slot), 0);
-  const lines = Array.from({ length: strings }, (_, i) => tuning[strings - 1 - i] + '|');
+  const parts = []; // parts[slot][string]
   for (let slot = 0; slot <= maxSlot; slot++) {
-    const parts = [];
+    parts[slot] = [];
     for (let s = 0; s < strings; s++) {
       const note = tab.notes.find(n => n.slot === slot && n.string === s);
-      parts[s] = note ? _tabNoteParts(note) : null;
-    }
-    const preW = Math.max(0, ...parts.map(p => p ? p.pre.length : 0));
-    const restW = Math.max(0, ...parts.map(p => p ? p.num.length + p.post.length : 0));
-    const width = Math.max(3, preW + restW + 1);
-    for (let s = 0; s < strings; s++) {
-      const p = parts[s];
-      const cell = p ? '-'.repeat(preW - p.pre.length) + p.pre + p.num + p.post : '';
-      lines[strings - 1 - s] += cell + '-'.repeat(width - cell.length);
+      parts[slot][s] = note ? _tabNoteParts(note) : null;
     }
   }
-  return lines.map(l => l + '|');
+  // Column widths: number + at least one gap char; widen if a post symbol and the next slot's pre symbol collide
+  const widths = parts.map((col, slot) => {
+    let w = Math.max(3, 1 + Math.max(1, ...col.map(p => p ? p.num.length : 0)));
+    col.forEach((p, s) => {
+      if (p?.post && parts[slot + 1]?.[s]?.pre) w = Math.max(w, p.num.length + 2);
+    });
+    return w;
+  });
+  // Group slots into rows
+  const rows = [];
+  let cur = [], curW = 3; // "E|" + lead char
+  widths.forEach((w, slot) => {
+    if (maxW > 0 && cur.length && curW + w + 1 > maxW) { rows.push(cur); cur = []; curW = 3; }
+    cur.push(slot); curW += w;
+  });
+  if (cur.length) rows.push(cur);
+
+  const out = [];
+  rows.forEach((row, ri) => {
+    if (ri > 0) out.push('');
+    for (let s = strings - 1; s >= 0; s--) {
+      const chars = ['-']; // lead char, holds a pre symbol on the row's first slot
+      row.forEach(slot => {
+        const p = parts[slot][s];
+        const cell = Array(widths[slot]).fill('-');
+        if (p) {
+          if (p.pre) chars[chars.length - 1] = p.pre;
+          [...p.num].forEach((c, i) => { cell[i] = c; });
+          if (p.post) cell[p.num.length] = p.post;
+        }
+        chars.push(...cell);
+      });
+      out.push(tuning[s] + '|' + chars.join('') + '|');
+    }
+  });
+  return out;
 }
 
-function _tabAsciiText(tab) {
-  return [tab.title||'Untitled', tab.songName?'Song: '+tab.songName:'', tab.author?'By: '+tab.author:'', '', ..._tabAsciiLines(tab), '', tab.extraNotes||'']
-    .filter((l,i) => i < 4 || l !== '').join('\n');
+function _tabAsciiText(tab, maxW = 0) {
+  const head = [tab.title||'Untitled', tab.songName?'Song: '+tab.songName:'', tab.author?'By: '+tab.author:''].filter(Boolean);
+  return [...head, '', ..._tabAsciiLines(tab, maxW), ...(tab.extraNotes ? ['', tab.extraNotes] : [])].join('\n');
+}
+
+// Share via the phone's share sheet (WhatsApp etc.); triple backticks = monospace in WhatsApp
+async function shareTab(tabId) {
+  const tab = S.tabs?.find(t => t.id === tabId);
+  if (!tab) return;
+  const text = '```\n' + _tabAsciiText(tab, 34) + '\n```';
+  if (navigator.share) {
+    try { await navigator.share({ title: tab.title || 'Tab', text }); return; }
+    catch(e) { if (e.name === 'AbortError') return; }
+  }
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 
 function tabViewTab(tabId) {
@@ -6472,7 +6514,15 @@ function tabViewTab(tabId) {
   close.textContent = '✕ Close';
   close.style.cssText = 'margin-top:12px;background:none;border:1px solid #444;border-radius:6px;color:#aaa;font-family:monospace;font-size:12px;padding:8px 20px;cursor:pointer;align-self:center';
   close.onclick = () => document.body.removeChild(overlay);
-  overlay.appendChild(pre); overlay.appendChild(close);
+  close.style.marginTop = '0';
+  const share = document.createElement('button');
+  share.textContent = 'Share';
+  share.style.cssText = close.style.cssText + ';border-color:var(--c-amber);color:var(--c-amber-lt)';
+  share.onclick = () => shareTab(tabId);
+  const btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;gap:10px;justify-content:center;margin-top:12px';
+  btns.appendChild(share); btns.appendChild(close);
+  overlay.appendChild(pre); overlay.appendChild(btns);
   document.body.appendChild(overlay);
 }
 
