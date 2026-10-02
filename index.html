@@ -433,6 +433,12 @@ header {
 .bpm-tap-btn:active { background:rgba(192,120,64,0.2); transform:scale(0.96); }
 .bpm-actions { display:flex; gap:10px; }
 .bpm-action-btn { font-family:var(--f-mono); font-size:11px; padding:8px 20px; border-radius:6px; cursor:pointer; }
+.bpm-metro-btn { font-family:var(--f-mono); font-size:11px; padding:8px 20px; border-radius:6px; cursor:pointer; background:none; border:1px solid var(--c-border); color:var(--c-teal-pale); }
+.bpm-metro-btn.on { border-color:var(--c-amber-lt); color:var(--c-amber-lt); background:rgba(232,169,106,0.1); }
+.bpm-dots { display:flex; gap:14px; }
+.bpm-dot { width:14px; height:14px; border-radius:50%; border:2px solid var(--c-border); transition:background 0.15s, border-color 0.15s, transform 0.15s; }
+.bpm-dot.fill { background:var(--c-amber); border-color:var(--c-amber); }
+.bpm-dot.flash { background:var(--c-amber-lt); border-color:var(--c-amber-lt); transform:scale(1.35); transition:none; }
 /* BPM ctrl button */
 .tp-bpm-ctrl-btn { font-family:var(--f-mono); font-size:11px; padding:4px 10px; border:1px solid var(--c-border); border-radius:8px; background:transparent; color:var(--c-teal-pale); cursor:pointer; white-space:nowrap; user-select:none; flex-shrink:0; }
 .tp-bpm-ctrl-btn:hover { border-color:var(--c-teal-pale); color:var(--c-text); }
@@ -714,6 +720,8 @@ header {
 .snip-metro { display:flex; align-items:center; gap:10px; padding:8px 16px; background:var(--c-surface); border-bottom:1px solid var(--c-border); flex-shrink:0; }
 .snip-metro-toggle { font-family:var(--f-mono); font-size:10px; padding:5px 12px; border:1px solid var(--c-border); border-radius:5px; background:none; color:var(--c-teal-pale); cursor:pointer; white-space:nowrap; user-select:none; }
 .snip-metro-toggle.on { border-color:var(--c-amber-lt); color:var(--c-amber-lt); background:rgba(232,169,106,0.1); }
+.snip-metro-light { width:14px; height:14px; border-radius:50%; border:2px solid var(--c-border); flex-shrink:0; transition:background 0.12s, border-color 0.12s; }
+.snip-metro-light.flash { background:var(--c-amber-lt); border-color:var(--c-amber-lt); transition:none; }
 .snip-metro-bpm { font-family:var(--f-mono); font-size:18px; font-weight:500; color:var(--c-text); min-width:40px; text-align:center; flex-shrink:0; }
 .snip-metro-knob-wrap { display:flex; flex-direction:column; align-items:center; gap:3px; }
 .snip-metro-knob { width:32px; height:40px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; background:var(--c-surface2); border:2px solid var(--c-border); position:relative; cursor:ns-resize; touch-action:none; user-select:none; transition:border-color 0.12s; flex-shrink:0; }
@@ -834,7 +842,13 @@ body.tab-fs #main-header { display:none; }
 .tab-nav-col { flex:1; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--c-text); cursor:pointer; background:var(--c-surface2); border:none; user-select:none; -webkit-user-select:none; }
 .tab-nav-col:active { background:var(--c-teal-lt); }
 .tab-mid-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:space-around; padding:6px 2px; }
-#tab-cursor-label { font-family:var(--f-mono); font-size:13px; color:var(--c-amber-lt); }
+#tab-sym-btn { min-width:34px; height:30px; border:1px solid var(--c-border); border-radius:6px; background:none; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:15px; font-weight:700; cursor:pointer; padding:0 6px; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; touch-action:none; }
+#tab-sym-btn.on { border-color:var(--c-amber-lt); color:var(--c-bg); background:var(--c-amber-lt); }
+#tab-sym-menu { position:fixed; z-index:700; display:none; flex-direction:column; background:var(--c-surface); border:1px solid var(--c-border); border-radius:8px; padding:4px; box-shadow:0 6px 20px rgba(0,0,0,0.4); max-height:80vh; overflow-y:auto; }
+#tab-sym-menu.open { display:flex; }
+#tab-sym-menu button { display:flex; gap:10px; align-items:center; background:none; border:none; border-radius:5px; color:var(--c-text); font-family:var(--f-mono); font-size:12px; padding:6px 10px; cursor:pointer; text-align:left; white-space:nowrap; }
+#tab-sym-menu button b { display:inline-block; width:14px; text-align:center; color:var(--c-amber-lt); font-size:14px; }
+#tab-sym-menu button.sel { background:rgba(232,169,106,0.15); }
 #tab-clear-btn { background:none; border:none; color:var(--c-accent); font-size:20px; cursor:pointer; padding:0; line-height:1; }
 #tab-save-btn { background:var(--c-accent); border:none; border-radius:5px; color:var(--c-text); font-family:var(--f-mono); font-size:11px; padding:5px 8px; cursor:pointer; width:100%; }
 #tab-save-btn:active { opacity:0.85; }
@@ -1661,7 +1675,7 @@ body.tab-view #tab-view-close { display:flex; }
         <div id="tab-controls-panel">
           <div class="tab-nav-col" onclick="tabMoveCursor(-1)">‹</div>
           <div class="tab-mid-col">
-            <span id="tab-cursor-label">0</span>
+            <button type="button" id="tab-sym-btn" title="Tap: toggle symbol mode · Hold: choose symbol">/</button>
             <button type="button" id="tab-clear-btn" onclick="tabClearSlot()" title="Clear slot">𓅮</button>
             <button type="button" id="tab-save-btn" onclick="tabSave()">Save</button>
           </div>
@@ -1673,6 +1687,7 @@ body.tab-view #tab-view-close { display:flex; }
         <canvas id="fret-canvas"></canvas>
         <button type="button" id="tab-notenames-btn" onclick="tabToggleNoteNames()">fret</button>
       </div>
+      <div id="tab-sym-menu"></div>
     </div>
   </div>
 
@@ -4946,6 +4961,7 @@ window.onload = () => {
   });
   // Mouse click on fretboard (desktop)
   $('fret-canvas')?.addEventListener('click', e => _fretboardHit(e.clientX, e.clientY));
+  _tabSymInit();
 };
 
 /* ══════════════════════════════════════════════════════
@@ -6371,7 +6387,8 @@ async function deleteTab(id) {
 ══════════════════════════════════════════════════════ */
 const TE = {
   id: null, instrument: 'bass', cursor: 0, fretOffset: 0, showNoteNames: false,
-  notes: [],            // { slot, string, fret }
+  notes: [],            // { slot, string, fret (null = symbol only), mod?, modPos?: 'after'|'before' }
+  symOn: false, sym: '/',
   songName: null, author: null, title: '', extraNotes: '', returnScreen: 'screen-addnotes',
   get strings() { return this.instrument === 'guitar' ? 6 : 4; },
   get tuning()  {
@@ -6382,7 +6399,7 @@ const TE = {
 };
 
 const TAB_SLOT_W   = 22;
-const TAB_L_PAD    = 22;
+const TAB_L_PAD    = 30;
 const TAB_T_PAD    = 8;
 const FRET_TOTAL   = 24;
 let VISIBLE_FRETS = FRET_TOTAL;
@@ -6399,24 +6416,52 @@ function fretToNote(stringIdx, fret) {
 
 let _fretScrollMode = false;
 
-function tabViewTab(tabId) {
-  const tab = S.tabs?.find(t => t.id === tabId);
-  if (!tab) return;
+const TAB_SYMBOLS = [
+  ['/', 'slide up'], ['\\', 'slide down'], ['x', 'muted'], ['h', 'hammer-on'],
+  ['p', 'pull-off'], ['b', 'bend'], ['r', 'release'], ['~', 'vibrato'],
+];
+
+// Text parts of a tab note: symbol before the fret, the fret, symbol after
+function _tabNoteParts(n) {
+  const num = n.fret == null ? '' : String(n.fret);
+  const mod = n.mod || '';
+  if (!num) return { pre: '', num: mod, post: '' };
+  return n.modPos === 'before' ? { pre: mod, num, post: '' } : { pre: '', num, post: mod };
+}
+
+// ASCII tab lines; each slot column is padded so fret numbers stay vertically aligned
+function _tabAsciiLines(tab) {
   const strings = tab.instrument === 'guitar' ? 6 : 4;
   const tuning  = tab.instrument === 'guitar' ? ['E','A','D','G','B','e'] : ['E','A','D','G'];
   const maxSlot = tab.notes.reduce((m, n) => Math.max(m, n.slot), 0);
-  const lines = [];
-  for (let s = strings - 1; s >= 0; s--) {
-    let line = tuning[s] + '|';
-    for (let slot = 0; slot <= maxSlot; slot++) {
+  const lines = Array.from({ length: strings }, (_, i) => tuning[strings - 1 - i] + '|');
+  for (let slot = 0; slot <= maxSlot; slot++) {
+    const parts = [];
+    for (let s = 0; s < strings; s++) {
       const note = tab.notes.find(n => n.slot === slot && n.string === s);
-      if (note) { const num = String(note.fret); line += num + '-'.repeat(Math.max(0, 3 - num.length)); }
-      else line += '---';
+      parts[s] = note ? _tabNoteParts(note) : null;
     }
-    lines.push(line + '|');
+    const preW = Math.max(0, ...parts.map(p => p ? p.pre.length : 0));
+    const restW = Math.max(0, ...parts.map(p => p ? p.num.length + p.post.length : 0));
+    const width = Math.max(3, preW + restW + 1);
+    for (let s = 0; s < strings; s++) {
+      const p = parts[s];
+      const cell = p ? '-'.repeat(preW - p.pre.length) + p.pre + p.num + p.post : '';
+      lines[strings - 1 - s] += cell + '-'.repeat(width - cell.length);
+    }
   }
-  const text = [tab.title||'Untitled', tab.songName?'Song: '+tab.songName:'', tab.author?'By: '+tab.author:'', '', ...lines, '', tab.extraNotes||'']
+  return lines.map(l => l + '|');
+}
+
+function _tabAsciiText(tab) {
+  return [tab.title||'Untitled', tab.songName?'Song: '+tab.songName:'', tab.author?'By: '+tab.author:'', '', ..._tabAsciiLines(tab), '', tab.extraNotes||'']
     .filter((l,i) => i < 4 || l !== '').join('\n');
+}
+
+function tabViewTab(tabId) {
+  const tab = S.tabs?.find(t => t.id === tabId);
+  if (!tab) return;
+  const text = _tabAsciiText(tab);
 
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;display:flex;flex-direction:column;padding:20px;box-sizing:border-box';
@@ -6461,6 +6506,7 @@ function openTabEditor(tabId) {
   // Remember where to return after save
   TE.returnScreen = document.querySelector('.screen.active')?.id || 'screen-addnotes';
   TE.fretOffset = 0;
+  TE.symOn = false;
   document.body.classList.add('tab-fs');
   showScreen('screen-tab');
   requestAnimationFrame(() => {
@@ -6475,8 +6521,11 @@ function openTabEditor(tabId) {
 }
 
 function tabRefreshControls() {
-  const cursor = $('tab-cursor-label');
-  if (cursor) cursor.textContent = TE.cursor;
+  const symBtn = $('tab-sym-btn');
+  if (symBtn) {
+    symBtn.textContent = TE.sym;
+    symBtn.classList.toggle('on', TE.symOn);
+  }
   const noteBtn = $('tab-notenames-btn');
   if (noteBtn) {
     noteBtn.textContent = TE.showNoteNames ? 'note' : 'fret';
@@ -6519,13 +6568,15 @@ function renderTabCanvas() {
   const strings = TE.strings;
   const wrap = $('tab-canvas-wrap');
   const wrapH = wrap ? wrap.clientHeight : strings * 30 + 20;
-  const strH = Math.max(18, Math.floor((wrapH - TAB_T_PAD * 2 - 14) / strings));
+  const LBL_H = TE.cursor >= 0 ? 12 : 0; // room for the beat counter above the cursor line
+  const T_PAD = TAB_T_PAD + LBL_H;
+  const strH = Math.max(18, Math.floor((wrapH - TAB_T_PAD * 2 - LBL_H - 14) / strings));
 
   const maxSlot = Math.max(24, TE.cursor + 12,
     TE.notes.reduce((m, n) => Math.max(m, n.slot + 4), 0));
 
   const W = TAB_L_PAD + maxSlot * TAB_SLOT_W + 30;
-  const H = TAB_T_PAD * 2 + strings * strH + 14;
+  const H = TAB_T_PAD * 2 + LBL_H + strings * strH + 14;
   canvas.width = W; canvas.height = H;
 
   const ctx = canvas.getContext('2d');
@@ -6535,7 +6586,7 @@ function renderTabCanvas() {
   // String lines and labels
   for (let s = 0; s < strings; s++) {
     const row = strings - 1 - s;
-    const y = Math.round(TAB_T_PAD + row * strH + strH / 2);
+    const y = Math.round(T_PAD + row * strH + strH / 2);
 
     ctx.fillStyle = '#83A8A6';
     ctx.font = '10px monospace';
@@ -6558,33 +6609,42 @@ function renderTabCanvas() {
     ctx.fillText(slot, x, H - 2);
   }
 
-  // Notes
+  // Notes — the fret number stays centred on the slot; a symbol hangs off its left or right edge
   ctx.font = 'bold 12px monospace';
   TE.notes.forEach(n => {
     const row = strings - 1 - n.string;
-    const y = Math.round(TAB_T_PAD + row * strH + strH / 2);
+    const y = Math.round(T_PAD + row * strH + strH / 2);
     const x = Math.round(TAB_L_PAD + n.slot * TAB_SLOT_W + TAB_SLOT_W / 2);
-    const numStr = String(n.fret);
-    const tw = ctx.measureText(numStr).width + 6;
+    const { pre, num, post } = _tabNoteParts(n);
+    const nw = ctx.measureText(num).width;
+    const left  = x - nw / 2 - ctx.measureText(pre).width;
+    const right = x + nw / 2 + ctx.measureText(post).width;
     ctx.fillStyle = '#161E1E';
-    ctx.fillRect(Math.round(x - tw / 2), y - 9, Math.round(tw), 14);
-    ctx.fillStyle = '#EDDDD4';
+    ctx.fillRect(Math.round(left - 3), y - 9, Math.round(right - left + 6), 14);
     ctx.textAlign = 'center';
-    ctx.fillText(numStr, x, y + 4);
+    ctx.fillStyle = n.fret == null ? '#E8A96A' : '#EDDDD4';
+    ctx.fillText(num, x, y + 4);
+    ctx.fillStyle = '#E8A96A';
+    if (pre)  { ctx.textAlign = 'right'; ctx.fillText(pre,  x - nw / 2, y + 4); }
+    if (post) { ctx.textAlign = 'left';  ctx.fillText(post, x + nw / 2, y + 4); }
   });
 
-  // Cursor line (hidden in view-only mode)
+  // Cursor line + beat counter (hidden in view-only mode)
+  const cx = Math.round(TAB_L_PAD + TE.cursor * TAB_SLOT_W + TAB_SLOT_W / 2);
   if (TE.cursor >= 0) {
-    const cx = Math.round(TAB_L_PAD + TE.cursor * TAB_SLOT_W + TAB_SLOT_W / 2);
     ctx.strokeStyle = '#E8A96A';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(cx, 2); ctx.lineTo(cx, H - 16);
     ctx.stroke();
+    ctx.font = '10px monospace';
+    ctx.fillStyle = '#E8A96A';
+    ctx.textAlign = 'left';
+    ctx.fillText(String(TE.cursor), cx + 3, 11);
   }
 
   // Auto-scroll to keep cursor visible
-  if (wrap) {
+  if (wrap && TE.cursor >= 0) {
     const local = cx - wrap.scrollLeft;
     if (local < 40) wrap.scrollLeft = Math.max(0, cx - 50);
     else if (local > wrap.clientWidth - 40) wrap.scrollLeft = cx - wrap.clientWidth + 60;
@@ -6667,6 +6727,7 @@ function renderFretboard() {
   // Highlight notes at current cursor slot (opaque amber circle + dark text)
   const curNotes = TE.notes.filter(n => n.slot === TE.cursor);
   curNotes.forEach(n => {
+    if (n.fret == null) return; // symbol-only notes have no fret position
     const visF = n.fret - offset;
     if (visF < 0 || visF >= VISIBLE_FRETS) return;
     const row = strings - 1 - n.string;
@@ -6710,10 +6771,78 @@ function _fretboardHit(clientX, clientY) {
   const string = strings - 1 - row;
   if (visF < 0 || visF >= VISIBLE_FRETS || fret >= FRET_TOTAL || string < 0 || string >= strings) return;
   const idx = TE.notes.findIndex(n => n.slot === TE.cursor && n.string === string);
-  if (idx >= 0) { TE.notes.splice(idx, 1); }
+  const note = TE.notes[idx];
+  if (TE.symOn) {
+    // Symbol mode: only the string matters. Cycle 5 → 5/ → /5 → 5; lone symbol toggles.
+    const sym = TE.sym;
+    if (!note) TE.notes.push({ slot: TE.cursor, string, fret: null, mod: sym });
+    else if (note.fret == null) {
+      if (note.mod === sym) TE.notes.splice(idx, 1); else note.mod = sym;
+    }
+    else if (note.mod !== sym)        { note.mod = sym; note.modPos = 'after'; }
+    else if (note.modPos !== 'before') { note.modPos = 'before'; }
+    else                               { delete note.mod; delete note.modPos; }
+  }
+  else if (note && note.fret == null) { note.fret = fret; note.modPos = 'after'; } // add fret to a lone symbol
+  else if (note) { TE.notes.splice(idx, 1); }
   else { TE.notes.push({ slot: TE.cursor, string, fret }); }
   renderTabCanvas();
   renderFretboard();
+}
+
+/* Symbol button: tap toggles symbol mode, hold opens the picker */
+function _tabSymInit() {
+  const btn = $('tab-sym-btn');
+  if (!btn) return;
+  let holdTimer = null, held = false;
+  const down = e => {
+    e.preventDefault();
+    held = false;
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(() => { held = true; tabSymOpenMenu(); }, 450);
+  };
+  const up = e => {
+    e.preventDefault();
+    clearTimeout(holdTimer);
+    if (!held) { TE.symOn = !TE.symOn; tabRefreshControls(); }
+  };
+  btn.addEventListener('pointerdown', down);
+  btn.addEventListener('pointerup', up);
+  btn.addEventListener('pointercancel', () => clearTimeout(holdTimer));
+  btn.addEventListener('contextmenu', e => e.preventDefault());
+}
+
+function tabSymOpenMenu() {
+  const menu = $('tab-sym-menu');
+  if (menu.parentElement !== document.body) document.body.appendChild(menu);
+  menu.innerHTML = '';
+  TAB_SYMBOLS.forEach(([sym, label]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    if (sym === TE.sym) b.className = 'sel';
+    b.innerHTML = `<b></b><span></span>`;
+    b.querySelector('b').textContent = sym;
+    b.querySelector('span').textContent = label;
+    b.onclick = () => { TE.sym = sym; TE.symOn = true; tabSymCloseMenu(); tabRefreshControls(); };
+    menu.appendChild(b);
+  });
+  menu.classList.add('open');
+  const r = $('tab-sym-btn').getBoundingClientRect();
+  const mw = menu.offsetWidth, mh = menu.offsetHeight;
+  menu.style.left = Math.max(4, Math.min(window.innerWidth - mw - 4, r.left + r.width / 2 - mw / 2)) + 'px';
+  menu.style.top  = Math.max(4, Math.min(window.innerHeight - mh - 4, r.bottom + 4)) + 'px';
+  // Close on next tap outside (deferred so the releasing pointerup doesn't close it)
+  setTimeout(() => document.addEventListener('pointerdown', _tabSymOutside, true), 0);
+}
+
+function _tabSymOutside(e) {
+  if ($('tab-sym-menu').contains(e.target)) return;
+  tabSymCloseMenu();
+}
+
+function tabSymCloseMenu() {
+  $('tab-sym-menu')?.classList.remove('open');
+  document.removeEventListener('pointerdown', _tabSymOutside, true);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -6800,7 +6929,7 @@ const SnipR = {
   /* Web Audio for gapless loop */
   _waCtx: null, _waBuf: null, _waSrc: null,
   _waPlaying: false, _waT0: 0, _waOff: 0,
-  metro: { on: false, bpm: 120, snap: false, _ctx: null, _nextBeat: 0, _schedId: null, _bpmKnob: null },
+  metro: { on: false, bpm: 120, snap: false, _nextBeat: 0, _schedId: null, _bpmKnob: null },
 };
 SnipR.audio.addEventListener('ended', () => {
   if (SnipR.looping) { SnipR.audio.currentTime = SnipR.trimStart; SnipR.audio.play(); }
@@ -6861,11 +6990,20 @@ async function snipToggleRecord() {
   }
   if (typeof MediaRecorder === 'undefined') { showToast('Recording not supported on this browser'); return; }
   try {
-    SnipR.stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    // Voice-call processing (noise suppression, echo cancellation, AGC) mangles music — turn it off
+    SnipR.stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: {
+      echoCancellation: false, noiseSuppression: false, autoGainControl: false,
+    } });
+    // Some Android builds ignore the request — re-apply, then report anything still on
+    const _track = SnipR.stream.getAudioTracks()[0];
+    try { await _track?.applyConstraints({ echoCancellation: false, noiseSuppression: false, autoGainControl: false }); } catch(e) {}
+    const _set = _track?.getSettings?.() || {};
+    const _stillOn = ['noiseSuppression','autoGainControl','echoCancellation'].filter(k => _set[k] === true);
+    if (_stillOn.length) showToast('Mic processing still on: ' + _stillOn.join(', '));
     SnipR.chunks = [];
     const _mimes = ['audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus',''];
     const mime = _mimes.find(m => m === '' || MediaRecorder.isTypeSupported(m));
-    SnipR.recorder = new MediaRecorder(SnipR.stream, mime ? { mimeType: mime } : undefined);
+    SnipR.recorder = new MediaRecorder(SnipR.stream, { audioBitsPerSecond: 128000, ...(mime ? { mimeType: mime } : {}) });
     SnipR.recorder.ondataavailable = e => { if (e.data.size > 0) SnipR.chunks.push(e.data); };
     SnipR.recorder.onstop = async () => {
       SnipR.blob = new Blob(SnipR.chunks, { type: SnipR.recorder.mimeType });
@@ -7094,37 +7232,31 @@ function snipMetroToggle() {
   if (m.on) _snipMetroStart(); else _snipMetroStop();
 }
 
+// Visual only: an audible click would bleed into the recording
 function _snipMetroStart() {
   _snipMetroStop();
   const m = SnipR.metro;
-  try {
-    m._ctx = new (window.AudioContext || window.webkitAudioContext)();
-    m._nextBeat = m._ctx.currentTime + 0.05;
-    m._schedId = setInterval(_snipMetroSchedule, 50);
-  } catch(e) { console.warn('metro ctx:', e); }
+  m._nextBeat = performance.now() + 50;
+  m._schedId = setInterval(_snipMetroSchedule, 15);
 }
 
 function _snipMetroStop() {
   const m = SnipR.metro;
   clearInterval(m._schedId); m._schedId = null;
-  if (m._ctx) { try { m._ctx.close(); } catch(e) {} m._ctx = null; }
+  $('snip-metro-light')?.classList.remove('flash');
 }
 
 function _snipMetroSchedule() {
   const m = SnipR.metro;
-  if (!m._ctx || !m.on) return;
-  const beatLen = 60 / m.bpm;
-  const lookAhead = 0.15;
-  while (m._nextBeat < m._ctx.currentTime + lookAhead) {
-    const osc = m._ctx.createOscillator();
-    const gain = m._ctx.createGain();
-    osc.connect(gain); gain.connect(m._ctx.destination);
-    osc.frequency.value = 880;
-    gain.gain.setValueAtTime(0.5, m._nextBeat);
-    gain.gain.exponentialRampToValueAtTime(0.001, m._nextBeat + 0.05);
-    osc.start(m._nextBeat); osc.stop(m._nextBeat + 0.06);
-    m._nextBeat += beatLen;
-  }
+  if (!m.on) return;
+  const now = performance.now();
+  if (now < m._nextBeat) return;
+  const beatMs = 60000 / m.bpm;
+  m._nextBeat += beatMs * Math.max(1, Math.ceil((now - m._nextBeat) / beatMs)); // skip missed beats
+  const light = $('snip-metro-light');
+  if (!light) return;
+  light.classList.add('flash');
+  setTimeout(() => light.classList.remove('flash'), 90);
 }
 
 function snipToggleSnap() {
@@ -7152,7 +7284,7 @@ function snipBpmKnobMove(e) {
   // update knob rotation: 20bpm=0deg, 300bpm=330deg
   const rot = ((newBpm - 20) / 280) * 330;
   $('snip-metro-knob').style.transform = `rotate(${rot}deg)`;
-  if (m.on && m._ctx) m._nextBeat = m._ctx.currentTime + 0.05; // re-sync
+  if (m.on) m._nextBeat = performance.now() + 50; // re-sync
 }
 
 function snipBpmKnobUp() {
@@ -7862,18 +7994,19 @@ function _lyricsHandleViewClick(e, ctx) {
 }
 
 /* ── BPM TAGGER ─────────────────────────────────────────── */
-const _bpm = { taps: [], lastTap: 0, ctx: 'feathers', _resetTimer: null };
+const _bpm = { taps: [], lastTap: 0, ctx: 'feathers', _resetTimer: null, bpm: 0,
+  metro: { on: false, _ac: null, _schedId: null, _rafId: null, _nextTime: 0, _beat: 0, _queue: [] } };
 
 function openBpmTapper(ctx) {
   _bpm.ctx = ctx;
-  _bpm.taps = []; _bpm.lastTap = 0;
+  _bpm.taps = []; _bpm.lastTap = 0; _bpm.bpm = 0;
   $('bpm-display').textContent = '—';
   $('bpm-sub').textContent = 'tap to the beat';
   $('bpm-add-btn').style.display = ctx === 'track' ? '' : 'none';
   $('bpm-overlay').classList.add('open');
 }
 
-function closeBpmTapper() { $('bpm-overlay').classList.remove('open'); }
+function closeBpmTapper() { bpmMetroStop(); $('bpm-overlay').classList.remove('open'); }
 
 function bpmTap() {
   const now = Date.now();
@@ -7882,20 +8015,83 @@ function bpmTap() {
   _bpm.taps.push(now);
   if (_bpm.taps.length > 8) _bpm.taps.shift();
   clearTimeout(_bpm._resetTimer);
-  _bpm._resetTimer = setTimeout(bpmReset, 4000);
+  // Idle auto-reset; while the metronome runs only the tap run resets so the tempo stays visible
+  _bpm._resetTimer = setTimeout(() => { if (_bpm.metro.on) { _bpm.taps = []; _bpm.lastTap = 0; } else bpmReset(); }, 4000);
   if (_bpm.taps.length < 2) { $('bpm-sub').textContent = 'keep tapping…'; return; }
   const intervals = [];
   for (let i = 1; i < _bpm.taps.length; i++) intervals.push(_bpm.taps[i] - _bpm.taps[i-1]);
   const avg = intervals.reduce((a,b) => a+b, 0) / intervals.length;
   const bpm = Math.round(60000 / avg);
+  _bpm.bpm = bpm;
   $('bpm-display').textContent = bpm;
   $('bpm-sub').textContent = `${_bpm.taps.length} taps`;
 }
 
 function bpmReset() {
-  _bpm.taps = []; _bpm.lastTap = 0;
+  bpmMetroStop();
+  _bpm.taps = []; _bpm.lastTap = 0; _bpm.bpm = 0;
   $('bpm-display').textContent = '—';
   $('bpm-sub').textContent = 'tap to the beat';
+}
+
+/* 4/4 metronome at the tapped tempo; follows re-taps live */
+function bpmMetroToggle() {
+  if (_bpm.metro.on) { bpmMetroStop(); return; }
+  if (!_bpm.bpm) { showToast('Tap a BPM first'); return; }
+  const m = _bpm.metro;
+  try { m._ac = new (window.AudioContext || window.webkitAudioContext)(); }
+  catch(e) { showToast('Audio not available'); return; }
+  m.on = true; m._beat = 0; m._queue = [];
+  m._nextTime = m._ac.currentTime + 0.1;
+  m._schedId = setInterval(_bpmMetroSchedule, 25);
+  _bpmMetroSchedule();
+  m._rafId = requestAnimationFrame(_bpmMetroDraw);
+  $('bpm-metro-btn').classList.add('on');
+}
+
+function bpmMetroStop() {
+  const m = _bpm.metro;
+  m.on = false;
+  clearInterval(m._schedId); m._schedId = null;
+  cancelAnimationFrame(m._rafId); m._rafId = null;
+  if (m._ac) { try { m._ac.close(); } catch(e) {} m._ac = null; }
+  m._queue = [];
+  $('bpm-metro-btn')?.classList.remove('on');
+  document.querySelectorAll('#bpm-dots .bpm-dot').forEach(d => d.classList.remove('fill', 'flash'));
+}
+
+function _bpmMetroSchedule() {
+  const m = _bpm.metro;
+  if (!m.on || !m._ac) return;
+  while (m._nextTime < m._ac.currentTime + 0.12) {
+    const t = m._nextTime, accent = m._beat === 0;
+    const osc = m._ac.createOscillator(), gain = m._ac.createGain();
+    osc.connect(gain); gain.connect(m._ac.destination);
+    osc.frequency.value = accent ? 1500 : 1000;
+    gain.gain.setValueAtTime(accent ? 0.6 : 0.4, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+    osc.start(t); osc.stop(t + 0.06);
+    m._queue.push({ t, beat: m._beat });
+    m._beat = (m._beat + 1) % 4;
+    m._nextTime += 60 / _bpm.bpm;
+  }
+}
+
+// Dots: each beat's dot flashes as its click sounds, then stays filled until the bar restarts
+function _bpmMetroDraw() {
+  const m = _bpm.metro;
+  if (!m.on || !m._ac) return;
+  let cur = null;
+  while (m._queue.length && m._queue[0].t <= m._ac.currentTime) cur = m._queue.shift();
+  if (cur) {
+    const dots = document.querySelectorAll('#bpm-dots .bpm-dot');
+    dots.forEach((d, i) => {
+      d.classList.toggle('fill', i <= cur.beat);
+      d.classList.toggle('flash', i === cur.beat);
+    });
+    setTimeout(() => dots[cur.beat]?.classList.remove('flash'), 100);
+  }
+  m._rafId = requestAnimationFrame(_bpmMetroDraw);
 }
 
 async function bpmAddToTrack() {
@@ -8024,7 +8220,11 @@ async function snipSave() {
     const tracks = S.songs.filter(s => !s.type || s.type === 'track').map(s => s.name);
     const eggs   = S.songs.filter(s => s.type === 'egg').map(s => s.name);
     const picked = await _simplePickerModal('Link snippet to…', [...tracks, ...eggs, '＋ New Egg'], null);
-    if (!picked) return;
+    if (!picked) {
+      SnipR._saving = false;
+      if (sb) { sb.disabled = false; sb.textContent = 'Save'; }
+      return;
+    }
     if (picked === '＋ New Egg') {
       const n = S.songs.filter(s => s.type === 'egg').length + 1;
       const ne = { name: `Egg ${n}`, type: 'egg', eggFileId: null, eggFileName: null,
@@ -8071,7 +8271,11 @@ async function snipSave() {
     if (_dbSnipBarIdx != null) {
       dbPickItem('snip', entry.id, entry.fileName || 'Snippet', _dbSnipBarIdx);
     }
-  } catch(e) { hideLoading(); showToast('Save failed: ' + _errMsg(e)); }
+  } catch(e) {
+    hideLoading(); showToast('Save failed: ' + _errMsg(e));
+    SnipR._saving = false;
+    if (sb) { sb.disabled = false; sb.textContent = 'Save'; }
+  }
 }
 
 window.addEventListener('resize', () => { if ($('snip-panel').classList.contains('open')) _snipResizeCanvas(); });
@@ -8512,34 +8716,7 @@ async function tabSave() {
 function downloadTab(id) {
   const tab = S.tabs?.find(t => t.id === id);
   if (!tab) return;
-  // Render tab as ASCII text
-  const strings = tab.instrument === 'guitar' ? 6 : 4;
-  const tuning  = tab.instrument === 'guitar' ? ['E','A','D','G','B','e'] : ['E','A','D','G'];
-  const maxSlot = tab.notes.reduce((m, n) => Math.max(m, n.slot), 0);
-  const lines = [];
-  for (let s = strings - 1; s >= 0; s--) {
-    let line = tuning[s] + '|';
-    for (let slot = 0; slot <= maxSlot; slot++) {
-      const note = tab.notes.find(n => n.slot === slot && n.string === s);
-      if (note) {
-        const num = String(note.fret);
-        line += num + '-'.repeat(Math.max(0, 3 - num.length));
-      } else {
-        line += '---';
-      }
-    }
-    line += '|';
-    lines.push(line);
-  }
-  const text = [
-    tab.title || 'Untitled',
-    tab.songName ? 'Song: ' + tab.songName : '',
-    tab.author ? 'By: ' + tab.author : '',
-    '',
-    ...lines,
-    '',
-    tab.extraNotes || '',
-  ].filter((l, i) => i < 4 || l !== '').join('\n');
+  const text = _tabAsciiText(tab);
 
   const blob = new Blob([text], { type: 'text/plain' });
   const url  = URL.createObjectURL(blob);
@@ -8954,6 +9131,7 @@ async function _plkLoadLamejs() {
   </div>
   <div class="snip-metro">
     <button class="snip-metro-toggle" id="snip-metro-on" onclick="snipMetroToggle()">Off</button>
+    <div class="snip-metro-light" id="snip-metro-light"></div>
     <div class="snip-metro-bpm" id="snip-metro-bpm">120</div>
     <div class="snip-metro-knob-wrap">
       <div class="snip-metro-knob" id="snip-metro-knob"
@@ -9056,6 +9234,10 @@ async function _plkLoadLamejs() {
             onclick="bpmAddToTrack()">Add BPM</button>
     <button class="bpm-action-btn" style="background:none;border:1px solid var(--c-border);color:var(--c-teal-pale)"
             onclick="closeBpmTapper()">Close</button>
+  </div>
+  <button class="bpm-metro-btn" id="bpm-metro-btn" onclick="bpmMetroToggle()">♩ Metronome</button>
+  <div class="bpm-dots" id="bpm-dots">
+    <div class="bpm-dot"></div><div class="bpm-dot"></div><div class="bpm-dot"></div><div class="bpm-dot"></div>
   </div>
 </div>
 
