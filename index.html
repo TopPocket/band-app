@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<script>
+// user-scalable=no is for phones. Firefox-based browsers can also take it to mean no trackpad pinch, which the plucker zooms with.
+if (!matchMedia('(hover:none) and (pointer:coarse)').matches) document.querySelector('meta[name=viewport]').content = 'width=device-width, initial-scale=1.0';
+</script>
 <title>Nesting Ground</title>
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -8932,23 +8936,6 @@ async function _plkReadWavInfo(file) {
   return { fmt, dataOffset: pos, dataSize, byteRate, rate, align, channels, bytesEach, isFloat: tag === 3 };
 }
 
-// Build the header for a WAV holding `dataSize` bytes of audio
-function _plkWavHeader(fmt, dataSize) {
-  const pad = fmt.length & 1;
-  const out = new Uint8Array(12 + 8 + fmt.length + pad + 8);
-  const dv = new DataView(out.buffer);
-  const tag = (s, at) => [...s].forEach((c, i) => { out[at + i] = c.charCodeAt(0); });
-  tag('RIFF', 0);
-  dv.setUint32(4, Math.min(4 + 8 + fmt.length + pad + 8 + dataSize, 0xFFFFFFFF), true);
-  tag('WAVE', 8);
-  tag('fmt ', 12);
-  dv.setUint32(16, fmt.length, true);
-  out.set(fmt, 20);
-  tag('data', 20 + fmt.length + pad);
-  dv.setUint32(24 + fmt.length + pad, Math.min(dataSize, 0xFFFFFFFF), true);
-  return out;
-}
-
 // Reads sample number i of a chunk of raw WAV audio as a float
 function _plkSampler(buf, wav) {
   switch (wav.bytesEach) {
@@ -9045,13 +9032,85 @@ async function plkProceed() {
 }
 
 function _plkSetupAudio() {
-  if (_PLK.audio) _PLK.audio.pause();
+  if (_PLK.audio) {
+    _PLK.audio.pause();
+    _PLK.audio.ctx?.close();
+  }
   if (_PLK.audioUrl) URL.revokeObjectURL(_PLK.audioUrl);
-  const recs = _PLK.recordings;
-  // A single recording is played as it is on disk; several as one WAV, so it plays across the joins
-  const source = recs.length === 1 ? recs[0].file
-    : new Blob([_plkWavHeader(recs[0].wav.fmt, _PLK.dataBlob.size), _PLK.dataBlob], { type: 'audio/wav' });
-  _PLK.audioUrl = URL.createObjectURL(source);
+  _PLK.audioUrl = null;
+  _PLK.audio = _PLK.recordings[0].wav ? _plkWavPlayer() : _plkFilePlayer(_PLK.recordings[0].file);
+  $('plk-transport-time').textContent = _plkFmt(0);
+}
+
+// Plays a stretch of the WAV timeline straight from its bytes. An <audio> element would have to
+// seek in the joined Blob, and Firefox-based browsers can't seek a Blob made of several parts.
+function _plkWavPlayer() {
+  const wav = _PLK.recordings[0].wav;
+  return {
+    ctx: null, node: null, ticket: 0, paused: true,
+    position: 0, startedAt: 0,
+    get currentTime() {
+      return this.node ? this.position + this.ctx.currentTime - this.startedAt : this.position;
+    },
+    pause() {
+      this.ticket++;
+      this.position = this.currentTime;
+      this.paused = true;
+      if (this.node) {
+        const node = this.node;
+        this.node = null;
+        node.stop();
+        this.ctx.suspend();
+      }
+    },
+    async playRange(from, to) {
+      this.pause();
+      const ticket = this.ticket;
+      this.paused = false;
+      this.ctx ||= new AudioContext();
+      const resumed = this.ctx.resume(); // has to start while still inside the click
+      const first = Math.floor(from * wav.rate);
+      const last = Math.min(Math.ceil(to * wav.rate), Math.floor(_PLK.dataBlob.size / wav.align));
+      this.position = first / wav.rate;
+      try {
+        const bytes = await _PLK.dataBlob.slice(first * wav.align, last * wav.align).arrayBuffer();
+        await resumed;
+        if (ticket !== this.ticket) return; // stopped, or another click got in first
+        const frames = Math.floor(bytes.byteLength / wav.align);
+        if (!frames) { plkPause(); return; }
+        const buffer = this.ctx.createBuffer(wav.channels, frames, wav.rate);
+        const read = _plkSampler(bytes, wav);
+        for (let c = 0; c < wav.channels; c++) {
+          const out = buffer.getChannelData(c);
+          for (let i = 0; i < frames; i++) out[i] = read(i * wav.channels + c);
+        }
+        const node = this.ctx.createBufferSource();
+        node.buffer = buffer;
+        node.connect(this.ctx.destination);
+        node.onended = () => { if (node === this.node) plkPause(); }; // the preview window is over
+        node.start();
+        this.node = node;
+        this.startedAt = this.ctx.currentTime;
+        const tick = () => {
+          if (node !== this.node) return;
+          const t = this.currentTime;
+          $('plk-transport-time').textContent = _plkFmt(t);
+          _plkDrawPlayhead(t);
+          requestAnimationFrame(tick);
+        };
+        tick();
+      } catch(e) {
+        if (ticket !== this.ticket) return;
+        plkPause();
+        showToast('Could not play that part: ' + (e.message || e), 5000);
+      }
+    },
+  };
+}
+
+// A non-WAV recording is only ever one file, which every browser can seek in
+function _plkFilePlayer(file) {
+  _PLK.audioUrl = URL.createObjectURL(file);
   const audio = new Audio();
   audio.src = _PLK.audioUrl;
   audio.preload = 'none';
@@ -9062,8 +9121,12 @@ function _plkSetupAudio() {
     if (audio._stopAt && t >= audio._stopAt) plkPause(); // the preview window is over
   });
   audio.addEventListener('ended', () => $('plk-playhead').classList.remove('visible'));
-  _PLK.audio = audio;
-  $('plk-transport-time').textContent = _plkFmt(0);
+  audio.playRange = (from, to) => {
+    audio.currentTime = from;
+    audio._stopAt = to;
+    audio.play().catch(() => {});
+  };
+  return audio;
 }
 
 /* ── Waveform peaks ── */
@@ -9520,9 +9583,7 @@ function _plkPlayPreview(type, timeSec) {
     from = Math.max(0, timeSec - (s.end_preview_secs || 5));
     to = timeSec;
   }
-  _PLK.audio.currentTime = from;
-  _PLK.audio._stopAt = to;
-  _PLK.audio.play().catch(() => {});
+  _PLK.audio.playRange(from, to);
   $('plk-transport-time').textContent = _plkFmt(from);
 }
 
