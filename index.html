@@ -746,50 +746,143 @@ header {
 .dev-notes-send:hover { background:var(--c-teal-lt); }
 .dev-notes-send:disabled { opacity:0.5; cursor:default; }
 
-/* ══ SONG PLUCKER ══ */
-#screen-plucker { overflow:hidden; }
-.plk-setup { padding:12px 16px; border-bottom:1px solid var(--c-border); display:flex; flex-direction:column; gap:10px; flex-shrink:0; }
-.plk-file-row { display:flex; align-items:center; gap:10px; }
-.plk-pick-btn { font-family:var(--f-mono); font-size:11px; padding:7px 12px; background:var(--c-teal); border:none; border-radius:7px; color:var(--c-text); cursor:pointer; white-space:nowrap; flex-shrink:0; }
-.plk-pick-btn:disabled { opacity:0.5; cursor:default; }
-.plk-file-name { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.plk-date-row { display:flex; align-items:center; gap:10px; }
-.plk-label { font-family:var(--f-mono); font-size:10px; color:var(--c-text-dim); flex-shrink:0; }
-.plk-date-input { background:var(--c-surface); border:1px solid var(--c-border); border-radius:6px; color:var(--c-text); font-family:var(--f-mono); font-size:11px; padding:6px 10px; flex:1; outline:none; }
-.plk-date-input:focus { border-color:var(--c-teal); }
-.plk-analyse-row { display:none; }
-.plk-analyse-row.ready { display:flex; justify-content:flex-end; }
-.plk-analyse-btn { font-family:var(--f-mono); font-size:12px; padding:9px 22px; background:var(--c-teal); border:none; border-radius:8px; color:var(--c-text); cursor:pointer; font-weight:500; }
-.plk-analyse-btn:hover { background:var(--c-teal-lt); }
-.plk-wave-wrap { height:80px; position:relative; background:var(--c-bg); border-bottom:1px solid var(--c-border); cursor:crosshair; flex-shrink:0; touch-action:none; overflow:hidden; }
-#plk-canvas { width:100%; height:100%; display:block; }
-.plk-cursor-label { position:absolute; bottom:3px; left:8px; font-family:var(--f-mono); font-size:9px; color:var(--c-teal-pale); pointer-events:none; }
-.plk-track-area { flex:1; overflow-y:auto; overscroll-behavior-y:contain; min-height:0; }
-.plk-track-toolbar { display:flex; align-items:center; padding:10px 16px; gap:10px; border-bottom:1px solid var(--c-border); position:sticky; top:0; background:var(--c-bg); z-index:2; }
-.plk-add-btn { font-family:var(--f-mono); font-size:11px; padding:6px 14px; background:var(--c-surface2); border:1px solid var(--c-border); border-radius:6px; color:var(--c-teal-pale); cursor:pointer; }
-.plk-add-btn:hover { border-color:var(--c-teal-pale); color:var(--c-text); }
-.plk-cursor-time { font-family:var(--f-mono); font-size:10px; color:var(--c-text-dim); }
-.plk-track-card { border-bottom:1px solid var(--c-border); padding:10px 16px; display:flex; flex-direction:column; gap:8px; }
-.plk-track-row1 { display:flex; align-items:center; gap:8px; }
-.plk-track-num { font-family:var(--f-mono); font-size:9px; color:var(--c-text-dim); min-width:18px; }
-.plk-song-select { flex:1; background:var(--c-bg); border:1px solid var(--c-border); border-radius:6px; color:var(--c-text); font-family:var(--f-mono); font-size:11px; padding:6px 8px; outline:none; min-width:0; }
-.plk-song-select:focus { border-color:var(--c-teal); }
-.plk-ver-label { font-family:var(--f-mono); font-size:10px; color:var(--c-text-dim); }
-.plk-ver-input { width:40px; background:var(--c-bg); border:1px solid var(--c-border); border-radius:6px; color:var(--c-text); font-family:var(--f-mono); font-size:11px; padding:5px 6px; text-align:center; outline:none; }
-.plk-ver-input:focus { border-color:var(--c-teal); }
-.plk-del-btn { background:none; border:1px solid var(--c-border); border-radius:6px; color:var(--c-text-dim); font-size:13px; padding:4px 8px; cursor:pointer; flex-shrink:0; }
-.plk-del-btn:hover { border-color:var(--c-accent); color:var(--c-accent); }
-.plk-track-row2 { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-.plk-time-input { width:60px; background:var(--c-bg); border:1px solid var(--c-border); border-radius:6px; color:var(--c-text); font-family:var(--f-mono); font-size:11px; padding:5px 6px; text-align:center; outline:none; }
-.plk-time-input:focus { border-color:var(--c-teal); }
-.plk-set-btn { font-family:var(--f-mono); font-size:10px; padding:5px 9px; background:var(--c-surface2); border:1px solid var(--c-border); border-radius:5px; color:var(--c-teal-pale); cursor:pointer; white-space:nowrap; }
-.plk-set-btn:hover { border-color:var(--c-teal-pale); color:var(--c-text); }
-.plk-time-sep { font-family:var(--f-mono); font-size:10px; color:var(--c-text-dim); }
-.plk-export-bar { flex-shrink:0; border-top:1px solid var(--c-border); background:var(--c-surface); padding:10px 16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-.plk-saveto-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex:1; }
-.plk-radio-lbl { font-family:var(--f-mono); font-size:11px; color:var(--c-teal-pale); display:flex; align-items:center; gap:4px; cursor:pointer; }
-.plk-export-btn { font-family:var(--f-mono); font-size:12px; padding:8px 18px; background:var(--c-amber); border:none; border-radius:7px; color:var(--c-bg); cursor:pointer; font-weight:600; white-space:nowrap; }
-.plk-export-btn:disabled { opacity:0.5; cursor:default; }
+/* ══ SONG PLUCKER (the Rehearsal Plucker, in the browser) ══ */
+.plk-scope { --plk-marker-s:#83A8A6; --plk-marker-e:#C44536; --plk-playhead:#EDDDD4; --plk-wave-bg:#0D1A19; overflow:hidden; }
+.plk-scope input[type="text"], .plk-scope input[type="date"], .plk-scope textarea, .plk-scope select { background:var(--c-bg); border:1px solid var(--c-border); border-radius:5px; color:var(--c-text); font-family:var(--f-mono); font-size:12px; padding:8px 12px; outline:none; transition:border-color 0.15s; width:100%; }
+.plk-scope input[type="text"]:focus, .plk-scope input[type="date"]:focus, .plk-scope select:focus { border-color:var(--c-teal); }
+.plk-btn { font-family:var(--f-mono); font-size:12px; font-weight:500; letter-spacing:0.07em; text-transform:uppercase; border:none; border-radius:5px; padding:10px 18px; cursor:pointer; transition:opacity 0.15s, transform 0.08s, background 0.15s; white-space:nowrap; flex-shrink:0; display:inline-flex; align-items:center; gap:6px; }
+.plk-btn:active:not(:disabled) { transform:scale(0.97); }
+.plk-btn:disabled { opacity:0.35; cursor:not-allowed; }
+.plk-btn-primary { background:var(--c-accent); color:var(--c-text); }
+.plk-btn-primary:hover:not(:disabled) { background:#d44f3e; }
+.plk-btn-teal { background:var(--c-teal); color:var(--c-text); }
+.plk-btn-teal:hover:not(:disabled) { background:var(--c-teal-lt); }
+.plk-btn-ghost { background:transparent; color:var(--c-teal-pale); border:1px solid var(--c-border); }
+.plk-btn-ghost:hover:not(:disabled) { border-color:var(--c-teal-pale); color:var(--c-text); }
+.plk-btn-danger { background:transparent; color:var(--c-accent); border:1px solid var(--c-accent-dk); }
+.plk-btn-danger:hover:not(:disabled) { background:rgba(196,69,54,0.12); }
+.plk-btn-sm { padding:6px 12px; font-size:11px; }
+.plk-gear { background:none; border:1px solid var(--c-border); border-radius:5px; color:var(--c-teal-pale); font-size:14px; padding:4px 9px; cursor:pointer; flex-shrink:0; }
+.plk-gear:hover { border-color:var(--c-teal-pale); color:var(--c-text); }
+.plk-field { display:flex; flex-direction:column; gap:5px; }
+.plk-field-label { font-family:var(--f-mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--c-teal-pale); }
+
+/* setup */
+.plk-setup-wrap { flex:1; overflow-y:auto; display:flex; padding:32px 24px; }
+.plk-setup-card { margin:auto; background:var(--c-surface); border:1px solid var(--c-border); border-radius:12px; padding:36px 40px; width:100%; max-width:520px; display:flex; flex-direction:column; gap:22px; }
+.plk-hero { text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.plk-hero-birds { font-size:32px; letter-spacing:4px; opacity:0.55; line-height:1; }
+.plk-hero-title { font-family:var(--f-display); font-size:26px; font-weight:700; color:var(--c-text); }
+.plk-hero-sub { font-family:var(--f-mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--c-teal-pale); }
+.plk-divider { border:none; border-top:1px solid var(--c-border); }
+.plk-pick-row { display:flex; gap:8px; align-items:stretch; }
+.plk-pick-display { flex:1; min-width:0; background:var(--c-bg); border:1px solid var(--c-border); border-radius:5px; padding:8px 12px; font-family:var(--f-mono); font-size:11px; color:var(--c-teal-pale); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:7px; min-height:38px; transition:border-color 0.15s; }
+.plk-pick-display.selected { color:var(--c-text); border-color:var(--c-teal); }
+.plk-status { font-family:var(--f-mono); font-size:11px; padding:8px 12px; border-radius:5px; display:none; gap:8px; align-items:center; }
+.plk-status.warn { background:rgba(196,69,54,0.12); color:#e09080; border:1px solid rgba(196,69,54,0.35); display:flex; }
+.plk-rec-list { display:flex; flex-direction:column; gap:4px; margin-top:6px; }
+.plk-rec-row { display:flex; align-items:center; gap:8px; padding:5px 8px; background:var(--c-bg); border:1px solid var(--c-border); border-radius:5px; font-family:var(--f-mono); font-size:11px; }
+.plk-rec-row label { flex:1; display:flex; align-items:center; gap:8px; cursor:pointer; min-width:0; }
+.plk-rec-row input[type="checkbox"] { accent-color:var(--c-teal); }
+.plk-rec-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.plk-rec-row.off .plk-rec-name { color:var(--c-teal-pale); opacity:0.6; }
+.plk-rec-size { color:var(--c-teal-pale); margin-left:auto; white-space:nowrap; }
+.plk-rec-move { padding:2px 7px; font-size:10px; }
+.plk-setup-actions { display:flex; justify-content:flex-end; }
+
+/* plucker */
+.plk-main { flex:1; display:flex; min-height:0; overflow:hidden; }
+.plk-left { flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden; }
+.plk-right { width:300px; flex-shrink:0; display:flex; flex-direction:column; overflow:hidden; background:var(--c-surface); border-left:1px solid var(--c-border); }
+.plk-wave-area { flex:1; display:flex; flex-direction:column; overflow:hidden; padding:12px 12px 0; gap:4px; }
+.plk-wave-label { font-family:var(--f-mono); font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:var(--c-teal-pale); opacity:0.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; }
+.plk-wave-wrap { position:relative; overflow:hidden; background:var(--plk-wave-bg); border-radius:4px; cursor:crosshair; user-select:none; flex-shrink:0; height:140px; }
+.plk-wave-wrap canvas { display:block; width:100%; }
+#plk-ruler-canvas { display:block; width:100%; height:22px; background:var(--plk-wave-bg); cursor:default; flex-shrink:0; }
+.plk-ov-wrap { position:relative; overflow:hidden; background:var(--plk-wave-bg); border-radius:3px; cursor:pointer; flex-shrink:0; }
+.plk-ov-wrap canvas { display:block; width:100%; height:44px; }
+.plk-ov-viewport { position:absolute; top:0; bottom:0; background:rgba(237,221,212,0.04); border-left:1px solid rgba(237,221,212,0.2); border-right:1px solid rgba(237,221,212,0.2); pointer-events:none; }
+.plk-marker { position:absolute; top:0; bottom:0; width:1px; pointer-events:none; }
+.plk-marker-s { background:var(--plk-marker-s); }
+.plk-marker-e { background:var(--plk-marker-e); }
+.plk-region { position:absolute; top:0; bottom:0; pointer-events:none; }
+.plk-region-s { background:linear-gradient(to right, rgba(131,168,166,0.10), transparent 80px); }
+.plk-region-e { background:linear-gradient(to left, rgba(196,69,54,0.10), transparent 80px); }
+.plk-marker-flag { position:absolute; top:4px; font-family:var(--f-mono); font-size:9px; padding:1px 5px; border-radius:2px; white-space:nowrap; pointer-events:none; }
+.plk-marker-s .plk-marker-flag { left:2px; background:var(--plk-marker-s); color:var(--plk-wave-bg); }
+.plk-marker-e .plk-marker-flag { right:2px; background:var(--plk-marker-e); color:#EDDDD4; }
+.plk-playhead { position:absolute; top:0; bottom:0; width:1px; background:var(--plk-playhead); pointer-events:none; opacity:0; transition:opacity 0.1s; }
+.plk-playhead.visible { opacity:1; }
+.plk-transport { display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--c-surface); border-top:1px solid var(--c-border); flex-shrink:0; }
+.plk-transport-time { font-family:var(--f-mono); font-size:18px; color:var(--c-text); min-width:110px; letter-spacing:0.03em; }
+
+/* sidebar */
+.plk-side-head { padding:14px 16px 10px; border-bottom:1px solid var(--c-border); flex-shrink:0; }
+.plk-side-title { font-family:var(--f-display); font-size:15px; font-weight:600; color:var(--c-text); }
+.plk-side-sub { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); margin-top:2px; }
+.plk-side-state { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.plk-pick-state { flex:1; display:flex; flex-direction:column; padding:16px; gap:16px; overflow-y:auto; }
+.plk-pick-step { display:flex; flex-direction:column; gap:6px; }
+.plk-step-label { font-family:var(--f-mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; display:flex; align-items:center; gap:6px; color:var(--c-teal-pale); }
+.plk-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.plk-dot.waiting { background:var(--c-border); }
+.plk-dot.active { background:var(--c-teal-pale); box-shadow:0 0 6px var(--c-teal); }
+.plk-dot.done { background:var(--c-teal); }
+.plk-dot.done-end { background:var(--c-accent); }
+.plk-step-val { font-family:var(--f-mono); font-size:13px; color:var(--c-text); padding-left:13px; }
+.plk-step-val.dim { color:var(--c-border); }
+.plk-hint { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); background:rgba(25,114,120,0.08); border:1px solid rgba(25,114,120,0.2); border-radius:5px; padding:8px 10px; line-height:1.6; }
+.plk-hint kbd { background:var(--c-surface2); border:1px solid var(--c-border); border-radius:3px; padding:1px 5px; font-size:10px; font-family:inherit; }
+.plk-form { flex:1; display:flex; flex-direction:column; padding:14px 16px; gap:13px; overflow-y:auto; }
+.plk-form-title { font-family:var(--f-mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--c-teal-pale); }
+.plk-form-preview { font-family:var(--f-mono); font-size:11px; color:var(--c-text-dim); word-break:break-all; }
+.plk-form-actions { display:flex; gap:8px; padding-top:6px; margin-top:auto; }
+.plk-combo-wrap { position:relative; }
+.plk-scope input.plk-combo-input { padding-right:36px; }
+.plk-combo-arrow { position:absolute; right:0; top:0; bottom:0; width:34px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--c-teal-pale); font-size:10px; border-left:1px solid var(--c-border); }
+.plk-combo-drop { position:absolute; top:calc(100% + 3px); left:0; right:0; z-index:100; background:var(--c-surface); border:1px solid var(--c-border); border-radius:5px; max-height:180px; overflow-y:auto; display:none; }
+.plk-combo-drop.open { display:block; }
+.plk-combo-opt { padding:7px 12px; font-family:var(--f-mono); font-size:12px; cursor:pointer; transition:background 0.1s; }
+.plk-combo-opt:hover { background:var(--c-teal-lt); color:#EDDDD4; }
+.plk-combo-opt.new-item { color:var(--c-teal-pale); font-style:italic; }
+
+/* review */
+.plk-review { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:16px; }
+.plk-review-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; flex-shrink:0; }
+.plk-review-title { font-family:var(--f-display); font-size:22px; font-weight:700; }
+.plk-review-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.plk-saveto { display:flex; align-items:center; gap:10px; padding:0 8px; font-family:var(--f-mono); font-size:11px; color:var(--c-teal-pale); }
+.plk-saveto label { display:flex; align-items:center; gap:4px; cursor:pointer; }
+.plk-saveto input { accent-color:var(--c-teal); }
+.plk-track-list { display:flex; flex-direction:column; gap:8px; }
+.plk-track-card { background:var(--c-surface); border:1px solid var(--c-border); border-radius:8px; padding:14px 16px; display:flex; align-items:center; gap:14px; transition:border-color 0.15s; }
+.plk-track-card:hover { border-color:var(--c-teal); }
+.plk-track-card.has-problem { border-color:var(--c-accent-dk); }
+.plk-track-num { font-family:var(--f-mono); font-size:20px; color:var(--c-teal-pale); opacity:0.5; min-width:28px; text-align:center; }
+.plk-track-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.plk-track-name { font-size:14px; font-weight:500; color:var(--c-text); }
+.plk-track-meta { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); word-break:break-all; }
+.plk-track-time { font-family:var(--f-mono); font-size:11px; color:var(--c-text-dim); }
+.plk-track-actions { display:flex; align-items:center; gap:6px; }
+.plk-track-problem { font-family:var(--f-mono); font-size:10px; color:#e09080; margin-top:2px; }
+.plk-export-status { font-family:var(--f-mono); font-size:11px; padding:4px 10px; border-radius:4px; white-space:nowrap; }
+.plk-export-status.exporting { background:rgba(25,114,120,0.15); color:var(--c-teal-pale); }
+.plk-export-status.done { background:rgba(25,114,120,0.25); color:var(--c-teal-pale); }
+.plk-export-status.error { background:rgba(196,69,54,0.15); color:#e09080; }
+
+/* settings */
+.plk-settings-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:600; display:none; align-items:flex-end; justify-content:flex-end; }
+.plk-settings-overlay.open { display:flex; }
+.plk-settings-panel { background:var(--c-surface); border-left:1px solid var(--c-border); width:340px; height:100%; display:flex; flex-direction:column; overflow:hidden; }
+.plk-settings-head { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--c-border); }
+.plk-settings-title { font-family:var(--f-display); font-size:17px; font-weight:600; }
+.plk-settings-body { flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:20px; }
+.plk-settings-section { font-family:var(--f-mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--c-teal-pale); margin-bottom:4px; }
+.plk-settings-row { display:flex; flex-direction:column; gap:5px; margin-top:10px; }
+.plk-settings-row label { font-family:var(--f-mono); font-size:11px; color:var(--c-text-dim); display:flex; justify-content:space-between; }
+.plk-settings-row label span { color:var(--c-teal-pale); }
+.plk-settings-row input[type="range"] { accent-color:var(--c-teal); }
+.plk-settings-foot { padding:14px 18px; border-top:1px solid var(--c-border); display:flex; justify-content:flex-end; }
 .an-card-icon { font-size:24px; color:var(--c-amber-lt); }
 .an-card-label { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); text-align:center; }
 .an-section-title { font-family:var(--f-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--c-text-dim); padding:10px 16px 4px; }
@@ -1617,48 +1710,234 @@ body.tab-view #tab-view-close { display:flex; }
     </div>
   </div>
 
-  <!-- ── SONG PLUCKER ── -->
-  <div class="screen" id="screen-plucker">
+  <!-- ── SONG PLUCKER: choose the session ── -->
+  <div class="screen plk-scope" id="screen-plucker">
     <div class="screen-nav">
       <button class="back-btn" onclick="plkClose()">‹ Home</button>
       <div class="screen-nav-title">Pluck Songs</div>
+      <button class="plk-gear" title="Settings" onclick="plkOpenSettings()">⚙</button>
     </div>
-    <div class="plk-setup">
-      <div class="plk-file-row">
-        <input type="file" id="plk-file-input" accept=".mp3,.wav,.m4a,.flac,.aiff,.aif" style="display:none" onchange="plkFilePicked(this.files[0])">
-        <button class="plk-pick-btn" onclick="$('plk-file-input').click()">𓅃 Pick Audio File</button>
-        <div class="plk-file-name" id="plk-file-name">No file selected</div>
-      </div>
-      <div class="plk-date-row">
-        <span class="plk-label">Session Date</span>
-        <input type="date" class="plk-date-input" id="plk-date-input">
-      </div>
-      <div class="plk-analyse-row" id="plk-analyse-row">
-        <button class="plk-analyse-btn" onclick="plkAnalyse()">Analyse Recording ▶</button>
+    <div class="plk-setup-wrap">
+      <div class="plk-setup-card">
+        <div class="plk-hero">
+          <div class="plk-hero-birds">𓅼 𓅧 𓅓 𓅣 𓅙</div>
+          <div class="plk-hero-title">Rehearsal Plucker</div>
+          <div class="plk-hero-sub">Select a session to begin</div>
+        </div>
+        <hr class="plk-divider">
+        <div class="plk-field">
+          <div class="plk-field-label">𓅦 Session Folder</div>
+          <div class="plk-pick-row">
+            <div class="plk-pick-display" id="plk-folder-display">
+              <span>𓅚</span>
+              <span id="plk-folder-text">No folder selected…</span>
+            </div>
+            <button class="plk-btn plk-btn-teal" onclick="plkBrowse()">Browse</button>
+            <input type="file" id="plk-folder-input" webkitdirectory style="display:none" onchange="plkFolderInputPicked(this.files)">
+          </div>
+          <div id="plk-audio-file-wrap" style="display:none">
+            <select id="plk-capsule-select" style="margin-top:6px;display:none" onchange="plkCapsuleChanged()">
+              <option value="MS">MS capsule</option>
+              <option value="XY">XY capsule</option>
+            </select>
+            <div class="plk-rec-list" id="plk-rec-list"></div>
+          </div>
+        </div>
+        <div class="plk-field">
+          <div class="plk-field-label">𓅪 Rehearsal Date</div>
+          <input type="date" id="plk-date-input" onchange="plkDateChanged()">
+        </div>
+        <div class="plk-status" id="plk-setup-status"></div>
+        <hr class="plk-divider">
+        <div class="plk-setup-actions">
+          <button class="plk-btn plk-btn-primary" id="plk-proceed-btn" disabled onclick="plkProceed()">𓆰 Get Plucking</button>
+        </div>
       </div>
     </div>
-    <div class="plk-wave-wrap" id="plk-wave-wrap" style="display:none" onclick="_plkWaveClick(event)" ontouchstart="_plkWaveClick(event)">
-      <canvas id="plk-canvas"></canvas>
-      <div class="plk-cursor-label" id="plk-cursor-label">0:00</div>
-    </div>
-    <div class="plk-track-area" id="plk-track-area" style="display:none">
-      <div class="plk-track-toolbar">
-        <button class="plk-add-btn" onclick="plkAddTrack()">+ Add Track</button>
-        <div class="plk-cursor-time" id="plk-cursor-time">Cursor: 0:00</div>
-      </div>
-      <div id="plk-tracks-list"></div>
-    </div>
-    <div class="plk-export-bar" id="plk-export-bar" style="display:none">
-      <div class="plk-saveto-row">
-        <span class="plk-label">Save to</span>
-        <label class="plk-radio-lbl"><input type="radio" name="plk-saveto" value="pc" checked> PC</label>
-        <label class="plk-radio-lbl"><input type="radio" name="plk-saveto" value="drive"> Drive</label>
-        <label class="plk-radio-lbl"><input type="radio" name="plk-saveto" value="both"> Both</label>
-      </div>
-      <button class="plk-export-btn" id="plk-export-btn" onclick="plkExportAll()">𓅃 Export All</button>
-    </div>
-  </div><!-- end screen-plucker -->
+  </div>
 
+  <!-- ── SONG PLUCKER: waveform + track details ── -->
+  <div class="screen plk-scope" id="screen-plucker-wave">
+    <div class="screen-nav">
+      <button class="back-btn" onclick="plkBackToSetup()">‹ Session</button>
+      <div class="screen-nav-title" id="plk-wave-title">Pluck Songs</div>
+      <button class="plk-gear" title="Settings" onclick="plkOpenSettings()">⚙</button>
+    </div>
+    <div class="plk-main">
+      <div class="plk-left">
+        <div class="plk-wave-area">
+          <div class="plk-wave-label" id="plk-wave-label">Full recording</div>
+          <div class="plk-wave-wrap" id="plk-wave-wrap">
+            <canvas id="plk-wave-canvas"></canvas>
+            <div class="plk-playhead" id="plk-playhead"></div>
+            <div class="plk-marker plk-marker-s" id="plk-marker-s" style="display:none"><div class="plk-marker-flag">START</div></div>
+            <div class="plk-marker plk-marker-e" id="plk-marker-e" style="display:none"><div class="plk-marker-flag">END</div></div>
+            <div class="plk-region plk-region-s" id="plk-region-s" style="display:none"></div>
+            <div class="plk-region plk-region-e" id="plk-region-e" style="display:none"></div>
+          </div>
+          <canvas id="plk-ruler-canvas"></canvas>
+          <div class="plk-wave-label" style="margin-top:4px">Overview</div>
+          <div class="plk-ov-wrap" id="plk-ov-wrap">
+            <canvas id="plk-ov-canvas"></canvas>
+            <div class="plk-ov-viewport" id="plk-ov-viewport"></div>
+          </div>
+        </div>
+        <div class="plk-transport">
+          <span class="plk-transport-time" id="plk-transport-time">0:00:00</span>
+          <button class="plk-btn plk-btn-ghost plk-btn-sm" id="plk-play-from-btn" style="display:none" onclick="plkPlayFromStart()">𓅰 Play</button>
+          <button class="plk-btn plk-btn-ghost plk-btn-sm" onclick="plkStop()">◼ Stop</button>
+        </div>
+      </div>
+      <div class="plk-right">
+        <div class="plk-side-head">
+          <div class="plk-side-title">𓆰 Pluck a Track</div>
+          <div class="plk-side-sub" id="plk-side-sub">Click the waveform to set the start point</div>
+        </div>
+        <div class="plk-side-state">
+          <div class="plk-pick-state" id="plk-pick-state">
+            <div class="plk-pick-step">
+              <div class="plk-step-label"><div class="plk-dot waiting" id="plk-dot-s"></div><span>Start</span></div>
+              <div class="plk-step-val dim" id="plk-val-s">—</div>
+            </div>
+            <div class="plk-pick-step">
+              <div class="plk-step-label"><div class="plk-dot waiting" id="plk-dot-e"></div><span>End</span></div>
+              <div class="plk-step-val dim" id="plk-val-e">—</div>
+            </div>
+            <div class="plk-hint" id="plk-pick-hint"></div>
+            <div style="display:flex;gap:8px;margin-top:auto;padding-top:8px">
+              <button class="plk-btn plk-btn-ghost plk-btn-sm" id="plk-to-review-btn" style="display:none" onclick="plkGoToReview()">𓅦 Review</button>
+            </div>
+          </div>
+          <div class="plk-form" id="plk-track-form" style="display:none">
+            <div class="plk-form-title">𓅃 Track Info</div>
+            <div class="plk-field">
+              <div class="plk-field-label">Title</div>
+              <div class="plk-combo-wrap">
+                <input type="text" id="plk-title-input" class="plk-combo-input" placeholder="Song name…" autocomplete="off">
+                <div class="plk-combo-arrow" id="plk-combo-arrow">▾</div>
+                <div class="plk-combo-drop" id="plk-combo-drop"></div>
+              </div>
+            </div>
+            <div class="plk-field">
+              <div class="plk-field-label">Version</div>
+              <input type="text" id="plk-version-input" placeholder="e.g. 1" oninput="_plkUpdateFilenamePreview()">
+            </div>
+            <div class="plk-field">
+              <div class="plk-field-label">Extra Info <span style="opacity:0.5">(optional)</span></div>
+              <input type="text" id="plk-extra-input" placeholder="e.g. intro only" oninput="_plkUpdateFilenamePreview()">
+            </div>
+            <div class="plk-field">
+              <div class="plk-field-label">Notes <span style="opacity:0.5">(optional)</span></div>
+              <input type="text" id="plk-notes-input" placeholder="Quick note…">
+            </div>
+            <div class="plk-form-title" style="margin-top:2px">File name preview</div>
+            <div class="plk-form-preview" id="plk-filename-preview">—</div>
+            <div class="plk-form-actions">
+              <button class="plk-btn plk-btn-ghost plk-btn-sm" onclick="plkCancelTrack()">Cancel</button>
+              <button class="plk-btn plk-btn-teal" style="flex:1;justify-content:center" onclick="plkConfirmTrack()">𓅥 Confirm Track</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SONG PLUCKER: review + export ── -->
+  <div class="screen plk-scope" id="screen-plucker-review">
+    <div class="screen-nav">
+      <button class="back-btn" onclick="plkPluckMore()">‹ Plucking</button>
+      <div class="screen-nav-title">Review Tracks</div>
+      <button class="plk-gear" title="Settings" onclick="plkOpenSettings()">⚙</button>
+    </div>
+    <div class="plk-review">
+      <div class="plk-review-head">
+        <div class="plk-review-title">𓅦 Tracks</div>
+        <div class="plk-review-actions">
+          <div class="plk-saveto">
+            <span>Save to</span>
+            <label><input type="radio" name="plk-saveto" value="drive"> Drive</label>
+            <label><input type="radio" name="plk-saveto" value="laptop"> <span id="plk-saveto-laptop">Laptop</span></label>
+            <label><input type="radio" name="plk-saveto" value="both"> Both</label>
+          </div>
+          <button class="plk-btn plk-btn-ghost" id="plk-pluck-more-btn" onclick="plkPluckMore()">𓆰 Pluck Another</button>
+          <button class="plk-btn plk-btn-primary" id="plk-export-btn" onclick="plkExportAll()">𓅃 Export All MP3s</button>
+        </div>
+      </div>
+      <div class="plk-track-list" id="plk-track-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── SONG PLUCKER SETTINGS ── -->
+<div class="plk-settings-overlay plk-scope" id="plk-settings-overlay" onclick="if (event.target === this) plkCloseSettings()">
+  <div class="plk-settings-panel">
+    <div class="plk-settings-head">
+      <div class="plk-settings-title">⚙ Settings</div>
+      <button class="plk-gear" onclick="plkCloseSettings()">✕</button>
+    </div>
+    <div class="plk-settings-body">
+      <div>
+        <div class="plk-settings-section">Band</div>
+        <div class="plk-settings-row">
+          <label>Band name (artist tag on exported MP3s)</label>
+          <input type="text" id="plk-set-band" placeholder="Rehearsal">
+        </div>
+      </div>
+      <div>
+        <div class="plk-settings-section">Playback Preview</div>
+        <div class="plk-settings-row">
+          <label>Start preview duration <span id="plk-lbl-start"></span></label>
+          <input type="range" min="2" max="15" step="1" id="plk-set-start" oninput="_plkSettingsLabels()">
+        </div>
+        <div class="plk-settings-row">
+          <label>End preview duration <span id="plk-lbl-end"></span></label>
+          <input type="range" min="2" max="10" step="1" id="plk-set-end" oninput="_plkSettingsLabels()">
+        </div>
+      </div>
+      <div>
+        <div class="plk-settings-section">Normalise</div>
+        <div class="plk-settings-row">
+          <label>Headroom <span id="plk-lbl-headroom"></span></label>
+          <input type="range" min="0" max="3" step="0.1" id="plk-set-headroom" oninput="_plkSettingsLabels()">
+        </div>
+      </div>
+      <div>
+        <div class="plk-settings-section">Compressor</div>
+        <div class="plk-settings-row">
+          <label>Threshold <span id="plk-lbl-thresh"></span></label>
+          <input type="range" min="-40" max="-6" step="1" id="plk-set-thresh" oninput="_plkSettingsLabels()">
+        </div>
+        <div class="plk-settings-row">
+          <label>Ratio <span id="plk-lbl-ratio"></span></label>
+          <input type="range" min="1.5" max="10" step="0.5" id="plk-set-ratio" oninput="_plkSettingsLabels()">
+        </div>
+        <div class="plk-settings-row">
+          <label>Attack <span id="plk-lbl-attack"></span></label>
+          <input type="range" min="1" max="50" step="1" id="plk-set-attack" oninput="_plkSettingsLabels()">
+        </div>
+        <div class="plk-settings-row">
+          <label>Release <span id="plk-lbl-release"></span></label>
+          <input type="range" min="20" max="500" step="10" id="plk-set-release" oninput="_plkSettingsLabels()">
+        </div>
+      </div>
+      <div>
+        <div class="plk-settings-section">Export Quality</div>
+        <div class="plk-settings-row">
+          <label>MP3 Bitrate</label>
+          <select id="plk-set-bitrate">
+            <option value="128k">128 kbps</option>
+            <option value="192k">192 kbps</option>
+            <option value="256k">256 kbps</option>
+            <option value="320k">320 kbps</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="plk-settings-foot">
+      <button class="plk-btn plk-btn-teal" onclick="plkSaveSettings()">Save Settings</button>
+    </div>
+  </div>
 </div>
 
 <!-- ── LYRICS PANEL (Feathers overlay) ── -->
@@ -1873,6 +2152,7 @@ function _closeTopOverlay() {
     ['bpm-overlay', 'open', closeBpmTapper],
     ['lyr-panel', 'open', lyrPanelClose],
     ['doodle-board', 'open', closeDoodleBoard],
+    ['plk-settings-overlay', 'open', plkCloseSettings],
   ];
   for (const [id, cls, close] of layers) {
     if ($(id)?.classList.contains(cls)) { close(); return true; }
@@ -1892,9 +2172,11 @@ window.addEventListener('popstate', async e => {
   // Clean up current screen state before leaving
   if (current === 'screen-track') { flushPendingEdits(); S.tp.audio.pause(); cancelAnimationFrame(S.tp.rafId); }
   if (current === 'screen-session') { try { SessPlayer.stop(); } catch(_){} }
+  if (current?.startsWith('screen-plucker')) plkPause();
   _suppressHistory = true;
   showScreen(target);
   _suppressHistory = false;
+  if (target === 'screen-plucker-wave') requestAnimationFrame(_plkResizeCanvases);
 });
 
 function showLoading(msg = 'Loading…') {
@@ -2048,6 +2330,13 @@ const Drive = {
   // Existing folder with this name, or a new one
   async ensureFolder(parentId, name) {
     return (await this.findFolder(parentId, name))?.id || this.createFolder(name, parentId);
+  },
+
+  // Move a file to Drive's bin
+  async trashFile(fileId) {
+    await this._fetch(`${DRIVE_API}/${fileId}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trashed: true }),
+    });
   },
 
   // Rename a file (metadata-only patch)
@@ -8303,33 +8592,6 @@ function downloadTab(id) {
 }
 
 /* ══════════════════════════════════════════════════════
-   SONG PLUCKER
-══════════════════════════════════════════════════════ */
-const _PLK = {
-  file: null,
-  audioBuffer: null,
-  peaks: [],
-  duration: 0,
-  cursor: 0,
-  tracks: [],
-  _lamejs: null,
-  _nextId: 1,
-};
-
-async function openPlucker() {
-  showScreen('screen-plucker');
-  if (!S.songs.length) await loadSongs(true); // song dropdowns need the list
-  if (!$('plk-date-input').value) {
-    $('plk-date-input').value = new Date().toISOString().slice(0, 10);
-  }
-  plkRenderTracks();
-}
-
-function plkClose() {
-  showScreen('screen-home');
-}
-
-/* ══════════════════════════════════════════════════════
    DEV NOTES / FEEDBACK
 ══════════════════════════════════════════════════════ */
 let _dnType = 'bug';
@@ -8367,311 +8629,1364 @@ async function submitDevNote() {
   }
 }
 
-function plkFilePicked(file) {
-  if (!file) return;
-  _PLK.file = file;
-  _PLK.audioBuffer = null;
-  _PLK.peaks = [];
-  _PLK.cursor = 0;
-  $('plk-file-name').textContent = file.name;
-  $('plk-wave-wrap').style.display = 'none';
-  $('plk-track-area').style.display = 'none';
-  $('plk-export-bar').style.display = 'none';
-  $('plk-analyse-row').classList.add('ready');
-}
+/* ══════════════════════════════════════════════════════
+   SONG PLUCKER
+   The Rehearsal Plucker, in the browser. No audio is ever loaded whole: a WAV timeline
+   is one Blob made of slices of the files on disk, so several recordings play and export
+   as one, and multi-GB sessions stay out of memory. Chrome/Edge can open the session
+   folder itself, so the MP3s, session.json and waveform cache land beside the WAVs, in
+   the same formats the standalone app uses. Other browsers read the folder and download.
+══════════════════════════════════════════════════════ */
+const PLK_AUDIO_EXTS    = ['.wav', '.mp3', '.flac', '.aiff', '.aif', '.ogg', '.m4a'];
+const PLK_LOSSLESS_EXTS = ['.wav', '.flac', '.aiff', '.aif'];
+const PLK_PEAKS_VERSION = 2;    // same .peaks.json as the standalone app, so each reuses the other's
+const PLK_PEAK_SECS     = 0.5;  // length of one cached peak, in seconds
+const PLK_PEAK_POINTS   = 6000; // waveform resolution
+const PLK_MIN_SPAN      = 5;    // seconds, tightest zoom
+const PLK_MP3_RATES     = [8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000];
 
-function plkAnalyse() {
-  if (!_PLK.file) { showToast('Pick an audio file first'); return; }
-  $('plk-analyse-row').classList.remove('ready');
-  _plkDecodeFile(_PLK.file);
-}
+const PLK_DEFAULTS = {
+  band_name: 'Nesting Ground', start_preview_secs: 15, end_preview_secs: 5,
+  normalize_headroom: 0.5, compress_threshold: -20, compress_ratio: 4,
+  compress_attack: 10, compress_release: 100, bitrate: '192k', save_to: 'both',
+};
 
-async function _plkDecodeFile(file) {
-  showLoading('Decoding audio…');
-  try {
-    const ab = await file.arrayBuffer();
-    const ctx = new AudioContext();
-    const buffer = await ctx.decodeAudioData(ab);
-    ctx.close();
-    _PLK.audioBuffer = buffer;
-    _PLK.duration = buffer.duration;
-    hideLoading();
-    $('plk-wave-wrap').style.display = '';
-    $('plk-track-area').style.display = '';
-    $('plk-export-bar').style.display = '';
-    $('plk-cursor-time').textContent = 'Cursor: 0:00';
-    await _plkGenPeaks(); // after canvas is visible so offsetWidth is correct
-    plkDrawWave();
-  } catch(e) {
-    hideLoading();
-    showToast('Could not decode audio: ' + (e.message || e));
+const _PLK = {
+  dir: null,            // folder handle (Chrome/Edge), null when we can only read and download
+  folderFiles: new Map(),  // every file in the session folder, by name
+  folderName: '',
+  dateTouched: false,   // the date was set by hand, so opening a folder mustn't change it
+  recFiles: [],         // recordings in the folder, in timeline order: {name,size,family,capsule,ticked,file}
+  capsule: null,        // MS or XY, when the folder has both
+  savedRecordings: [],
+  recordings: [],       // the chosen recordings: {name,file,wav,duration,offset}
+  dataBlob: null,       // WAV timeline: the audio bytes of every chosen recording, joined
+  decoded: null,        // non-WAV recording, decoded on first need
+  date: null,
+  duration: 0,
+  peaks: null,          // [[min,max]] across the whole timeline
+  viewStart: 0, viewEnd: 0,
+  phase: 'idle',        // idle | picking-start | picking-end | form
+  startSec: null, endSec: null,
+  tracks: [],
+  editingIdx: -1,       // -1 = new track
+  audio: null, audioUrl: null,
+  loadTicket: 0,
+  exporting: false,
+  settings: null,
+  lamejs: null,
+};
+
+const _plkFmt = sec => {
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = Math.floor(sec % 60);
+  return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+};
+const _plkFmtMs = sec => `${Math.floor(sec / 60)}:${String((sec % 60).toFixed(1)).padStart(4, '0')}`;
+const _plkExt   = name => (name.match(/\.[^.]+$/)?.[0] || '').toLowerCase();
+const _plkStem  = name => name.replace(/\.[^.]+$/, '');
+const _plkActive = () => document.querySelector('.screen.active')?.id;
+
+function _plkSettings() {
+  if (!_PLK.settings) {
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem('ng_plk_settings') || '{}'); } catch(e) {}
+    _PLK.settings = { ...PLK_DEFAULTS, ...saved };
   }
+  return _PLK.settings;
+}
+function _plkStoreSettings() {
+  try { localStorage.setItem('ng_plk_settings', JSON.stringify(_PLK.settings)); } catch(e) {}
 }
 
-async function _plkGenPeaks() {
-  const canvas = $('plk-canvas');
-  if (!canvas || !_PLK.audioBuffer) return;
-  const W = Math.max(canvas.offsetWidth, 300);
-  canvas.width = W;
-  canvas.height = 80;
-  const data = _PLK.audioBuffer.getChannelData(0);
-  const blockSize = Math.max(1, Math.floor(data.length / W));
-  _PLK.peaks = [];
-  for (let i = 0; i < W; i++) {
-    const s = i * blockSize;
-    const e = Math.min(s + blockSize, data.length);
-    let peak = 0;
-    for (let j = s; j < e; j++) peak = Math.max(peak, Math.abs(data[j]));
-    _PLK.peaks.push(peak);
-  }
-}
-
-function plkDrawWave() {
-  const canvas = $('plk-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width || canvas.offsetWidth;
-  const H = canvas.height || 80;
-  ctx.clearRect(0, 0, W, H);
-
-  if (_PLK.peaks.length) {
-    const mid = H / 2;
-    ctx.fillStyle = 'rgba(25,114,120,0.55)';
-    for (let i = 0; i < W; i++) {
-      const idx = Math.min(Math.floor(i * _PLK.peaks.length / W), _PLK.peaks.length - 1);
-      const h = Math.max(1, (_PLK.peaks[idx] || 0) * mid);
-      ctx.fillRect(i, mid - h, 1, h * 2);
-    }
-  }
-
-  const dur = _PLK.duration || 1;
-  const TK_COLORS = [[192,120,64],[25,114,120],[138,80,180],[64,140,100],[180,80,80],[80,100,180]];
-  _PLK.tracks.forEach((t, i) => {
-    if (t.start == null || t.end == null || t.end <= t.start) return;
-    const [r,g,b] = TK_COLORS[i % TK_COLORS.length];
-    const x1 = Math.round((t.start / dur) * W);
-    const x2 = Math.round((t.end   / dur) * W);
-    ctx.fillStyle = `rgba(${r},${g},${b},0.22)`;
-    ctx.fillRect(x1, 0, x2 - x1, H);
-    ctx.fillStyle = `rgba(${r},${g},${b},0.8)`;
-    ctx.fillRect(x1, 0, 2, H);
-    ctx.fillRect(Math.max(x1 + 2, x2 - 2), 0, 2, H);
-  });
-
-  if (_PLK.duration > 0) {
-    const cx = Math.round((_PLK.cursor / dur) * W);
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.fillRect(cx, 0, 1, H);
-  }
-}
-
-function _plkWaveClick(e) {
-  e.preventDefault();
-  const canvas = $('plk-canvas');
-  if (!canvas || !_PLK.duration) return;
-  const rect = canvas.getBoundingClientRect();
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  _PLK.cursor = Math.max(0, Math.min(_PLK.duration, ((clientX - rect.left) / rect.width) * _PLK.duration));
-  $('plk-cursor-time').textContent = 'Cursor: ' + fmt(_PLK.cursor);
-  $('plk-cursor-label').textContent = fmt(_PLK.cursor);
-  plkDrawWave();
-}
-
-function plkAddTrack() {
-  if (!_PLK.duration) { showToast('Load an audio file first'); return; }
-  _PLK.tracks.push({ id: _PLK._nextId++, songName: '', version: 1, start: null, end: null });
-  plkRenderTracks();
-  plkDrawWave();
-}
-
-function plkDeleteTrack(id) {
-  _PLK.tracks = _PLK.tracks.filter(t => t.id !== id);
-  plkRenderTracks();
-  plkDrawWave();
-}
-
-function plkSetStart(id) {
-  const t = _PLK.tracks.find(t => t.id === id);
-  if (!t) return;
-  t.start = +_PLK.cursor.toFixed(3);
-  plkRenderTracks();
-  plkDrawWave();
-}
-
-function plkSetEnd(id) {
-  const t = _PLK.tracks.find(t => t.id === id);
-  if (!t) return;
-  t.end = +_PLK.cursor.toFixed(3);
-  plkRenderTracks();
-  plkDrawWave();
-}
-
-function plkRenderTracks() {
-  const list = $('plk-tracks-list');
-  if (!list) return;
-  list.innerHTML = '';
-  if (!_PLK.tracks.length) {
-    list.innerHTML = `<div style="padding:24px 16px;font-family:var(--f-mono);font-size:11px;color:var(--c-text-dim);text-align:center">No tracks yet — click + Add Track to begin.</div>`;
+/* ── Opening and leaving ── */
+async function openPlucker() {
+  if (matchMedia('(hover:none) and (pointer:coarse)').matches) {
+    await _confirmModal('Pluck songs needs a laptop', 'It works on the full session recordings with a mouse and keyboard, so open Nesting Ground on your laptop for this one.', { yes: 'OK', no: 'Close' });
     return;
   }
-  const songs = _songLists().songs;
-  _PLK.tracks.forEach((t, idx) => {
+  showScreen('screen-plucker');
+  if (!$('plk-date-input').value) $('plk-date-input').value = new Date().toISOString().slice(0, 10);
+  _plkUpdateProceedBtn();
+  if (!S.songs.length) await loadSongs(true); // the title list needs the songs
+  ensureTrackIndex().catch(() => {});         // spots versions already on Drive
+}
+
+function plkPause() {
+  if (_PLK.audio) _PLK.audio.pause();
+  $('plk-playhead').classList.remove('visible');
+}
+function plkClose() { plkPause(); showScreen('screen-home'); }
+function plkBackToSetup() { plkPause(); showScreen('screen-plucker'); }
+
+/* ── Reading the session folder ── */
+async function plkBrowse() {
+  if (!window.showDirectoryPicker) { $('plk-folder-input').click(); return; }
+  let dir;
+  try { dir = await showDirectoryPicker({ id: 'plucker-session', mode: 'readwrite' }); }
+  catch(e) {
+    if (e.name !== 'AbortError') showToast('Could not open that folder: ' + (e.message || e));
+    return;
+  }
+  const files = new Map();
+  for await (const h of dir.values()) if (h.kind === 'file') files.set(h.name, await h.getFile());
+  await _plkScanFolder(dir, dir.name, files);
+}
+
+function plkFolderInputPicked(list) {
+  if (!list?.length) return;
+  const files = new Map();
+  [...list].forEach(f => { if (f.webkitRelativePath.split('/').length === 2) files.set(f.name, f); });
+  _plkScanFolder(null, list[0].webkitRelativePath.split('/')[0], files);
+  $('plk-folder-input').value = '';
+}
+
+// Sort key that orders ZOOM0099 before ZOOM0100
+function _plkNaturalCompare(a, b) {
+  const split = s => s.split(/(\d+)/).map(p => /^\d+$/.test(p) ? +p : p.toLowerCase());
+  const pa = split(a), pb = split(b);
+  for (let i = 0; i < Math.min(pa.length, pb.length); i++) {
+    if (pa[i] === pb[i]) continue;
+    if (typeof pa[i] === typeof pb[i]) return pa[i] < pb[i] ? -1 : 1;
+    return typeof pa[i] === 'number' ? -1 : 1;
+  }
+  return pa.length - pb.length;
+}
+
+// Which family a file belongs to. Files in one family are parts of the same recording:
+// ZOOM0023 + ZOOM0024, or SR044XY + SR045XY. MS and XY are the same moment from two
+// capsules, so they are kept as separate families.
+function _plkDescribeFile(file) {
+  const m = _plkStem(file.name).match(/^(.*?)(\d+)(MS|XY)?$/i);
+  const capsule = m?.[3] ? m[3].toUpperCase() : null;
+  return { name: file.name, size: file.size, file, capsule,
+           family: m ? `${m[1].toLowerCase()}#${capsule || ''}` : _plkStem(file.name).toLowerCase() };
+}
+
+async function _plkScanFolder(dir, name, files) {
+  _PLK.dir = dir;
+  _PLK.folderName = name;
+  _PLK.folderFiles = files;
+
+  const audio = [...files.values()].filter(f => PLK_AUDIO_EXTS.includes(_plkExt(f.name)));
+  // Exports land in the session folder too, so once there are lossless recordings
+  // the compressed files can only be our own MP3s
+  const lossless = audio.filter(f => PLK_LOSSLESS_EXTS.includes(_plkExt(f.name)));
+  const recordings = (lossless.length ? lossless : audio).sort((a, b) => _plkNaturalCompare(a.name, b.name));
+
+  $('plk-folder-display').classList.add('selected');
+  $('plk-folder-text').textContent = name;
+
+  _PLK.savedRecordings = (await _plkReadFolderSession())?.recordings || [];
+  _plkInitRecordingList(recordings.map(_plkDescribeFile), _PLK.savedRecordings);
+  if (!recordings.length) showToast('No audio file found in that folder.');
+
+  // Fill the date from the folder name, unless one was chosen by hand
+  const folderDate = name.match(/^(\d{4}-\d{2}-\d{2})/)?.[1];
+  if (folderDate && !_PLK.dateTouched) $('plk-date-input').value = folderDate;
+  plkDateChanged(false);
+}
+
+// Text of a file in the session folder, or null. Asks the folder afresh when it can: a File
+// object from the first scan can't be read any more once we've rewritten that file.
+async function _plkReadFolderText(name) {
+  try {
+    const f = _PLK.dir ? await (await _PLK.dir.getFileHandle(name)).getFile() : _PLK.folderFiles.get(name);
+    return f ? await f.text() : null;
+  } catch(e) { return null; }
+}
+
+async function _plkReadFolderSession() {
+  try { return JSON.parse(await _plkReadFolderText('session.json')); } catch(e) { return null; }
+}
+
+// Which of the folder's recordings are ticked, and in what order
+function _plkInitRecordingList(files, saved) {
+  _PLK.recFiles = files;
+  const has = c => files.some(f => f.capsule === c);
+  const remembered = saved.filter(n => files.some(f => f.name === n));
+
+  if (remembered.length) {
+    // Reopening a session: bring back its ticks, and its order among the ticked
+    // files. Unticked files keep their numbered place for next time.
+    const inOrder = remembered.map(n => files.find(f => f.name === n));
+    _PLK.recFiles = files.map(f => remembered.includes(f.name) ? inOrder.shift() : f);
+    files.forEach(f => { f.ticked = remembered.includes(f.name); });
+    const first = files.find(f => f.ticked && f.capsule);
+    _PLK.capsule = first ? first.capsule : (has('MS') ? 'MS' : 'XY');
+  } else {
+    _PLK.capsule = has('MS') ? 'MS' : 'XY';
+    _plkTickDefaultFamily();
+  }
+
+  $('plk-capsule-select').style.display = has('MS') && has('XY') ? 'block' : 'none';
+  $('plk-capsule-select').value = _PLK.capsule;
+  _plkRenderRecordingList();
+}
+
+function _plkVisibleRecFiles() {
+  return _PLK.recFiles.filter(f => !f.capsule || f.capsule === _PLK.capsule);
+}
+
+// Tick the biggest family of files: the parts of the main recording
+function _plkTickDefaultFamily() {
+  const visible = _plkVisibleRecFiles(), totals = {};
+  visible.forEach(f => { totals[f.family] = (totals[f.family] || 0) + f.size; });
+  const biggest = Object.keys(totals).sort((a, b) => totals[b] - totals[a])[0];
+  _PLK.recFiles.forEach(f => { f.ticked = f.family === biggest && visible.includes(f); });
+}
+
+function _plkRenderRecordingList() {
+  const visible = _plkVisibleRecFiles(), list = $('plk-rec-list');
+  list.innerHTML = '';
+  $('plk-audio-file-wrap').style.display = _PLK.recFiles.length > 1 ? 'block' : 'none';
+
+  visible.forEach((f, i) => {
+    const row = document.createElement('div');
+    row.className = 'plk-rec-row' + (f.ticked ? '' : ' off');
+    row.innerHTML = `<label><input type="checkbox"${f.ticked ? ' checked' : ''}>
+      <span class="plk-rec-name">${esc(f.name)}</span>
+      <span class="plk-rec-size">${(f.size / 1e9).toFixed(2)} GB</span></label>`;
+    row.querySelector('input').addEventListener('change', e => { f.ticked = e.target.checked; _plkRenderRecordingList(); });
+    [['▲', -1, 'Move earlier'], ['▼', 1, 'Move later']].forEach(([text, dir, title]) => {
+      const btn = document.createElement('button');
+      btn.className = 'plk-btn plk-btn-ghost plk-btn-sm plk-rec-move';
+      btn.textContent = text;
+      btn.title = title;
+      btn.disabled = !visible[i + dir];
+      btn.addEventListener('click', () => {
+        const a = _PLK.recFiles.indexOf(f), b = _PLK.recFiles.indexOf(visible[i + dir]);
+        [_PLK.recFiles[a], _PLK.recFiles[b]] = [_PLK.recFiles[b], _PLK.recFiles[a]];
+        _plkRenderRecordingList();
+      });
+      row.appendChild(btn);
+    });
+    list.appendChild(row);
+  });
+  _plkUpdateProceedBtn();
+}
+
+function plkCapsuleChanged() {
+  _PLK.capsule = $('plk-capsule-select').value;
+  _plkTickDefaultFamily();
+  _plkRenderRecordingList();
+}
+
+function plkDateChanged(byHand = true) {
+  if (byHand) _PLK.dateTouched = true;
+  const chosen = $('plk-date-input').value;
+  const folderDate = _PLK.folderName.match(/^(\d{4}-\d{2}-\d{2})/)?.[1];
+  const el = $('plk-setup-status');
+  if (folderDate && folderDate !== chosen) {
+    el.className = 'plk-status warn';
+    el.textContent = `𓅮 Date mismatch — folder says ${folderDate}`;
+  } else {
+    el.className = 'plk-status';
+  }
+  _plkUpdateProceedBtn();
+}
+
+function _plkUpdateProceedBtn() {
+  $('plk-proceed-btn').disabled = !(_PLK.folderName && $('plk-date-input').value && _plkVisibleRecFiles().some(f => f.ticked));
+}
+
+/* ── WAV files: where the audio is, and reading it ── */
+async function _plkBytes(file, start, length) {
+  return file.slice(start, start + length).arrayBuffer();
+}
+
+// Locate the audio inside a PCM WAV. Returns null for anything else.
+async function _plkReadWavInfo(file) {
+  const fileSize = file.size;
+  if (fileSize < 12) return null;
+  const ascii = (buf, from, n) => String.fromCharCode(...new Uint8Array(buf, from, n));
+  const riff = await _plkBytes(file, 0, 12);
+  if (ascii(riff, 0, 4) !== 'RIFF' || ascii(riff, 8, 4) !== 'WAVE') return null;
+
+  let pos = 12, fmt = null, size = 0;
+  while (true) {
+    if (pos + 8 > fileSize) return null;
+    const head = await _plkBytes(file, pos, 8);
+    const id = ascii(head, 0, 4);
+    size = new DataView(head).getUint32(4, true);
+    pos += 8;
+    if (id === 'data') break;
+    if (id === 'fmt ') fmt = new Uint8Array(await _plkBytes(file, pos, size));
+    pos += size + (size & 1);
+  }
+  if (!fmt || fmt.length < 16) return null;
+
+  const dv = new DataView(fmt.buffer);
+  let tag = dv.getUint16(0, true);
+  const channels = dv.getUint16(2, true), rate = dv.getUint32(4, true);
+  const byteRate = dv.getUint32(8, true), align = dv.getUint16(12, true);
+  if (![1, 3, 0xFFFE].includes(tag) || !align || !byteRate || !channels) return null;
+  if (tag === 0xFFFE) tag = fmt.length >= 26 ? dv.getUint16(24, true) : 1; // the real format, for extensible WAVs
+  const bytesEach = align / channels;
+  const known = tag === 1 ? [1, 2, 3, 4].includes(bytesEach) : tag === 3 && [4, 8].includes(bytesEach);
+  if (!known) return null;
+
+  // An unfinished recording can leave the size blank or too big
+  const remaining = fileSize - pos;
+  let dataSize = size > 0 && size <= remaining ? size : remaining;
+  dataSize -= dataSize % align; // a partial frame would swap channels after a join
+  return { fmt, dataOffset: pos, dataSize, byteRate, rate, align, channels, bytesEach, isFloat: tag === 3 };
+}
+
+// Build the header for a WAV holding `dataSize` bytes of audio
+function _plkWavHeader(fmt, dataSize) {
+  const pad = fmt.length & 1;
+  const out = new Uint8Array(12 + 8 + fmt.length + pad + 8);
+  const dv = new DataView(out.buffer);
+  const tag = (s, at) => [...s].forEach((c, i) => { out[at + i] = c.charCodeAt(0); });
+  tag('RIFF', 0);
+  dv.setUint32(4, Math.min(4 + 8 + fmt.length + pad + 8 + dataSize, 0xFFFFFFFF), true);
+  tag('WAVE', 8);
+  tag('fmt ', 12);
+  dv.setUint32(16, fmt.length, true);
+  out.set(fmt, 20);
+  tag('data', 20 + fmt.length + pad);
+  dv.setUint32(24 + fmt.length + pad, Math.min(dataSize, 0xFFFFFFFF), true);
+  return out;
+}
+
+// Reads sample number i of a chunk of raw WAV audio as a float
+function _plkSampler(buf, wav) {
+  switch (wav.bytesEach) {
+    case 1: { const a = new Uint8Array(buf); return i => (a[i] - 128) / 128; }
+    case 2: { const a = new Int16Array(buf); return i => a[i] / 32768; }
+    case 3: { const a = new Uint8Array(buf); return i => { const o = i * 3; return ((a[o + 2] << 24 | a[o + 1] << 16 | a[o] << 8) >> 8) / 8388608; }; }
+    case 4: {
+      if (wav.isFloat) { const a = new Float32Array(buf); return i => a[i]; }
+      const a = new Int32Array(buf); return i => a[i] / 2147483648;
+    }
+    default: { const a = new Float64Array(buf); return i => a[i]; }
+  }
+}
+
+function _plkProbeDuration(file) {
+  return new Promise(resolve => {
+    const a = new Audio(), url = URL.createObjectURL(file);
+    const done = v => { URL.revokeObjectURL(url); resolve(v); };
+    a.preload = 'metadata';
+    a.onloadedmetadata = () => done(isFinite(a.duration) ? a.duration : 0);
+    a.onerror = () => done(0);
+    a.src = url;
+  });
+}
+
+// Lets the screen update between chunks. A timer would crawl if this tab goes to the background.
+function _plkYield() {
+  return new Promise(resolve => {
+    const c = new MessageChannel();
+    c.port1.onmessage = () => resolve();
+    c.port2.postMessage(0);
+  });
+}
+
+/* ── Get Plucking: join the chosen recordings ── */
+async function plkProceed() {
+  const ticket = ++_PLK.loadTicket;
+  _PLK.date = $('plk-date-input').value;
+  const chosen = _plkVisibleRecFiles().filter(f => f.ticked);
+  showLoading('Reading recordings…');
+  try {
+    const recordings = [];
+    for (const f of chosen) {
+      const wav = await _plkReadWavInfo(f.file);
+      const duration = wav ? wav.dataSize / wav.byteRate : await _plkProbeDuration(f.file);
+      recordings.push({ name: f.name, file: f.file, wav, duration });
+    }
+    if (recordings.length > 1) {
+      // Joining works on the raw samples, so every part must match exactly
+      const same = (a, b) => a && b && a.length === b.length && a.every((v, i) => v === b[i]);
+      const bad = recordings.find(r => !r.wav || !same(r.wav.fmt, recordings[0].wav?.fmt));
+      if (bad) throw new Error(`${bad.name} can't be joined: recordings must be WAVs in the same format`);
+    }
+    let offset = 0;
+    for (const r of recordings) {
+      if (!r.duration) throw new Error(`Couldn't read ${r.name}. This browser may not support the format`);
+      r.offset = offset;
+      offset += r.duration;
+    }
+    _PLK.recordings = recordings;
+    _PLK.duration = offset;
+    _PLK.decoded = null;
+    _PLK.peaks = null;
+    _PLK.dataBlob = recordings[0].wav
+      ? new Blob(recordings.map(r => r.file.slice(r.wav.dataOffset, r.wav.dataOffset + r.wav.dataSize)))
+      : null;
+
+    const session = await _plkLoadSession();
+    _PLK.tracks = session?.tracks || [];
+    _PLK.tracks.forEach(t => { t.date = _PLK.date; });
+    _plkPlaceTracks();
+    _plkSaveSession();
+
+    const unplaced = _PLK.tracks.filter(t => t.problem).length;
+    if (unplaced) showToast(`${unplaced} saved track(s) couldn't be placed — see Review`, 5000);
+  } catch(e) {
+    hideLoading();
+    showToast(e.message || String(e), 5000);
+    return;
+  }
+
+  $('plk-wave-title').textContent = _PLK.folderName.startsWith(_PLK.date) ? _PLK.folderName : `${_PLK.folderName} · ${_PLK.date}`;
+  $('plk-wave-label').textContent = _PLK.recordings.map(r => r.name).join(' + ');
+  _PLK.startSec = _PLK.endSec = null;
+  _PLK.editingIdx = -1;
+  showScreen('screen-plucker-wave');
+  _plkSetupAudio();
+  _plkEnterPhase('picking-start');
+  // Double rAF: first frame applies display:flex, second frame has correct dimensions
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    _plkResizeCanvases();
+    _plkLoadPeaks(ticket);
+  }));
+}
+
+function _plkSetupAudio() {
+  if (_PLK.audio) _PLK.audio.pause();
+  if (_PLK.audioUrl) URL.revokeObjectURL(_PLK.audioUrl);
+  const recs = _PLK.recordings;
+  // A single recording is played as it is on disk; several as one WAV, so it plays across the joins
+  const source = recs.length === 1 ? recs[0].file
+    : new Blob([_plkWavHeader(recs[0].wav.fmt, _PLK.dataBlob.size), _PLK.dataBlob], { type: 'audio/wav' });
+  _PLK.audioUrl = URL.createObjectURL(source);
+  const audio = new Audio();
+  audio.src = _PLK.audioUrl;
+  audio.preload = 'none';
+  audio.addEventListener('timeupdate', () => {
+    const t = audio.currentTime;
+    $('plk-transport-time').textContent = _plkFmt(t);
+    _plkDrawPlayhead(t);
+    if (audio._stopAt && t >= audio._stopAt) plkPause(); // the preview window is over
+  });
+  audio.addEventListener('ended', () => $('plk-playhead').classList.remove('visible'));
+  _PLK.audio = audio;
+  $('plk-transport-time').textContent = _plkFmt(0);
+}
+
+/* ── Waveform peaks ── */
+async function _plkLoadPeaks(ticket) {
+  showLoading('Generating waveform… (first load may take a moment)');
+  try {
+    const parts = [], total = _PLK.recordings.length;
+    for (let i = 0; i < total; i++) {
+      const r = _PLK.recordings[i];
+      const peaks = await _plkPeaksForFile(r, frac => {
+        showLoading(`Generating waveform… ${Math.round((i + frac) / total * 100)}%`);
+      });
+      if (ticket !== _PLK.loadTicket) return;
+      parts.push([r, peaks]);
+    }
+    _PLK.peaks = _plkMergePeaks(parts, _PLK.duration, PLK_PEAK_POINTS);
+    _PLK.viewStart = 0;
+    _PLK.viewEnd = _PLK.duration;
+    _plkDrawAll();
+  } catch(e) {
+    showToast('Waveform error: ' + (e.message || e), 5000);
+  } finally {
+    if (ticket === _PLK.loadTicket) hideLoading();
+  }
+}
+
+// One recording's peaks at a fixed time resolution, cached beside it when we can write there
+async function _plkPeaksForFile(r, onProgress) {
+  const cacheName = _plkStem(r.name) + '.peaks.json';
+  try {
+    const c = JSON.parse(await _plkReadFolderText(cacheName));
+    if (c?.version === PLK_PEAKS_VERSION && c.peaks?.length) return c.peaks;
+  } catch(e) {} // regenerate if the cache is corrupt
+  const peaks = r.wav ? await _plkWavPeaks(r, onProgress) : await _plkDecodedPeaks(onProgress);
+  if (_PLK.dir) {
+    try { await _plkWriteToFolder(cacheName, JSON.stringify({ version: PLK_PEAKS_VERSION, peaks })); }
+    catch(e) { console.warn('Could not cache peaks', e); }
+  }
+  return peaks;
+}
+
+const _plkRound4 = v => Math.round(v * 10000) / 10000;
+
+async function _plkWavPeaks(r, onProgress) {
+  const wav = r.wav, ch = wav.channels;
+  const blockFrames = Math.max(1, Math.round(wav.rate * PLK_PEAK_SECS));
+  const stride = Math.max(1, Math.floor(wav.rate / 1000)); // about 1000 readings a second is plenty for a picture
+  const totalFrames = Math.floor(wav.dataSize / wav.align);
+  const chunkFrames = blockFrames * Math.max(1, Math.floor(16e6 / (blockFrames * wav.align)));
+  const peaks = [];
+  for (let from = 0; from < totalFrames; from += chunkFrames) {
+    const n = Math.min(chunkFrames, totalFrames - from);
+    const buf = await _plkBytes(r.file, wav.dataOffset + from * wav.align, n * wav.align);
+    const read = _plkSampler(buf, wav);
+    for (let b = 0; b < n; b += blockFrames) {
+      let lo = Infinity, hi = -Infinity;
+      for (let f = b; f < Math.min(b + blockFrames, n); f += stride) {
+        let v = 0;
+        for (let c = 0; c < ch; c++) v += read(f * ch + c);
+        v /= ch;
+        if (v < lo) lo = v;
+        if (v > hi) hi = v;
+      }
+      peaks.push([_plkRound4(lo), _plkRound4(hi)]);
+    }
+    onProgress((from + n) / totalFrames);
+    await _plkYield();
+  }
+  return peaks;
+}
+
+// A non-WAV recording has to be decoded whole: only one can be open, and it's kept for export
+async function _plkDecoded() {
+  if (_PLK.decoded) return _PLK.decoded;
+  const ctx = new AudioContext();
+  try { _PLK.decoded = await ctx.decodeAudioData(await _PLK.recordings[0].file.arrayBuffer()); }
+  finally { ctx.close(); }
+  return _PLK.decoded;
+}
+
+async function _plkDecodedPeaks(onProgress) {
+  const buffer = await _plkDecoded();
+  const blockFrames = Math.max(1, Math.round(buffer.sampleRate * PLK_PEAK_SECS));
+  const stride = Math.max(1, Math.floor(buffer.sampleRate / 1000));
+  const data = buffer.getChannelData(0), peaks = [];
+  for (let b = 0; b < data.length; b += blockFrames) {
+    let lo = Infinity, hi = -Infinity;
+    for (let f = b; f < Math.min(b + blockFrames, data.length); f += stride) {
+      if (data[f] < lo) lo = data[f];
+      if (data[f] > hi) hi = data[f];
+    }
+    peaks.push([_plkRound4(lo), _plkRound4(hi)]);
+    if (peaks.length % 1000 === 0) { onProgress(b / data.length); await _plkYield(); }
+  }
+  return peaks;
+}
+
+// Lay each recording's peaks onto one evenly spaced timeline
+function _plkMergePeaks(parts, duration, numPoints) {
+  // Never finer than the cached peaks, or the waveform would have holes
+  numPoints = Math.max(1, Math.min(numPoints, Math.floor(duration / PLK_PEAK_SECS)));
+  const merged = new Array(numPoints).fill(null);
+  parts.forEach(([r, peaks]) => {
+    const secsEach = r.duration / peaks.length;
+    peaks.forEach(([lo, hi], i) => {
+      const t = r.offset + (i + 0.5) * secsEach;
+      const idx = Math.min(numPoints - 1, Math.floor(t / duration * numPoints));
+      const cur = merged[idx];
+      merged[idx] = cur ? [Math.min(cur[0], lo), Math.max(cur[1], hi)] : [lo, hi];
+    });
+  });
+  return merged.map(p => p || [0, 0]);
+}
+
+/* ── Drawing ── */
+const _plkWaveCanvas = $('plk-wave-canvas'), _plkOvCanvas = $('plk-ov-canvas'), _plkRulerCanvas = $('plk-ruler-canvas');
+const _plkWaveWrap = $('plk-wave-wrap'), _plkOvWrap = $('plk-ov-wrap');
+const _plkW = _plkWaveCanvas.getContext('2d'), _plkO = _plkOvCanvas.getContext('2d'), _plkR = _plkRulerCanvas.getContext('2d');
+
+const PLK_C = {
+  join: 'rgba(237,221,212,0.45)', bg: '#0D1A19', waveBody: '#197278', waveEdge: '#83A8A6',
+  ruler: '#2E4644', rulerText: '#83A8A6', ovFill: '#21585A',
+};
+// Cycle of fill/border colors for track regions
+const PLK_TRACK_COLORS = [
+  { fill: 'rgba(131,168,166,0.13)', border: 'rgba(131,168,166,0.55)', text: '#83A8A6' },
+  { fill: 'rgba(196,69,54,0.11)',   border: 'rgba(196,69,54,0.50)',   text: '#C44536' },
+  { fill: 'rgba(25,114,120,0.16)',  border: 'rgba(25,114,120,0.60)',  text: '#197278' },
+  { fill: 'rgba(217,145,133,0.12)', border: 'rgba(217,145,133,0.50)', text: '#D99185' },
+];
+
+function _plkResizeCanvases() {
+  const dpr = window.devicePixelRatio || 1;
+  const ww = _plkWaveWrap.offsetWidth, wh = _plkWaveWrap.offsetHeight;
+  if (ww === 0 || wh === 0) return; // layout not ready yet
+  const size = (canvas, ctx, w, h) => {
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+  size(_plkWaveCanvas, _plkW, ww, wh);
+  size(_plkRulerCanvas, _plkR, _plkRulerCanvas.offsetWidth, 22);
+  size(_plkOvCanvas, _plkO, _plkOvCanvas.offsetWidth, 44);
+  if (_PLK.peaks) _plkDrawAll();
+}
+window.addEventListener('resize', () => requestAnimationFrame(_plkResizeCanvases));
+
+function _plkDrawAll() {
+  _plkDrawWave();
+  _plkDrawTrackRegions();
+  _plkDrawJoins();
+  _plkDrawOverview();
+  _plkDrawTrackRegionsOverview();
+  _plkDrawJoinsOverview();
+  _plkDrawRuler();
+  _plkUpdateMarkers();
+  _plkUpdateOvViewport();
+}
+
+// A line where one recording ends and the next begins, named at the foot
+function _plkDrawJoins() {
+  if (!_PLK.duration) return;
+  const w = _plkWaveWrap.offsetWidth, h = _plkWaveWrap.offsetHeight, ctx = _plkW;
+  const span = _PLK.viewEnd - _PLK.viewStart;
+  _PLK.recordings.slice(1).forEach(r => {
+    if (r.offset < _PLK.viewStart || r.offset > _PLK.viewEnd) return;
+    const x = ((r.offset - _PLK.viewStart) / span) * w;
+    ctx.fillStyle = PLK_C.join;
+    ctx.fillRect(x, 0, 1, h);
+    ctx.font = `9px 'DM Mono', monospace`;
+    ctx.textAlign = 'left';
+    ctx.fillText(r.name, x + 4, h - 5);
+  });
+}
+
+function _plkDrawJoinsOverview() {
+  if (!_PLK.duration) return;
+  const w = _plkOvWrap.offsetWidth;
+  _plkO.fillStyle = PLK_C.join;
+  _PLK.recordings.slice(1).forEach(r => _plkO.fillRect((r.offset / _PLK.duration) * w, 0, 1, 44));
+}
+
+function _plkDrawTrackRegions() {
+  if (!_PLK.tracks.length || !_PLK.duration) return;
+  const w = _plkWaveWrap.offsetWidth, h = _plkWaveWrap.offsetHeight, ctx = _plkW;
+  const span = _PLK.viewEnd - _PLK.viewStart;
+
+  _PLK.tracks.forEach((t, i) => {
+    if (t.problem) return;
+    const visStart = Math.max(t.start, _PLK.viewStart), visEnd = Math.min(t.end, _PLK.viewEnd);
+    if (visStart >= visEnd) return;
+    const x1 = ((visStart - _PLK.viewStart) / span) * w;
+    const x2 = ((visEnd - _PLK.viewStart) / span) * w;
+    const rw = x2 - x1;
+    const col = PLK_TRACK_COLORS[i % PLK_TRACK_COLORS.length];
+
+    ctx.fillStyle = col.fill;
+    ctx.fillRect(x1, 0, rw, h);
+    ctx.fillStyle = col.border;
+    ctx.fillRect(x1, 0, rw, 2);
+    ctx.fillRect(x1, 0, 1, h);
+
+    // Label, only if the region is wide enough to show something
+    if (rw > 24) {
+      const label = t.title + (t.version && String(t.version) !== '1' ? ` V${t.version}` : '');
+      const maxW = rw - 8;
+      ctx.font = `500 10px 'DM Mono', monospace`;
+      ctx.fillStyle = col.text;
+      ctx.textAlign = 'left';
+      let display = label;
+      if (ctx.measureText(display).width > maxW) {
+        while (display.length > 1 && ctx.measureText(display + '…').width > maxW) display = display.slice(0, -1);
+        display += '…';
+      }
+      ctx.fillText(display, x1 + 4, 13);
+    }
+  });
+}
+
+function _plkDrawTrackRegionsOverview() {
+  if (!_PLK.tracks.length || !_PLK.duration) return;
+  const w = _plkOvWrap.offsetWidth, ctx = _plkO;
+  _PLK.tracks.forEach((t, i) => {
+    if (t.problem) return;
+    const x1 = (t.start / _PLK.duration) * w, x2 = (t.end / _PLK.duration) * w;
+    const col = PLK_TRACK_COLORS[i % PLK_TRACK_COLORS.length];
+    ctx.fillStyle = col.fill;
+    ctx.fillRect(x1, 0, Math.max(2, x2 - x1), 44);
+    ctx.fillStyle = col.border;
+    ctx.fillRect(x1, 0, 1, 44);
+  });
+}
+
+function _plkDrawWave() {
+  if (!_PLK.peaks) return;
+  const w = _plkWaveWrap.offsetWidth, h = _plkWaveWrap.offsetHeight, ctx = _plkW;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = PLK_C.bg;
+  ctx.fillRect(0, 0, w, h);
+
+  const total = _PLK.peaks.length;
+  const startIdx = Math.floor(_PLK.viewStart / _PLK.duration * total);
+  const endIdx = Math.ceil(_PLK.viewEnd / _PLK.duration * total);
+  const view = _PLK.peaks.slice(startIdx, endIdx), n = view.length;
+  if (n === 0) return;
+
+  const mid = h / 2, bw = w / n;
+  for (let i = 0; i < n; i++) {
+    const [mn, mx] = view[i];
+    const y1 = mid - mx * mid * 0.92, y2 = mid - mn * mid * 0.92;
+    const grad = ctx.createLinearGradient(0, y1, 0, y2);
+    grad.addColorStop(0, PLK_C.waveEdge);
+    grad.addColorStop(0.35, PLK_C.waveBody);
+    grad.addColorStop(0.65, PLK_C.waveBody);
+    grad.addColorStop(1, PLK_C.waveEdge);
+    ctx.fillStyle = grad;
+    ctx.fillRect(Math.floor(i * bw), y1, Math.max(1, Math.floor(bw) - 1), Math.max(1, y2 - y1));
+  }
+}
+
+function _plkDrawOverview() {
+  if (!_PLK.peaks) return;
+  const w = _plkOvWrap.offsetWidth, h = 44, ctx = _plkO;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = PLK_C.bg;
+  ctx.fillRect(0, 0, w, h);
+  const n = _PLK.peaks.length, mid = h / 2, bw = w / n;
+  ctx.fillStyle = PLK_C.ovFill;
+  for (let i = 0; i < n; i++) {
+    const [mn, mx] = _PLK.peaks[i];
+    const y1 = mid - mx * mid * 0.88, y2 = mid - mn * mid * 0.88;
+    ctx.fillRect(Math.floor(i * bw), y1, Math.max(1, Math.floor(bw)), Math.max(1, y2 - y1));
+  }
+}
+
+function _plkDrawRuler() {
+  if (!_PLK.duration) return;
+  const w = _plkRulerCanvas.offsetWidth || _plkRulerCanvas.parentElement.offsetWidth, h = 22, ctx = _plkR;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = PLK_C.bg;
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = PLK_C.ruler;
+  ctx.fillStyle = PLK_C.rulerText;
+  ctx.font = `9px 'DM Mono', monospace`;
+  ctx.textAlign = 'left';
+
+  const span = _PLK.viewEnd - _PLK.viewStart;
+  const raw = span / (w / 60);
+  const tick = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600].find(n => n >= raw) || 3600;
+  for (let t = Math.ceil(_PLK.viewStart / tick) * tick; t <= _PLK.viewEnd; t += tick) {
+    const x = ((t - _PLK.viewStart) / span) * w;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, 6);
+    ctx.stroke();
+    if (x > 4) ctx.fillText(_plkFmt(t), x + 2, 16);
+  }
+}
+
+function _plkUpdateOvViewport() {
+  if (!_PLK.duration) return;
+  const el = $('plk-ov-viewport');
+  const sl = (_PLK.viewStart / _PLK.duration) * 100, sr = (_PLK.viewEnd / _PLK.duration) * 100;
+  el.style.left = sl + '%';
+  el.style.width = (sr - sl) + '%';
+}
+
+function _plkUpdateMarkers() {
+  _plkPositionMarker('plk-marker-s', 'plk-region-s', _PLK.startSec, 's');
+  _plkPositionMarker('plk-marker-e', 'plk-region-e', _PLK.endSec, 'e');
+}
+
+function _plkPositionMarker(markerId, regionId, timeSec, type) {
+  const el = $(markerId), reg = $(regionId);
+  if (timeSec === null || timeSec < _PLK.viewStart || timeSec > _PLK.viewEnd) {
+    el.style.display = reg.style.display = 'none';
+    return;
+  }
+  const frac = (timeSec - _PLK.viewStart) / (_PLK.viewEnd - _PLK.viewStart);
+  const pct = (frac * 100).toFixed(3) + '%';
+  el.style.display = reg.style.display = 'block';
+  el.style.left = pct;
+  reg.style.width = '80px';
+  if (type === 's') {
+    reg.style.left = pct;
+    reg.style.right = 'auto';
+  } else {
+    reg.style.right = (100 - frac * 100).toFixed(3) + '%';
+    reg.style.left = 'auto';
+  }
+}
+
+function _plkDrawPlayhead(timeSec) {
+  const ph = $('plk-playhead');
+  if (timeSec < _PLK.viewStart || timeSec > _PLK.viewEnd) { ph.classList.remove('visible'); return; }
+  ph.style.left = (((timeSec - _PLK.viewStart) / (_PLK.viewEnd - _PLK.viewStart)) * 100).toFixed(3) + '%';
+  ph.classList.add('visible');
+}
+
+/* ── Zoom and pan ── */
+// Set the visible window, keeping it inside the recording
+function _plkSetView(start, span) {
+  span = Math.max(Math.min(PLK_MIN_SPAN, _PLK.duration), Math.min(_PLK.duration, span));
+  start = Math.max(0, Math.min(_PLK.duration - span, start));
+  _PLK.viewStart = start;
+  _PLK.viewEnd = start + span;
+  _plkDrawAll();
+  if (_PLK.audio && !_PLK.audio.paused) _plkDrawPlayhead(_PLK.audio.currentTime);
+}
+
+// Zoom by `factor` (<1 = in) keeping `pivot` at the same screen position, or centring it if off-screen
+function _plkZoomAround(pivot, factor) {
+  const span = _PLK.viewEnd - _PLK.viewStart;
+  const newSpan = Math.max(Math.min(PLK_MIN_SPAN, _PLK.duration), Math.min(_PLK.duration, span * factor));
+  const frac = (pivot >= _PLK.viewStart && pivot <= _PLK.viewEnd) ? (pivot - _PLK.viewStart) / span : 0.5;
+  _plkSetView(pivot - frac * newSpan, newSpan);
+}
+
+// What to zoom around: the playback line while playing, else the point being set, else the mouse
+function _plkZoomPivot(mouseTime) {
+  if (_PLK.audio && !_PLK.audio.paused) return _PLK.audio.currentTime;
+  if (_PLK.phase === 'picking-end' && _PLK.endSec !== null) return _PLK.endSec;
+  if (_PLK.phase === 'picking-start' && _PLK.startSec !== null) return _PLK.startSec;
+  return mouseTime;
+}
+
+_plkWaveWrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (!_PLK.peaks) return;
+  const rect = _plkWaveWrap.getBoundingClientRect();
+  const span = _PLK.viewEnd - _PLK.viewStart;
+  if (e.ctrlKey) {
+    // Trackpad pinch (browsers report it as ctrl+wheel): zoom
+    const mouseTime = _PLK.viewStart + ((e.clientX - rect.left) / rect.width) * span;
+    _plkZoomAround(_plkZoomPivot(mouseTime), Math.exp(e.deltaY * 0.01));
+  } else {
+    // Two-finger slide or mouse wheel: pan
+    const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    _plkSetView(_PLK.viewStart + (d / rect.width) * span, span);
+  }
+}, { passive: false });
+
+function _plkOverviewTime(e) {
+  const rect = _plkOvWrap.getBoundingClientRect();
+  return ((e.clientX - rect.left) / rect.width) * _PLK.duration;
+}
+_plkOvWrap.addEventListener('click', e => {
+  if (!_PLK.peaks) return;
+  const span = _PLK.viewEnd - _PLK.viewStart;
+  _plkSetView(_plkOverviewTime(e) - span / 2, span);
+});
+_plkOvWrap.addEventListener('dblclick', e => {
+  if (!_PLK.peaks) return;
+  const span = (_PLK.viewEnd - _PLK.viewStart) / 2;
+  _plkSetView(_plkOverviewTime(e) - span / 2, span);
+});
+
+/* ── Picking: click to hear it, Enter to confirm ── */
+_plkWaveWrap.addEventListener('click', e => {
+  if (!_PLK.peaks || (_PLK.phase !== 'picking-start' && _PLK.phase !== 'picking-end')) return;
+  const rect = _plkWaveWrap.getBoundingClientRect();
+  const t = _PLK.viewStart + ((e.clientX - rect.left) / rect.width) * (_PLK.viewEnd - _PLK.viewStart);
+  if (_PLK.phase === 'picking-start') {
+    _PLK.startSec = t;
+    _plkUpdatePickUI();
+    _plkPlayPreview('start', t);
+  } else {
+    if (t <= _PLK.startSec) { showToast('End must be after start'); return; }
+    _PLK.endSec = t;
+    _plkUpdatePickUI();
+    _plkPlayPreview('end', t);
+  }
+  _plkUpdateMarkers();
+});
+
+// True when the key should go to a text field, a dialog or the settings panel instead
+function _plkKeyBelongsToField(e) {
+  return $('plk-settings-overlay').classList.contains('open') ||
+         document.querySelector('.ng-modal-overlay, .pick-overlay') ||
+         e.target.isContentEditable ||
+         ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName);
+}
+const _plkIsPicking = () => _plkActive() === 'screen-plucker-wave' && (_PLK.phase === 'picking-start' || _PLK.phase === 'picking-end');
+
+document.addEventListener('keydown', e => {
+  if (!_plkIsPicking() || _plkKeyBelongsToField(e)) return;
+  if (e.code !== 'Space' && e.code !== 'Enter') return;
+  e.preventDefault();
+  // Stop a focused button from also being "clicked" by this key
+  if (document.activeElement?.tagName === 'BUTTON') document.activeElement.blur();
+  if (e.code === 'Space') {
+    if (_PLK.phase === 'picking-start' && _PLK.startSec !== null) _plkPlayPreview('start', _PLK.startSec);
+    if (_PLK.phase === 'picking-end' && _PLK.endSec !== null) _plkPlayPreview('end', _PLK.endSec);
+  } else {
+    if (_PLK.phase === 'picking-start' && _PLK.startSec !== null) _plkConfirmStart();
+    else if (_PLK.phase === 'picking-end' && _PLK.endSec !== null) _plkConfirmEnd();
+  }
+});
+// Buttons activate on Space keyup, so swallow that too while picking
+document.addEventListener('keyup', e => {
+  if (_plkIsPicking() && !_plkKeyBelongsToField(e) && e.code === 'Space') e.preventDefault();
+});
+
+function _plkPlayPreview(type, timeSec) {
+  if (!_PLK.audio) return;
+  const s = _plkSettings();
+  let from, to;
+  if (type === 'start') {
+    from = timeSec;
+    to = timeSec + (s.start_preview_secs || 15);
+  } else {
+    from = Math.max(0, timeSec - (s.end_preview_secs || 5));
+    to = timeSec;
+  }
+  _PLK.audio.currentTime = from;
+  _PLK.audio._stopAt = to;
+  _PLK.audio.play().catch(() => {});
+  $('plk-transport-time').textContent = _plkFmt(from);
+}
+
+function plkStop() { plkPause(); }
+function plkPlayFromStart() { if (_PLK.startSec !== null) _plkPlayPreview('start', _PLK.startSec); }
+
+function _plkEnterPhase(phase) {
+  _PLK.phase = phase;
+  const pick = $('plk-pick-state'), form = $('plk-track-form'), sub = $('plk-side-sub');
+  if (phase === 'picking-start') {
+    pick.style.display = 'flex';
+    form.style.display = 'none';
+    sub.textContent = 'Click waveform to set start point';
+    $('plk-dot-s').className = 'plk-dot active';
+    $('plk-dot-e').className = 'plk-dot waiting';
+    $('plk-val-s').textContent = '—';
+    $('plk-val-s').classList.add('dim');
+    $('plk-val-e').textContent = '—';
+    $('plk-val-e').classList.add('dim');
+    $('plk-pick-hint').innerHTML = '<b>Click</b> waveform to set start point<br><kbd>Space</kbd> replay · <kbd>Enter</kbd> confirm';
+    $('plk-play-from-btn').style.display = 'none';
+    $('plk-to-review-btn').style.display = _PLK.tracks.length ? 'inline-flex' : 'none';
+  } else if (phase === 'picking-end') {
+    sub.textContent = 'Now click to set the end point';
+    $('plk-dot-s').className = 'plk-dot done';
+    $('plk-dot-e').className = 'plk-dot active';
+    $('plk-pick-hint').innerHTML = '<b>Click</b> waveform for end point<br><kbd>Space</kbd> replay · <kbd>Enter</kbd> confirm';
+    $('plk-play-from-btn').style.display = 'inline-flex';
+  } else if (phase === 'form') {
+    pick.style.display = 'none';
+    form.style.display = 'flex';
+    sub.textContent = 'Enter track details';
+    $('plk-dot-e').className = 'plk-dot done-end';
+    _plkPopulateTrackForm();
+  }
+}
+
+function _plkUpdatePickUI() {
+  if (_PLK.startSec !== null) { $('plk-val-s').textContent = _plkFmtMs(_PLK.startSec); $('plk-val-s').classList.remove('dim'); }
+  if (_PLK.endSec !== null)   { $('plk-val-e').textContent = _plkFmtMs(_PLK.endSec);   $('plk-val-e').classList.remove('dim'); }
+}
+
+function _plkConfirmStart() {
+  plkPause();
+  _plkEnterPhase('picking-end');
+  _PLK.endSec = null;
+  _plkUpdateMarkers();
+}
+
+function _plkConfirmEnd() {
+  plkPause();
+  _plkEnterPhase('form');
+}
+
+function plkCancelTrack() {
+  _PLK.startSec = _PLK.endSec = null;
+  _PLK.editingIdx = -1;
+  _plkEnterPhase('picking-start');
+  _plkUpdateMarkers();
+}
+
+/* ── Track form ── */
+// Songs and ideas from the app, plus anything already typed in this session
+function _plkSongNames() {
+  const { songs, ideas } = _songLists();
+  const names = [...songs, ...ideas].map(s => s.name);
+  _PLK.tracks.forEach(t => { if (t.title && !names.some(n => n.toLowerCase() === t.title.toLowerCase())) names.push(t.title); });
+  return names.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+}
+
+function _plkPopulateTrackForm() {
+  const t = _PLK.editingIdx >= 0 ? _PLK.tracks[_PLK.editingIdx] : {};
+  $('plk-title-input').value = t.title || '';
+  $('plk-version-input').value = t.version || '1';
+  $('plk-extra-input').value = t.extra || '';
+  $('plk-notes-input').value = t.notes || '';
+  _plkUpdateFilenamePreview();
+}
+
+function _plkPickTitle(name) {
+  $('plk-title-input').value = name;
+  _plkCloseCombo();
+  _plkAutoFillVersion();
+  _plkUpdateFilenamePreview();
+}
+
+function _plkOpenCombo(filter = '') {
+  const drop = $('plk-combo-drop'), typed = $('plk-title-input').value.trim(), filt = filter.toLowerCase();
+  const names = _plkSongNames();
+  const option = (label, cls, onPick) => {
+    const d = document.createElement('div');
+    d.className = 'plk-combo-opt' + cls;
+    d.textContent = label;
+    d.addEventListener('mousedown', ev => { ev.preventDefault(); onPick(); });
+    drop.appendChild(d);
+  };
+  drop.innerHTML = '';
+  if (typed && !names.some(n => n.toLowerCase() === typed.toLowerCase())) {
+    option(`+ Add "${typed}"`, ' new-item', () => _plkPickTitle(typed));
+  }
+  names.filter(n => !filt || n.toLowerCase().includes(filt)).forEach(n => option(n, '', () => _plkPickTitle(n)));
+  drop.classList.toggle('open', drop.children.length > 0);
+}
+
+function _plkCloseCombo() { $('plk-combo-drop').classList.remove('open'); }
+
+$('plk-title-input').addEventListener('input', () => {
+  _plkOpenCombo($('plk-title-input').value);
+  _plkAutoFillVersion();
+  _plkUpdateFilenamePreview();
+});
+$('plk-title-input').addEventListener('focus', () => _plkOpenCombo($('plk-title-input').value));
+$('plk-title-input').addEventListener('blur', () => setTimeout(_plkCloseCombo, 150));
+$('plk-combo-arrow').addEventListener('click', () => {
+  if ($('plk-combo-drop').classList.contains('open')) _plkCloseCombo();
+  else { $('plk-title-input').focus(); _plkOpenCombo(); }
+});
+
+// One past the versions of this title in this session, or already on Drive for this date
+function _plkAutoFillVersion() {
+  const title = $('plk-title-input').value.trim().toLowerCase();
+  if (!title || _PLK.editingIdx >= 0) return;
+  const here = _PLK.tracks.filter(t => t.title.toLowerCase() === title).length;
+  const onDrive = (S.trackIndex?.[title] || []).filter(v => v.sessionDate === _PLK.date).map(v => v.version);
+  $('plk-version-input').value = String(Math.max(here, ...onDrive, 0) + 1);
+}
+
+const _plkSafeName = s => String(s).replace(/[\\/:*?"<>|]/g, '_');
+
+// Title - Version - Date[ - Extra].mp3
+function _plkFileName(t) {
+  const parts = [_plkSafeName(t.title), _plkSafeName(t.version), t.date];
+  if (t.extra) parts.push(_plkSafeName(t.extra));
+  return parts.join(' - ') + '.mp3';
+}
+
+function _plkUpdateFilenamePreview() {
+  $('plk-filename-preview').textContent = _plkFileName({
+    title: $('plk-title-input').value.trim() || 'Title',
+    version: $('plk-version-input').value.trim() || '1',
+    extra: $('plk-extra-input').value.trim(),
+    date: _PLK.date || 'date',
+  });
+}
+
+function plkConfirmTrack() {
+  let title = $('plk-title-input').value.trim();
+  if (!title) { showToast('Please enter a track title'); return; }
+  // "frog" is the song Frog: the app groups recordings by name
+  title = _plkSongNames().find(n => n.toLowerCase() === title.toLowerCase()) || title;
+
+  const track = {
+    title,
+    version: $('plk-version-input').value.trim() || '1',
+    extra: $('plk-extra-input').value.trim(),
+    notes: $('plk-notes-input').value.trim(),
+    start: _PLK.startSec,
+    end: _PLK.endSec,
+    date: _PLK.date,
+    exported: false,
+  };
+  _plkAnchorTrack(track);
+
+  if (_PLK.editingIdx >= 0) {
+    // The old file on Drive stays until this one replaces it at export
+    const old = _PLK.tracks[_PLK.editingIdx];
+    if (old.drive_file_id || old.replaces_drive_id) track.replaces_drive_id = old.drive_file_id || old.replaces_drive_id;
+    _PLK.tracks[_PLK.editingIdx] = track;
+    _PLK.editingIdx = -1;
+  } else {
+    _PLK.tracks.push(track);
+  }
+
+  _plkSaveSession();
+  showToast(`𓅥 "${title}" added`);
+
+  // Reset for the next track
+  _PLK.startSec = _PLK.endSec = null;
+  _plkEnterPhase('picking-start');
+  _plkUpdateMarkers();
+  _plkDrawAll(); // so the new region appears immediately
+}
+
+/* ── Session: which recordings, which tracks ── */
+function _plkSessionData() {
+  return { recordings: _PLK.recordings.map(r => r.name), tracks: _PLK.tracks, date: _PLK.date };
+}
+
+async function _plkWriteToFolder(name, content) {
+  const handle = await _PLK.dir.getFileHandle(name, { create: true });
+  const w = await handle.createWritable();
+  await w.write(content);
+  await w.close();
+}
+
+// The folder's copy is the one to trust. Without folder access there's a copy on this
+// device, and Drive's in case this session was first exported from somewhere else.
+async function _plkLoadSession() {
+  const local = await _plkReadFolderSession();
+  if (local) return local;
+  try {
+    const draft = JSON.parse(localStorage.getItem('ng_plk_session_' + _PLK.date) || 'null');
+    if (draft) return draft;
+  } catch(e) {}
+  if (!Auth.valid()) return null; // don't sit waiting for a reconnect just to look
+  try {
+    if (!S.folders?.rehearsals) await discoverFolders();
+    const folder = await Drive.findFolder(S.folders.rehearsals, _PLK.date);
+    const file = folder && (await Drive.list(folder.id, { filesOnly: true, name: 'session.json' }))[0];
+    return file ? await Drive.readJson(file.id) : null;
+  } catch(e) { return null; }
+}
+
+function _plkSaveSession() {
+  const data = _plkSessionData();
+  if (_PLK.dir) {
+    return _plkWriteToFolder('session.json', JSON.stringify(data, null, 2))
+      .catch(e => showToast('Could not save session.json: ' + (e.message || e), 5000));
+  }
+  try { localStorage.setItem('ng_plk_session_' + _PLK.date, JSON.stringify(data)); } catch(e) {}
+}
+
+// Find the recording a point on the joined timeline falls in
+function _plkLocate(sec, isEnd) {
+  const recs = _PLK.recordings;
+  const r = recs.find(r => isEnd ? sec <= r.offset + r.duration : sec < r.offset + r.duration) || recs[recs.length - 1];
+  return { rec: r, offset: sec - r.offset };
+}
+
+// Record which recording(s) a track came from, and where within them.
+// These are what get saved; start/end are worked out from them on every open.
+function _plkAnchorTrack(t) {
+  const a = _plkLocate(t.start, false), b = _plkLocate(t.end, true);
+  const names = _PLK.recordings.map(r => r.name);
+  t.start_file = a.rec.name;
+  t.start_offset = a.offset;
+  t.end_file = b.rec.name;
+  t.end_offset = b.offset;
+  t.files = names.slice(names.indexOf(a.rec.name), names.indexOf(b.rec.name) + 1);
+}
+
+// The same moment from the other capsule: SR044MS.WAV <-> SR044XY.WAV
+function _plkOtherCapsule(name) {
+  return name.replace(/(MS|XY)(\.[^.]+)$/i, (_, c, ext) => ({ MS: 'XY', XY: 'MS', ms: 'xy', xy: 'ms' }[c] || c) + ext);
+}
+
+// Work out each saved track's place on the current timeline, flagging any that can't
+// be placed so they are never drawn or exported in the wrong spot
+function _plkPlaceTracks() {
+  const recs = _PLK.recordings, names = recs.map(r => r.name);
+  const here = n => names.includes(n) ? n : (names.includes(_plkOtherCapsule(n)) ? _plkOtherCapsule(n) : null);
+
+  _PLK.tracks.forEach(t => {
+    delete t.problem;
+
+    // Saved before tracks knew their recording: assume the first one
+    if (t.start_file === undefined) {
+      if (typeof t.start !== 'number' || typeof t.end !== 'number') {
+        t.problem = 'No position saved for this track';
+        return;
+      }
+      t.start_file = t.end_file = names[0];
+      t.start_offset = t.start;
+      t.end_offset = t.end;
+      t.files = [names[0]];
+    }
+
+    const missing = t.files.filter(n => !here(n));
+    if (missing.length) {
+      t.problem = `Needs ${missing.join(' + ')} — tick it when opening this session`;
+      return;
+    }
+
+    const files = t.files.map(here);
+    const first = names.indexOf(files[0]);
+    if (files.some((n, i) => names[first + i] !== n)) {
+      t.problem = `Crosses ${files.join(' + ')}, which are no longer next to each other`;
+      return;
+    }
+
+    t.files = files;
+    t.start_file = here(t.start_file);
+    t.end_file = here(t.end_file);
+    const a = recs.find(r => r.name === t.start_file), b = recs.find(r => r.name === t.end_file);
+    if (t.start_offset > a.duration || t.end_offset > b.duration + 0.01) {
+      t.problem = `Runs past the end of ${b.name} — it may belong to another recording`;
+      return;
+    }
+    t.start = a.offset + t.start_offset;
+    t.end = b.offset + t.end_offset;
+  });
+}
+
+/* ── Review ── */
+function plkGoToReview() {
+  if (!_PLK.tracks.length) { showToast('No tracks yet — pluck some first!'); return; }
+  plkPause();
+  const saveTo = _plkSettings().save_to;
+  document.querySelectorAll('input[name="plk-saveto"]').forEach(r => { r.checked = r.value === saveTo; });
+  $('plk-saveto-laptop').textContent = _PLK.dir ? 'Laptop' : 'Downloads';
+  _plkRenderTrackList();
+  showScreen('screen-plucker-review');
+}
+
+const _plkExportedLabel = t => [t.exported && (_PLK.dir ? 'Laptop' : 'Downloaded'), t.drive_file_id && 'Drive'].filter(Boolean).join(' + ');
+
+function _plkRenderTrackList() {
+  const list = $('plk-track-list');
+  list.innerHTML = '';
+  _PLK.tracks.forEach((t, i) => {
+    const done = _plkExportedLabel(t);
     const card = document.createElement('div');
-    card.className = 'plk-track-card';
-    const opts = songs.map(s => `<option value="${esc(s.name)}"${s.name===t.songName?' selected':''}>${esc(s.name)}</option>`).join('');
+    card.className = 'plk-track-card' + (t.problem ? ' has-problem' : '');
     card.innerHTML = `
-      <div class="plk-track-row1">
-        <span class="plk-track-num">${idx + 1}</span>
-        <select class="plk-song-select" id="plk-song-${t.id}">
-          <option value="">-- Song --</option>
-          ${opts}
-        </select>
-        <span class="plk-ver-label">V</span>
-        <input type="number" class="plk-ver-input" id="plk-ver-${t.id}" value="${t.version}" min="1" max="99">
-        <button class="plk-del-btn" onclick="plkDeleteTrack(${t.id})">✕</button>
+      <div class="plk-track-num">${i + 1}</div>
+      <div class="plk-track-info">
+        <div class="plk-track-name">${esc(t.title)} <span style="color:var(--c-text-dim);font-weight:400">V${esc(String(t.version))}${t.extra ? ' · ' + esc(t.extra) : ''}</span></div>
+        <div class="plk-track-meta">${esc(_plkFileName(t))}</div>
+        ${_PLK.recordings.length > 1 && !t.problem ? `<div class="plk-track-meta">From ${esc(t.files.join(' + '))}</div>` : ''}
+        ${t.notes ? `<div class="plk-track-meta" style="color:var(--c-text-dim);margin-top:2px">${esc(t.notes)}</div>` : ''}
+        ${t.problem ? `<div class="plk-track-problem">${esc(t.problem)}</div>` : ''}
       </div>
-      <div class="plk-track-row2">
-        <button class="plk-set-btn" onclick="plkSetStart(${t.id})">Set Start</button>
-        <input class="plk-time-input" id="plk-ts-${t.id}" value="${t.start != null ? t.start.toFixed(1) : ''}" placeholder="0.0" inputmode="decimal">
-        <span class="plk-time-sep">→</span>
-        <input class="plk-time-input" id="plk-te-${t.id}" value="${t.end != null ? t.end.toFixed(1) : ''}" placeholder="0.0" inputmode="decimal">
-        <button class="plk-set-btn" onclick="plkSetEnd(${t.id})">Set End</button>
+      <div class="plk-track-time">${t.problem ? '' : _plkFmtMs(t.end - t.start)}</div>
+      <div class="plk-track-actions">
+        <span class="plk-export-status${done ? ' done' : ''}" id="plk-export-status-${i}"${done ? '' : ' style="display:none"'}>${done ? '𓅥 ' + esc(done) : ''}</span>
+        ${t.problem ? '' : `<button class="plk-btn plk-btn-ghost plk-btn-sm" title="Edit" onclick="plkEditTrack(${i})">𓅦</button>`}
+        <button class="plk-btn plk-btn-danger plk-btn-sm" title="Delete" onclick="plkDeleteTrack(${i})">𓅮</button>
       </div>`;
-    card.querySelector(`#plk-song-${t.id}`).addEventListener('change', e => { t.songName = e.target.value; });
-    card.querySelector(`#plk-ver-${t.id}`).addEventListener('change', e => { t.version = parseInt(e.target.value) || 1; });
-    card.querySelector(`#plk-ts-${t.id}`).addEventListener('change', e => {
-      const v = parseFloat(e.target.value);
-      if (!isNaN(v)) { t.start = v; plkDrawWave(); }
-    });
-    card.querySelector(`#plk-te-${t.id}`).addEventListener('change', e => {
-      const v = parseFloat(e.target.value);
-      if (!isNaN(v)) { t.end = v; plkDrawWave(); }
-    });
     list.appendChild(card);
   });
 }
 
-async function plkExportAll() {
-  if (!_PLK.tracks.length) { showToast('No tracks to export'); return; }
-  const date = $('plk-date-input').value;
-  if (!date) { showToast('Enter a session date first'); return; }
-  const invalid = _PLK.tracks.find(t => !t.songName || t.start == null || t.end == null || t.end <= t.start + 0.5);
-  if (invalid) { showToast('Each track needs a song name and valid start/end times'); return; }
-
-  const saveTo = document.querySelector('input[name="plk-saveto"]:checked')?.value || 'pc';
-  const toDrive = saveTo === 'drive' || saveTo === 'both';
-  const toPc    = saveTo === 'pc'    || saveTo === 'both';
-
-  showLoading('Loading MP3 encoder…');
-  try { await _plkLoadLamejs(); } catch(e) { hideLoading(); showToast('Could not load MP3 encoder'); return; }
-  if (!_PLK._lamejs) { hideLoading(); showToast('MP3 encoder unavailable'); return; }
-
-  let driveFolder = null;
-  if (toDrive) {
-    if (!S.folders?.rehearsals) { hideLoading(); showToast('Not connected to Drive'); return; }
-    showLoading('Creating Drive folder…');
-    try {
-      driveFolder = await Drive.ensureFolder(S.folders.rehearsals, date);
-    } catch(e) {
-      hideLoading();
-      showToast('Could not create Drive folder: ' + (e.message || e));
-      return;
-    }
-  }
-
-  const btn = $('plk-export-btn');
-  btn.disabled = true;
-  let done = 0;
-  for (const t of _PLK.tracks) {
-    showLoading(`Exporting ${done + 1}/${_PLK.tracks.length}: ${t.songName}…`);
-    try {
-      const rendered = await _plkProcessSegment(_PLK.audioBuffer, t.start, t.end);
-      const mp3Bytes = _plkEncodeMp3(rendered, _PLK._lamejs);
-      const blob = new Blob([mp3Bytes], { type: 'audio/mpeg' });
-      const fileName = `${t.songName} - ${t.version} - ${date}.mp3`;
-      if (toPc) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = fileName; a.click();
-        setTimeout(() => URL.revokeObjectURL(url), 8000);
-      }
-      if (toDrive && driveFolder) {
-        await Drive.uploadFile(blob, 'audio/mpeg', fileName, driveFolder);
-      }
-      done++;
-    } catch(e) {
-      hideLoading();
-      btn.disabled = false;
-      showToast(`Failed on track ${done + 1}: ` + (e.message || e));
-      return;
-    }
-  }
-  hideLoading();
-  btn.disabled = false;
-  if (toDrive) { S.sessions = []; invalidateTrackIndex(); }
-  showToast(`✓ ${done} track${done !== 1 ? 's' : ''} exported`);
+function plkEditTrack(idx) {
+  if (_PLK.exporting) return;
+  _PLK.editingIdx = idx;
+  _PLK.startSec = _PLK.tracks[idx].start;
+  _PLK.endSec = _PLK.tracks[idx].end;
+  showScreen('screen-plucker-wave');
+  _plkEnterPhase('form');
+  // Pan the view to show the track
+  const span = _PLK.viewEnd - _PLK.viewStart;
+  _PLK.viewStart = Math.max(0, _PLK.tracks[idx].start - 10);
+  _PLK.viewEnd = Math.min(_PLK.duration, _PLK.viewStart + span);
+  requestAnimationFrame(_plkResizeCanvases);
 }
 
-async function _plkProcessSegment(fullBuffer, start, end) {
-  const sr = fullBuffer.sampleRate;
-  const numCh = fullBuffer.numberOfChannels;
-  const startFrame = Math.round(start * sr);
-  const endFrame   = Math.round(end   * sr);
-  const numFrames  = Math.max(1, endFrame - startFrame);
-  const offCtx = new OfflineAudioContext(numCh, numFrames, sr);
-  const segBuf = offCtx.createBuffer(numCh, numFrames, sr);
-  for (let ch = 0; ch < numCh; ch++) {
-    segBuf.getChannelData(ch).set(fullBuffer.getChannelData(ch).subarray(startFrame, endFrame));
-  }
-  const source = offCtx.createBufferSource();
-  source.buffer = segBuf;
-  const comp = offCtx.createDynamicsCompressor();
-  comp.threshold.value = -18;
-  comp.knee.value = 4;
-  comp.ratio.value = 4;
-  comp.attack.value = 0.003;
-  comp.release.value = 0.25;
-  source.connect(comp);
-  comp.connect(offCtx.destination);
-  source.start(0);
-  const rendered = await offCtx.startRendering();
-  let peak = 0;
-  for (let ch = 0; ch < rendered.numberOfChannels; ch++) {
-    const d = rendered.getChannelData(ch);
-    for (let i = 0; i < d.length; i++) peak = Math.max(peak, Math.abs(d[i]));
-  }
-  if (peak > 0.001) {
-    const gain = 0.9 / peak;
-    for (let ch = 0; ch < rendered.numberOfChannels; ch++) {
-      const d = rendered.getChannelData(ch);
-      for (let i = 0; i < d.length; i++) d[i] *= gain;
-    }
-  }
-  return rendered;
+function plkDeleteTrack(idx) {
+  if (_PLK.exporting) return;
+  _PLK.tracks.splice(idx, 1);
+  _plkSaveSession();
+  _plkRenderTrackList();
+  showToast('𓅮 Track removed');
 }
 
-function _plkEncodeMp3(buffer, lamejs) {
-  const numCh = buffer.numberOfChannels;
-  const sr = buffer.sampleRate;
-  const encoder = new lamejs.Mp3Encoder(numCh, sr, 192);
-  const blockSize = 1152;
-  const left  = buffer.getChannelData(0);
-  const right = numCh > 1 ? buffer.getChannelData(1) : null;
-  const chunks = [];
-  for (let i = 0; i < left.length; i += blockSize) {
-    const L = _plkF32ToI16(left.subarray(i, i + blockSize));
-    const mp3buf = right
-      ? encoder.encodeBuffer(L, _plkF32ToI16(right.subarray(i, i + blockSize)))
-      : encoder.encodeBuffer(L);
-    if (mp3buf.length > 0) chunks.push(new Uint8Array(mp3buf.buffer, mp3buf.byteOffset, mp3buf.byteLength));
+function plkPluckMore() {
+  if (_PLK.exporting) { showToast('Still exporting…'); return; }
+  _PLK.startSec = _PLK.endSec = null;
+  _PLK.editingIdx = -1;
+  showScreen('screen-plucker-wave');
+  _plkEnterPhase('picking-start');
+  requestAnimationFrame(_plkResizeCanvases);
+}
+
+/* ── Rendering a track: compress, normalise, encode ── */
+// The same compressor as the standalone app (pydub's compress_dynamic_range), fed a chunk at a
+// time. Below the threshold the reduction holds rather than decays; that's how pydub behaves.
+function _plkCompressor(numCh, rate, s) {
+  const thresh = Math.pow(10, s.compress_threshold / 20);
+  const attackFrames = s.compress_attack * rate / 1000, releaseFrames = s.compress_release * rate / 1000;
+  const lookFrames = Math.floor(attackFrames), maxPart = 1 - 1 / s.compress_ratio;
+  const ring = new Float64Array(Math.max(1, lookFrames));
+  let ringAt = 0, count = 0, sum = 0, att = 0, gain = 1;
+
+  return channels => {
+    const n = channels[0].length;
+    for (let i = 0; i < n; i++) {
+      const rms = count ? Math.sqrt(Math.max(0, sum) / (count * numCh)) : 0;
+      if (rms > thresh) {
+        const maxAtt = maxPart * 20 * Math.log10(rms / thresh);
+        att = att <= maxAtt ? Math.min(att + maxAtt / attackFrames, maxAtt) : Math.max(att - maxAtt / releaseFrames, 0);
+        gain = Math.pow(10, -att / 20);
+      }
+      let energy = 0;
+      for (let c = 0; c < numCh; c++) {
+        const v = channels[c][i];
+        energy += v * v;
+        channels[c][i] = v * gain;
+      }
+      // Slide the look-back window on: it never includes the frame just processed
+      if (lookFrames > 0) {
+        if (count === lookFrames) sum -= ring[ringAt]; else count++;
+        ring[ringAt] = energy;
+        sum += energy;
+        ringAt = (ringAt + 1) % lookFrames;
+      }
+    }
+  };
+}
+
+// MP3 tops out at 48 kHz, so higher-rate recordings are halved (or quartered) on the way in
+function _plkDownFactor(rate) {
+  if (PLK_MP3_RATES.includes(rate)) return 1;
+  const f = [2, 4].find(f => PLK_MP3_RATES.includes(rate / f));
+  if (!f) throw new Error(`Can't make an MP3 from a ${rate} Hz recording`);
+  return f;
+}
+function _plkDownsample(channels, factor) {
+  if (factor === 1) return channels;
+  return channels.map(d => {
+    const out = new Float32Array(Math.floor(d.length / factor));
+    for (let i = 0; i < out.length; i++) {
+      let v = 0;
+      for (let k = 0; k < factor; k++) v += d[i * factor + k];
+      out[i] = v / factor;
+    }
+    return out;
+  });
+}
+
+// Reads frames from the timeline as float channels (two at most: an MP3 can't hold more)
+async function _plkTimeline() {
+  const wav = _PLK.recordings[0].wav;
+  if (wav) {
+    const numCh = Math.min(wav.channels, 2);
+    return {
+      rate: wav.rate, numCh, totalFrames: Math.floor(_PLK.dataBlob.size / wav.align),
+      async read(from, n) {
+        const buf = await _PLK.dataBlob.slice(from * wav.align, (from + n) * wav.align).arrayBuffer();
+        const frames = Math.floor(buf.byteLength / wav.align), get = _plkSampler(buf, wav), ch = wav.channels;
+        const out = [];
+        for (let c = 0; c < numCh; c++) {
+          const d = new Float32Array(frames);
+          for (let f = 0; f < frames; f++) d[f] = get(f * ch + c);
+          out.push(d);
+        }
+        return out;
+      },
+    };
   }
-  const flush = encoder.flush();
-  if (flush.length > 0) chunks.push(new Uint8Array(flush.buffer, flush.byteOffset, flush.byteLength));
-  const total = chunks.reduce((n, c) => n + c.length, 0);
-  const out = new Uint8Array(total);
-  let off = 0;
-  chunks.forEach(c => { out.set(c, off); off += c.length; });
-  return out;
+  const buffer = await _plkDecoded();
+  const numCh = Math.min(buffer.numberOfChannels, 2);
+  return {
+    rate: buffer.sampleRate, numCh, totalFrames: buffer.length,
+    async read(from, n) {
+      const out = [];
+      for (let c = 0; c < numCh; c++) out.push(buffer.getChannelData(c).slice(from, from + n));
+      return out;
+    },
+  };
+}
+
+// Walks the track through the compressor a chunk at a time, so a long track never has to fit in memory
+async function _plkEachChunk(line, t, s, factor, onChunk) {
+  const CHUNK = 1152 * 256;
+  const from = Math.round(t.start * line.rate);
+  const to = Math.min(Math.round(t.end * line.rate), line.totalFrames);
+  const compress = _plkCompressor(line.numCh, line.rate, s);
+  for (let at = from; at < to; at += CHUNK) {
+    const channels = await line.read(at, Math.min(CHUNK, to - at));
+    if (!channels[0].length) break;
+    compress(channels);
+    onChunk(_plkDownsample(channels, factor), (at - from) / (to - from));
+    await _plkYield();
+  }
 }
 
 function _plkF32ToI16(f32) {
@@ -8683,16 +9998,263 @@ function _plkF32ToI16(f32) {
   return i16;
 }
 
-async function _plkLoadLamejs() {
-  if (_PLK._lamejs) return;
-  if (window.lamejs) { _PLK._lamejs = window.lamejs; return; }
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js';
-    s.onload = () => { _PLK._lamejs = window.lamejs; resolve(); };
-    s.onerror = () => reject(new Error('Could not load lamejs'));
-    document.head.appendChild(s);
+// ID3v2.4 tags, like the ones the standalone app writes
+function _plkId3(t, s) {
+  const enc = new TextEncoder();
+  const synchsafe = n => [(n >> 21) & 127, (n >> 14) & 127, (n >> 7) & 127, n & 127];
+  const frame = (id, body) => [...enc.encode(id), ...synchsafe(body.length), 0, 0, ...body];
+  const text = (id, v) => frame(id, [3, ...enc.encode(String(v))]);
+  const frames = [
+    ...text('TIT2', t.title), ...text('TDRC', t.date), ...text('TRCK', t.version),
+    ...text('TPE1', s.band_name?.trim() || 'Rehearsal'), ...text('TALB', `Rehearsal ${t.date}`),
+  ];
+  if (t.notes) frames.push(...frame('COMM', [3, ...enc.encode('eng'), ...enc.encode('notes'), 0, ...enc.encode(t.notes)]));
+  return new Uint8Array([...enc.encode('ID3'), 4, 0, 0, ...synchsafe(frames.length), ...frames]);
+}
+
+// Trim, compress, normalise and encode one track as an MP3 blob
+async function _plkRenderMp3(t, s, onProgress) {
+  const line = await _plkTimeline();
+  const factor = _plkDownFactor(line.rate);
+
+  // First pass: how loud the compressed track ends up, for normalising
+  let peak = 0;
+  await _plkEachChunk(line, t, s, factor, (channels, frac) => {
+    channels.forEach(d => { for (let i = 0; i < d.length; i++) { const v = Math.abs(d[i]); if (v > peak) peak = v; } });
+    onProgress(frac / 2);
   });
+  const gain = peak > 0 ? Math.pow(10, -s.normalize_headroom / 20) / peak : 1;
+
+  // Second pass: encode
+  const encoder = new _PLK.lamejs.Mp3Encoder(line.numCh, line.rate / factor, parseInt(s.bitrate) || 192);
+  const parts = [_plkId3(t, s)];
+  const keep = b => { if (b.length) parts.push(new Uint8Array(b)); };
+  await _plkEachChunk(line, t, s, factor, (channels, frac) => {
+    channels.forEach(d => { for (let i = 0; i < d.length; i++) d[i] *= gain; });
+    const L = _plkF32ToI16(channels[0]), R = line.numCh > 1 ? _plkF32ToI16(channels[1]) : null;
+    for (let i = 0; i < L.length; i += 1152) {
+      const l = L.subarray(i, i + 1152);
+      keep(R ? encoder.encodeBuffer(l, R.subarray(i, i + 1152)) : encoder.encodeBuffer(l));
+    }
+    onProgress(0.5 + frac / 2);
+  });
+  keep(encoder.flush());
+  return new Blob(parts, { type: 'audio/mpeg' });
+}
+
+async function _plkLoadLamejs() {
+  if (_PLK.lamejs) return;
+  if (!window.lamejs) {
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js';
+      s.onload = resolve;
+      s.onerror = () => reject(new Error('Could not load the MP3 encoder'));
+      document.head.appendChild(s);
+    });
+  }
+  _PLK.lamejs = window.lamejs;
+  if (!_PLK.lamejs) throw new Error('MP3 encoder unavailable');
+}
+
+/* ── Export ── */
+function _plkDownload(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+// Lines up everything Drive needs, asking about new titles and clashes before the long work starts.
+// Returns the folder and the tracks not to upload, or null if Drive can't be used.
+async function _plkPrepareDrive(jobs) {
+  await discoverFolders();
+  if (!S.folders?.rehearsals) throw new Error('Rehearsals folder not found on Drive');
+  await loadSongs(true);
+  const folderId = await Drive.ensureFolder(S.folders.rehearsals, _PLK.date);
+  const existing = await Drive.list(folderId, { filesOnly: true });
+
+  // New titles: song or idea?
+  const kinds = new Map();
+  for (const t of jobs) {
+    const key = t.title.toLowerCase();
+    if (kinds.has(key) || S.songs.some(s => s.name?.toLowerCase() === key)) continue;
+    const song = await _confirmModal(`"${t.title}" is new`, 'Add it to the app as a song or an idea?', { yes: 'Song', no: 'Idea' });
+    kinds.set(key, song ? 'track' : 'egg');
+  }
+
+  // Files that would be replaced. Edited tracks leave their old file behind under its old name.
+  const replacing = new Map(); // track -> Drive files to bin once its upload succeeds
+  jobs.forEach(t => {
+    const name = _plkFileName(t);
+    const old = existing.filter(f => f.name === name || f.id === t.drive_file_id || f.id === t.replaces_drive_id);
+    if (old.length) replacing.set(t, old);
+  });
+  const skip = new Set();
+  if (replacing.size) {
+    const names = [...new Set([...replacing.values()].flat().map(f => f.name))];
+    const replace = await _confirmModal(
+      `${names.length} already on Drive`,
+      `${names.join(', ')}. Replace uploads the new file and bins the old one, so comments on the old file stop showing. Skip leaves Drive as it is.`,
+      { yes: 'Replace', no: 'Skip' });
+    if (!replace) [...replacing.keys()].forEach(t => skip.add(t));
+  }
+  return { folderId, kinds, replacing, skip };
+}
+
+// Keep session.json on Drive up to date (the session screen reads notes from it).
+// Tracks someone else listed stay listed.
+async function _plkSaveDriveSession(folderId) {
+  const files = await Drive.list(folderId, { filesOnly: true, name: 'session.json' });
+  const data = _plkSessionData();
+  if (files[0]) {
+    const remote = await Drive.readJson(files[0].id).catch(() => null);
+    const ours = new Set(_PLK.tracks.map(_plkFileName));
+    (remote?.tracks || []).forEach(t => { if (t?.title && !ours.has(_plkFileName(t))) data.tracks = [...data.tracks, t]; });
+  }
+  await Drive.writeJson(files[0]?.id, data, 'session.json', folderId);
+}
+
+async function plkExportAll() {
+  if (_PLK.exporting) return;
+  const s = _plkSettings();
+  const saveTo = document.querySelector('input[name="plk-saveto"]:checked')?.value || s.save_to;
+  s.save_to = saveTo;
+  _plkStoreSettings();
+  const toLaptop = saveTo !== 'drive', toDrive = saveTo !== 'laptop';
+
+  const usable = _PLK.tracks.filter(t => !t.problem);
+  let force = false;
+  let jobs = usable.filter(t => (toLaptop && !t.exported) || (toDrive && !t.drive_file_id));
+  if (!usable.length) { showToast('No tracks to export'); return; }
+  if (!jobs.length) {
+    if (!await _confirmModal('Already exported', 'Everything here has been saved there already. Export it all again?', { yes: 'Export again', no: 'Cancel' })) return;
+    force = true;
+    jobs = usable;
+  }
+
+  _PLK.exporting = true;
+  ['plk-export-btn', 'plk-pluck-more-btn'].forEach(id => { $(id).disabled = true; });
+  const status = (t, cls, text) => {
+    const el = $(`plk-export-status-${_PLK.tracks.indexOf(t)}`);
+    if (!el) return;
+    el.style.display = 'inline-block';
+    el.className = 'plk-export-status ' + cls;
+    el.textContent = text;
+  };
+
+  let drive = null, failed = 0, skipped = 0, binFailed = 0;
+  try {
+    if (toDrive) {
+      const needDrive = jobs.filter(t => force || !t.drive_file_id);
+      drive = await _plkPrepareDrive(needDrive);
+    }
+    await _plkLoadLamejs();
+
+    for (const t of jobs) {
+      const name = _plkFileName(t);
+      const wantLaptop = toLaptop && (force || !t.exported);
+      const wantDrive = toDrive && (force || !t.drive_file_id) && !drive.skip.has(t);
+      if (!wantLaptop && !wantDrive) { skipped++; status(t, 'done', 'Skipped'); continue; }
+      try {
+        status(t, 'exporting', 'Exporting…');
+        const blob = await _plkRenderMp3(t, s, frac => status(t, 'exporting', `Exporting… ${Math.round(frac * 100)}%`));
+
+        if (wantLaptop) {
+          if (_PLK.dir) await _plkWriteToFolder(name, blob);
+          else _plkDownload(blob, name);
+          t.exported = true;
+        }
+        if (wantDrive) {
+          status(t, 'exporting', 'Uploading…');
+          const id = await Drive.uploadFile(blob, 'audio/mpeg', name, drive.folderId);
+          for (const f of drive.replacing.get(t) || []) {
+            try { await Drive.trashFile(f.id); } catch(e) { binFailed++; console.warn('Could not bin', f.name, e); }
+          }
+          t.drive_file_id = id;
+          delete t.replaces_drive_id;
+
+          const kind = drive.kinds.get(t.title.toLowerCase());
+          if (kind && !S.songs.some(e => e.name?.toLowerCase() === t.title.toLowerCase())) {
+            S.songs.push(kind === 'egg'
+              ? { id: newTrackId(), name: t.title, type: 'egg', sessionDate: _PLK.date, notes: '' }
+              : { id: newTrackId(), name: t.title, type: 'track', sessionDate: _PLK.date });
+          }
+          rememberDuration(id, t.end - t.start, t.title);
+        }
+        await _plkSaveSession();
+        status(t, 'done', '𓅥 ' + _plkExportedLabel(t));
+      } catch(e) {
+        failed++;
+        status(t, 'error', '𓅮 Error');
+        console.error('Export error:', t.title, e);
+        showToast(`${t.title}: ${e.message || e}`, 5000);
+      }
+    }
+
+    if (drive) {
+      await saveSongsJson();
+      await _plkSaveDriveSession(drive.folderId);
+      S.sessions = [];
+      invalidateTrackIndex();
+    }
+    if (failed) showToast(`𓅮 ${failed} track(s) failed. Export again to retry them`, 5000);
+    else if (binFailed) showToast(`Exported, but ${binFailed} old file(s) couldn't be binned from Drive`, 5000);
+    else showToast(skipped === jobs.length ? 'Nothing changed' : '𓅃 Export complete!');
+  } catch(e) {
+    console.error(e);
+    showToast('Export stopped: ' + (e.message || e), 5000);
+  } finally {
+    _PLK.exporting = false;
+    ['plk-export-btn', 'plk-pluck-more-btn'].forEach(id => { $(id).disabled = false; });
+  }
+}
+
+/* ── Settings (kept on this device) ── */
+function plkOpenSettings() {
+  const s = _plkSettings();
+  $('plk-set-band').value = s.band_name || '';
+  $('plk-set-start').value = s.start_preview_secs;
+  $('plk-set-end').value = s.end_preview_secs;
+  $('plk-set-headroom').value = s.normalize_headroom;
+  $('plk-set-thresh').value = s.compress_threshold;
+  $('plk-set-ratio').value = s.compress_ratio;
+  $('plk-set-attack').value = s.compress_attack;
+  $('plk-set-release').value = s.compress_release;
+  $('plk-set-bitrate').value = s.bitrate;
+  _plkSettingsLabels();
+  $('plk-settings-overlay').classList.add('open');
+}
+
+function plkCloseSettings() { $('plk-settings-overlay').classList.remove('open'); }
+
+function _plkSettingsLabels() {
+  $('plk-lbl-start').textContent = $('plk-set-start').value + 's';
+  $('plk-lbl-end').textContent = $('plk-set-end').value + 's';
+  $('plk-lbl-headroom').textContent = parseFloat($('plk-set-headroom').value).toFixed(1) + ' dBFS';
+  $('plk-lbl-thresh').textContent = $('plk-set-thresh').value + ' dB';
+  $('plk-lbl-ratio').textContent = $('plk-set-ratio').value + ':1';
+  $('plk-lbl-attack').textContent = $('plk-set-attack').value + ' ms';
+  $('plk-lbl-release').textContent = $('plk-set-release').value + ' ms';
+}
+
+function plkSaveSettings() {
+  Object.assign(_plkSettings(), {
+    band_name: $('plk-set-band').value.trim(),
+    start_preview_secs: parseInt($('plk-set-start').value),
+    end_preview_secs: parseInt($('plk-set-end').value),
+    normalize_headroom: parseFloat($('plk-set-headroom').value),
+    compress_threshold: parseFloat($('plk-set-thresh').value),
+    compress_ratio: parseFloat($('plk-set-ratio').value),
+    compress_attack: parseFloat($('plk-set-attack').value),
+    compress_release: parseFloat($('plk-set-release').value),
+    bitrate: $('plk-set-bitrate').value,
+  });
+  _plkStoreSettings();
+  plkCloseSettings();
+  showToast('Settings saved');
 }
 </script>
 
