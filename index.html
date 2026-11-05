@@ -4405,7 +4405,9 @@ const SessPlayer = {
   get comments() {
     const t = this.tracks[this.idx];
     if (!t) return [];
-    return _cdAllComments.filter(c => c.fileId === t.fileId ||
+    // Match by file; title+date only for old comments saved without a fileId
+    // (a session can hold several takes of the same song)
+    return _cdAllComments.filter(c => c.fileId ? c.fileId === t.fileId :
       (c.songName?.toLowerCase() === t.title?.toLowerCase() && c.sessionDate === t.sessionDate));
   },
 
