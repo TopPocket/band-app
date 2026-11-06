@@ -1,6 +1,6 @@
 # Guitar / Bass Tuner — Spec (draft)
 
-Status: **proposal, not built**. Open questions are at the bottom.
+Status: **v1 built** (Nov 2026): Tools → Tuner. Standard guitar and bass, chromatic, and custom tunings kept on each device, with a horizontal bar and no reference tone. The rest of this doc is the original proposal.
 
 ## Feasibility
 

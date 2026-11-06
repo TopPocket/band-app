@@ -410,6 +410,31 @@ header[data-page="nav"] .hdr-t-nav { display: flex; }
 .bpm-overlay { position:fixed; inset:0; z-index:350; display:none; background:rgba(26,46,44,0.7); backdrop-filter:blur(4px); flex-direction:column; align-items:center; justify-content:center; gap:20px; }
 .bpm-overlay.open { display:flex; }
 .bpm-back { position:absolute; top:max(10px, env(safe-area-inset-top)); left:10px; background:none; border:none; color:var(--c-text); font-size:24px; line-height:1; padding:10px 14px; cursor:pointer; }
+/* tuner: bar is ±50 cents; green in the middle, further out = more out of tune */
+.tuner-overlay { position:fixed; inset:0; z-index:350; display:none; background:var(--c-bg); flex-direction:column; align-items:center; padding:56px 20px 20px; overflow-y:auto; }
+.tuner-overlay > .bpm-back { position:fixed; }
+.tuner-body { margin:auto 0; display:flex; flex-direction:column; align-items:center; gap:14px; flex-shrink:0; }
+.tuner-body > * { flex-shrink:0; }
+.tuner-overlay.open { display:flex; }
+.tuner-pick { background:var(--c-surface); border:1px solid var(--c-border); border-radius:8px; color:var(--c-text); font-family:var(--f-mono); font-size:12px; padding:8px 14px; cursor:pointer; }
+.tuner-note { font-family:var(--f-display); font-size:84px; font-weight:700; line-height:1; color:var(--c-text); min-height:84px; margin-top:10px; }
+.tuner-hz { font-family:var(--f-mono); font-size:11px; color:var(--c-teal-pale); min-height:14px; }
+.tuner-bar { position:relative; width:min(86vw, 440px); height:38px; border-radius:8px; margin-top:8px; border:1px solid var(--c-border);
+  background:linear-gradient(90deg, rgba(196,80,58,0.45) 0%, rgba(232,169,106,0.3) 30%, rgba(60,170,110,0.5) 46%, rgba(60,170,110,0.5) 54%, rgba(232,169,106,0.3) 70%, rgba(196,80,58,0.45) 100%); }
+.tuner-centre { position:absolute; left:50%; top:-6px; bottom:-6px; width:2px; margin-left:-1px; background:var(--c-text); opacity:0.5; }
+.tuner-marker { position:absolute; left:50%; top:-8px; bottom:-8px; width:8px; margin-left:-4px; border-radius:4px; background:var(--c-accent); box-shadow:0 0 8px rgba(0,0,0,0.3); }
+.tuner-bar[data-zone="near"] .tuner-marker { background:var(--c-amber-lt); }
+.tuner-bar[data-zone="in"] .tuner-marker { background:#3CAA6E; }
+.tuner-bar.idle .tuner-marker { display:none; }
+.tuner-bar-labels { width:min(86vw, 440px); display:flex; justify-content:space-between; font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); }
+.tuner-cents { font-family:var(--f-mono); font-size:14px; color:var(--c-text); min-height:18px; }
+.tuner-strings { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:14px; }
+.tuner-chip { width:44px; height:44px; border-radius:50%; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-teal-pale); font-family:var(--f-mono); font-size:15px; cursor:pointer; }
+.tuner-chip.lit { border-color:var(--c-teal); color:var(--c-text); }
+.tuner-chip.locked { border:2px solid var(--c-amber-lt); }
+.tuner-chip.in-tune { background:#3CAA6E; border-color:#3CAA6E; color:#fff; }
+.tuner-hint { font-family:var(--f-mono); font-size:10px; color:var(--c-border); min-height:12px; }
+.tuner-del { background:none; border:none; color:var(--c-accent); font-family:var(--f-mono); font-size:11px; cursor:pointer; padding:8px; }
 .bpm-display { font-family:var(--f-display); font-size:72px; font-weight:700; color:var(--c-text); min-width:180px; text-align:center; line-height:1; }
 .bpm-sub { font-family:var(--f-mono); font-size:11px; color:var(--c-teal-pale); text-align:center; letter-spacing:0.1em; }
 .bpm-tap-btn { width:120px; height:148px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; background:var(--c-surface2); border:2px solid var(--c-amber); color:var(--c-amber-lt); font-family:var(--f-mono); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; user-select:none; transition:background 0.1s, transform 0.08s; -webkit-tap-highlight-color:transparent; }
@@ -1344,6 +1369,7 @@ body.tab-view #tab-view-close { display:flex; }
         <button class="home-tool" onclick="openBpmTapper('feathers')"><span>♩</span>Tap BPM</button>
         <button class="home-tool" onclick="openImporter()"><span>𓆑</span>Upload tracks</button>
         <button class="home-tool" onclick="openPlucker()"><span>𓅃</span>Pluck songs</button>
+        <button class="home-tool" onclick="openTuner()"><span>𝄢</span>Tuner</button>
       </div>
     </div>
     <button id="theme-toggle-btn" onclick="toggleTheme()" title="Switch to light mode">☀</button>
@@ -2116,6 +2142,7 @@ function _closeTopOverlay() {
     ['doodle-board', 'open', closeDoodleBoard],
     ['plk-settings-overlay', 'open', plkCloseSettings],
     ['hdr-menu', 'open', closeTitleMenu],
+    ['tuner-overlay', 'open', closeTuner],
   ];
   for (const [id, cls, close] of layers) {
     if ($(id)?.classList.contains(cls)) { close(); return true; }
@@ -8043,6 +8070,253 @@ async function deleteBpmTag(tagId, ctx) {
   try { await saveSongsJson(); } catch(e) { console.warn('BPM del:', e); }
 }
 
+/* ══════════════════════════════════════════════════════
+   TUNER  (guitar, bass, chromatic, custom tunings)
+   Mic → AnalyserNode → YIN pitch detection every frame. Nothing is played or recorded.
+   Pick a string to lock onto it; otherwise the nearest string lights up.
+   Custom tunings are kept on this device (ng_tuner_custom).
+══════════════════════════════════════════════════════ */
+// Pitch of a mono buffer by YIN. Downsamples by `step` first (averaging) so a long window
+// for low bass notes stays cheap. Returns { hz, clarity } or null (too quiet / no clear pitch).
+function detectPitch(buf, sampleRate, minHz, maxHz, step = 1) {
+  const n = Math.floor(buf.length / step), sr = sampleRate / step;
+  const x = new Float32Array(n);
+  let rms = 0;
+  for (let i = 0; i < n; i++) {
+    let s = 0; for (let k = 0; k < step; k++) s += buf[i * step + k];
+    x[i] = s / step; rms += x[i] * x[i];
+  }
+  if (Math.sqrt(rms / n) < 0.006) return null;
+  const tauMin = Math.max(2, Math.floor(sr / maxHz)), tauMax = Math.min(Math.ceil(sr / minHz), Math.floor(n / 2));
+  const W = n - tauMax;
+  const d = new Float32Array(tauMax + 2);
+  for (let tau = 1; tau <= tauMax + 1 && tau < n - W + 1; tau++) {
+    let s = 0;
+    for (let i = 0; i < W; i++) { const v = x[i] - x[i + tau]; s += v * v; }
+    d[tau] = s;
+  }
+  // cumulative mean normalised difference
+  let run = 0; d[0] = 1;
+  for (let tau = 1; tau <= tauMax; tau++) { run += d[tau]; d[tau] = run ? d[tau] * tau / run : 1; }
+  let tau = -1;
+  for (let t = tauMin; t <= tauMax; t++) {
+    if (d[t] < 0.15) { while (t + 1 <= tauMax && d[t + 1] < d[t]) t++; tau = t; break; }
+  }
+  if (tau < 0) { // no dip under the threshold: take the best one if it's still fairly clear
+    let best = tauMin; for (let t = tauMin; t <= tauMax; t++) if (d[t] < d[best]) best = t;
+    if (d[best] > 0.35) return null;
+    tau = best;
+  }
+  // parabolic interpolation around the dip
+  let t0 = tau;
+  if (tau > 1 && tau < tauMax) {
+    const a = d[tau - 1], b = d[tau], c = d[tau + 1], den = a + c - 2 * b;
+    if (den) t0 = tau + (a - c) / (2 * den);
+  }
+  return { hz: sr / t0, clarity: 1 - d[tau] };
+}
+
+const TUNER_NOTE_NAMES = ['C','C♯','D','E♭','E','F','F♯','G','A♭','A','B♭','B'];
+const TUNER_PRESETS = [
+  { id: 'guitar', name: 'Guitar · Standard', kind: 'guitar', midis: [40, 45, 50, 55, 59, 64] }, // E2 A2 D3 G3 B3 E4
+  { id: 'bass',   name: 'Bass · Standard',   kind: 'bass',   midis: [28, 33, 38, 43] },         // E1 A1 D2 G2
+  { id: 'chromatic', name: 'Chromatic (any note)', kind: 'chromatic', midis: [] },
+];
+// Window, downsampling and search range per instrument (low bass needs a long window)
+const TUNER_KINDS = {
+  guitar:    { fft: 4096, rate: 24000, lo: 60, hi: 1400 },
+  bass:      { fft: 8192, rate: 12000, lo: 25, hi: 400 },
+  chromatic: { fft: 8192, rate: 24000, lo: 28, hi: 1400 },
+};
+const TU = { stream: null, ctx: null, an: null, buf: null, raf: 0, hist: [], lastHit: 0,
+             shown: 0, lock: -1, inSince: 0, buzzed: false, wake: null, tuning: null };
+
+const _tuMidiHz   = m => 440 * Math.pow(2, (m - 69) / 12);
+const _tuNoteName = m => TUNER_NOTE_NAMES[((m % 12) + 12) % 12];
+const _tuCustom   = () => { try { return JSON.parse(localStorage.getItem('ng_tuner_custom') || '[]'); } catch(e) { return []; } };
+const _tuAll      = () => [...TUNER_PRESETS, ..._tuCustom()];
+
+// "D A D G B E" (low to high) → MIDI notes. Each note takes the octave nearest a fourth above
+// the previous string (the first one: nearest the standard low string), unless an octave is given.
+function _tuParseNotes(text, kind) {
+  const pcOf = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  const out = [];
+  for (const tok of text.trim().split(/[\s,]+/).filter(Boolean)) {
+    const m = tok.match(/^([A-Ga-g])([#♯b♭]?)(\d)?$/);
+    if (!m) return null;
+    const pc = (pcOf[m[1].toUpperCase()] + (/[#♯]/.test(m[2]) ? 1 : /[b♭]/.test(m[2]) ? -1 : 0) + 12) % 12;
+    if (m[3] !== undefined) { out.push(12 * (+m[3] + 1) + pc); continue; }
+    const want = out.length ? out[out.length - 1] + 5 : (kind === 'bass' ? 28 : 40);
+    let best = null;
+    for (let c = want - 6; c <= want + 5; c++) if (((c % 12) + 12) % 12 === pc) best = c;
+    out.push(best);
+  }
+  return out.length ? out : null;
+}
+
+function openTuner() {
+  if ($('snip-panel')?.classList.contains('open')) { showToast('Close the recorder first'); return; }
+  const sel = localStorage.getItem('ng_tuner_sel');
+  TU.tuning = _tuAll().find(t => t.id === sel) || TUNER_PRESETS[0];
+  TU.lock = -1;
+  $('tuner-overlay').classList.add('open');
+  _tuRenderTuning();
+  _tuShowIdle('Starting the mic…');
+  _tuStart();
+}
+
+async function _tuStart() {
+  try {
+    // Same as the recorder: voice-call processing pumps the level and filters the sound
+    TU.stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: {
+      echoCancellation: false, noiseSuppression: false, autoGainControl: false,
+    } });
+    try { await TU.stream.getAudioTracks()[0]?.applyConstraints({ echoCancellation: false, noiseSuppression: false, autoGainControl: false }); } catch(e) {}
+    if (!$('tuner-overlay').classList.contains('open')) { _tuStop(); return; } // closed while asking
+    TU.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (TU.ctx.state === 'suspended') await TU.ctx.resume().catch(() => {});
+    TU.an = TU.ctx.createAnalyser(); // not connected to the speakers, so no feedback
+    TU.ctx.createMediaStreamSource(TU.stream).connect(TU.an);
+    _tuApplyKind();
+    try { TU.wake = await navigator.wakeLock?.request('screen'); } catch(e) {}
+    _tuShowIdle('Play a string');
+    const loop = () => { _tuFrame(); TU.raf = requestAnimationFrame(loop); };
+    TU.raf = requestAnimationFrame(loop);
+  } catch(e) {
+    console.warn('Tuner mic', e);
+    _tuShowIdle(e.name === 'NotAllowedError' ? 'Mic blocked: allow it in the browser settings' : 'Could not start the mic');
+  }
+}
+
+function _tuStop() {
+  cancelAnimationFrame(TU.raf); TU.raf = 0;
+  TU.stream?.getTracks().forEach(t => t.stop()); TU.stream = null;
+  TU.ctx?.close().catch(() => {}); TU.ctx = null; TU.an = null;
+  TU.wake?.release?.().catch(() => {}); TU.wake = null;
+}
+
+function closeTuner() { _tuStop(); $('tuner-overlay').classList.remove('open'); }
+document.addEventListener('visibilitychange', () => { if (document.hidden && TU.stream) closeTuner(); });
+
+function _tuApplyKind() {
+  if (!TU.an) return;
+  TU.an.fftSize = TUNER_KINDS[TU.tuning.kind].fft;
+  TU.buf = new Float32Array(TU.an.fftSize);
+  TU.hist = [];
+}
+
+function _tuRenderTuning() {
+  const t = TU.tuning;
+  $('tuner-pick').textContent = t.name + ' ▾';
+  $('tuner-del').style.display = t.custom ? '' : 'none';
+  $('tuner-strings').innerHTML = t.midis.map((m, i) =>
+    `<button class="tuner-chip${i === TU.lock ? ' locked' : ''}" data-i="${i}" onclick="tunerLock(${i})">${_tuNoteName(m)}</button>`).join('');
+  $('tuner-hint').textContent = t.midis.length ? 'Tap a string to lock onto it' : '';
+}
+
+function tunerLock(i) {
+  TU.lock = TU.lock === i ? -1 : i;
+  TU.hist = [];
+  _tuRenderTuning();
+}
+
+async function tunerPickTuning() {
+  const all = _tuAll(), ADD = '+ Add a custom tuning';
+  const pick = await _simplePickerModal('Tuning', [...all.map(t => t.name), ADD], TU.tuning.name);
+  if (!pick) return;
+  if (pick === ADD) { await _tuAddCustom(); return; }
+  _tuSelect(all.find(t => t.name === pick));
+}
+
+function _tuSelect(t) {
+  if (!t) return;
+  TU.tuning = t; TU.lock = -1;
+  localStorage.setItem('ng_tuner_sel', t.id);
+  _tuApplyKind();
+  _tuRenderTuning();
+}
+
+async function _tuAddCustom() {
+  const inst = await _simplePickerModal('Instrument', ['Guitar', 'Bass']);
+  if (!inst) return;
+  const kind = inst.toLowerCase();
+  const notes = await _promptModal('Strings, lowest first', { placeholder: kind === 'bass' ? 'D A D G' : 'D A D G B E', ok: 'Next',
+    hint: 'Note names with spaces. Add an octave number only if it guesses wrong (e.g. B0).' });
+  if (!notes) return;
+  const midis = _tuParseNotes(notes, kind);
+  if (!midis) { showToast('Couldn’t read those notes. Try e.g. D A D G B E'); return; }
+  const name = await _promptModal('Name this tuning', { value: `${inst} · ${notes.trim().toUpperCase()}`, ok: 'Save' });
+  if (!name) return;
+  const t = { id: 'c_' + Date.now().toString(36), name, kind, midis, custom: true };
+  localStorage.setItem('ng_tuner_custom', JSON.stringify([..._tuCustom(), t]));
+  _tuSelect(t);
+}
+
+async function tunerDeleteTuning() {
+  const t = TU.tuning;
+  if (!t.custom || !await _confirmModal('Delete tuning?', t.name, { yes: 'Delete', no: 'Keep' })) return;
+  localStorage.setItem('ng_tuner_custom', JSON.stringify(_tuCustom().filter(x => x.id !== t.id)));
+  _tuSelect(TUNER_PRESETS.find(p => p.kind === t.kind) || TUNER_PRESETS[0]);
+}
+
+function _tuShowIdle(msg) {
+  $('tuner-note').textContent = '—';
+  $('tuner-hz').textContent = msg || '';
+  $('tuner-cents').textContent = '';
+  $('tuner-bar').classList.add('idle');
+  document.querySelectorAll('.tuner-chip').forEach(c => c.classList.remove('lit', 'in-tune'));
+  TU.inSince = 0; TU.buzzed = false;
+}
+
+function _tuFrame() {
+  if (!TU.an) return;
+  const k = TUNER_KINDS[TU.tuning.kind], sr = TU.ctx.sampleRate;
+  TU.an.getFloatTimeDomainData(TU.buf);
+  const r = detectPitch(TU.buf, sr, k.lo, k.hi, Math.max(1, Math.round(sr / k.rate)));
+  const now = performance.now();
+  if (!r) { if (now - TU.lastHit > 500 && TU.hist.length) { TU.hist = []; _tuShowIdle('Play a string'); } return; }
+  TU.lastHit = now;
+  TU.hist.push(r.hz); if (TU.hist.length > 5) TU.hist.shift();
+  const hz = [...TU.hist].sort((a, b) => a - b)[TU.hist.length >> 1]; // median: ignores one-frame jumps
+
+  const t = TU.tuning;
+  let name, cents, idx = -1;
+  if (t.midis.length) {
+    // Phone mics lose a bass's lowest notes, so a reading can land an octave out: fold it back
+    // when that's much closer to a string than the raw reading
+    const off = (f, m) => 1200 * Math.log2(f / _tuMidiHz(m));
+    const strings = TU.lock >= 0 ? [TU.lock] : t.midis.map((m, i) => i);
+    let best = null;
+    [hz, hz / 2, hz * 2].forEach((f, n) => strings.forEach(i => {
+      const c = off(f, t.midis[i]), score = Math.abs(c) + (n ? 700 : 0); // prefer the raw reading
+      if (!best || score < best.score) best = { score, i, c };
+    }));
+    idx = best.i; cents = best.c; name = _tuNoteName(t.midis[idx]);
+  } else {
+    const midi = 69 + 12 * Math.log2(hz / 440), m = Math.round(midi);
+    cents = 100 * (midi - m); name = _tuNoteName(m) + Math.floor(m / 12 - 1);
+  }
+
+  $('tuner-bar').classList.remove('idle');
+  $('tuner-note').textContent = name;
+  $('tuner-hz').textContent = hz.toFixed(1) + ' Hz';
+  TU.shown += (Math.max(-50, Math.min(50, cents)) - TU.shown) * 0.35; // ease the marker, not the reading
+  const sh = TU.shown, a = Math.abs(cents);
+  $('tuner-marker').style.left = (50 + sh) + '%';
+  $('tuner-bar').dataset.zone = a <= 3 ? 'in' : a <= 15 ? 'near' : 'out';
+  $('tuner-cents').textContent = a <= 3 ? 'in tune' : `${cents > 0 ? '+' : '−'}${Math.round(a)}¢ ${cents > 0 ? 'sharp' : 'flat'}`;
+
+  if (a <= 3) {
+    if (!TU.inSince) TU.inSince = now;
+    if (now - TU.inSince > 500 && !TU.buzzed) { TU.buzzed = true; navigator.vibrate?.(30); }
+  } else { TU.inSince = 0; TU.buzzed = false; }
+  document.querySelectorAll('.tuner-chip').forEach(c => {
+    const on = +c.dataset.i === idx;
+    c.classList.toggle('lit', on);
+    c.classList.toggle('in-tune', on && TU.buzzed);
+  });
+}
+
 /* Trim a blob to [trimStart, trimEnd] and return a WAV blob */
 async function _trimBlobToWav(blob, trimStart, trimEnd) {
   const arr = await blob.arrayBuffer();
@@ -10476,6 +10750,25 @@ function plkSaveSettings() {
   <button class="bpm-metro-btn" id="bpm-metro-btn" onclick="bpmMetroToggle()">♩ Metronome</button>
   <div class="bpm-dots" id="bpm-dots">
     <div class="bpm-dot"></div><div class="bpm-dot"></div><div class="bpm-dot"></div><div class="bpm-dot"></div>
+  </div>
+</div>
+
+<!-- Tuner -->
+<div class="tuner-overlay" id="tuner-overlay">
+  <button class="bpm-back" onclick="closeTuner()" aria-label="Back">←</button>
+  <div class="tuner-body">
+  <button class="tuner-pick" id="tuner-pick" onclick="tunerPickTuning()">Guitar · Standard ▾</button>
+  <div class="tuner-note" id="tuner-note">—</div>
+  <div class="tuner-hz" id="tuner-hz"></div>
+  <div class="tuner-bar idle" id="tuner-bar">
+    <div class="tuner-centre"></div>
+    <div class="tuner-marker" id="tuner-marker"></div>
+  </div>
+  <div class="tuner-bar-labels"><span>♭ flat</span><span>sharp ♯</span></div>
+  <div class="tuner-cents" id="tuner-cents"></div>
+  <div class="tuner-strings" id="tuner-strings"></div>
+  <div class="tuner-hint" id="tuner-hint"></div>
+  <button class="tuner-del" id="tuner-del" onclick="tunerDeleteTuning()">Delete this tuning</button>
   </div>
 </div>
 
