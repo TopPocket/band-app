@@ -1543,7 +1543,9 @@ body.tab-view #tab-view-close { display:flex; }
         <button class="sess-ctrl-btn" onclick="SessPlayer.prev()">⏮&#xFE0E;</button>
         <button class="sess-ctrl-btn play-btn" id="sess-ctrl-play" onclick="SessPlayer.togglePlay()"><svg class="pp-ic" viewBox="0 0 16 16"><path d="M4 2.5v11l9.5-5.5z" fill="currentColor"/></svg></button>
         <button class="sess-ctrl-btn" onclick="SessPlayer.next()">⏭&#xFE0E;</button>
+        <button class="tp-bpm-ctrl-btn" onclick="openBpmTapper('session')">BPM</button>
       </div>
+      <div class="tp-bpm-tags-body" id="sess-bpm-tags-body"></div>
     </div>
     <div class="pl-comments" id="sess-comments-area">
       <div class="tp-comments-section">
@@ -4210,18 +4212,7 @@ function drawWave() {
     }
   });
 
-  // BPM tag markers — slim cyan lines at the bottom third
-  const _curVBpm = _tpCurVersion();
-  const _bpmTags = _curVBpm ? (S.songs.find(s=>s.name===S.tp.songName)?.bpmTags||[]).filter(t=>t.fileId===_curVBpm.fileId) : [];
-  if (dur > 0) _bpmTags.forEach(t => {
-    const tf = t.time / dur;
-    if (tf >= viewStart && tf <= viewEnd) {
-      const tx = ((tf - viewStart) / visFrac) * W;
-      ctx.fillStyle = 'rgba(66,210,210,0.85)';
-      ctx.fillRect(Math.round(tx) - 0.5, H * 0.52, 1, H * 0.48);
-      ctx.beginPath(); ctx.arc(tx, H - 3, 2.5, 0, Math.PI * 2); ctx.fill();
-    }
-  });
+  _drawBpmMarks(ctx, _bpmTagsFor(_bpmTarget('track')), dur, viewStart, visFrac, W, H);
 
   // Playhead
   const px = ((playFrac - viewStart) / visFrac) * W;
@@ -4500,6 +4491,7 @@ const SessPlayer = {
     this.audio.pause();
     if(this.blobUrl){URL.revokeObjectURL(this.blobUrl);this.blobUrl=null;}
     renderSessComments();
+    renderBpmTags('session');
     try {
       showLoading('Fetching…');
       const blob=await Drive.fetchBlob(t.fileId);
@@ -4569,6 +4561,7 @@ function drawSessWave(){
       ctx.beginPath(); ctx.arc(cx,4,3,0,Math.PI*2); ctx.fill();
     }
   });
+  _drawBpmMarks(ctx, _bpmTagsFor(_bpmTarget('session')), dur, viewStart, visFrac, W, H);
   const px=((playFrac-viewStart)/visFrac)*W;
   ctx.fillStyle='#C44536'; ctx.fillRect(px-1,0,2,H);
 }
@@ -7852,7 +7845,7 @@ function openBpmTapper(ctx) {
   _bpm.taps = []; _bpm.lastTap = 0; _bpm.bpm = 0;
   $('bpm-display').textContent = '—';
   $('bpm-sub').textContent = 'tap to the beat';
-  $('bpm-add-btn').style.display = ctx === 'track' ? '' : 'none';
+  $('bpm-add-btn').style.display = ctx === 'track' || ctx === 'session' ? '' : 'none';
   $('bpm-overlay').classList.add('open');
 }
 
@@ -7944,50 +7937,74 @@ function _bpmMetroDraw() {
   m._rafId = requestAnimationFrame(_bpmMetroDraw);
 }
 
+// BPM tags live on the song (bpmTags, by file ID), so the session player and the song page
+// show the same ones. ctx: 'session' or 'track'; default = whichever page is showing.
+const _bpmCtx = () => document.querySelector('.screen.active')?.id === 'screen-session' ? 'session' : 'track';
+function _bpmTarget(ctx = _bpmCtx()) {
+  if (ctx === 'session') {
+    const t = SessPlayer.tracks[SessPlayer.idx];
+    return { ctx, songName: t?.title || '', fileId: t?.fileId, audio: SessPlayer.audio, body: $('sess-bpm-tags-body'), redraw: drawSessWave };
+  }
+  const v = _tpCurVersion();
+  return { ctx, songName: S.tp.songName, fileId: v?.fileId, audio: S.tp.audio, body: $('tp-bpm-tags-body'), redraw: drawWave };
+}
+const _bpmSong = name => S.songs.find(s => s.name.toLowerCase() === (name || '').toLowerCase());
+const _bpmTagsFor = tg => tg.fileId ? (_bpmSong(tg.songName)?.bpmTags || []).filter(t => t.fileId === tg.fileId) : [];
+
+// Slim cyan lines in the bottom half of a waveform where BPM tags are
+function _drawBpmMarks(ctx, tags, dur, viewStart, visFrac, W, H) {
+  if (!(dur > 0)) return;
+  tags.forEach(t => {
+    const tf = t.time / dur;
+    if (tf >= viewStart && tf <= viewStart + visFrac) {
+      const tx = ((tf - viewStart) / visFrac) * W;
+      ctx.fillStyle = 'rgba(66,210,210,0.85)';
+      ctx.fillRect(Math.round(tx) - 0.5, H * 0.52, 1, H * 0.48);
+      ctx.beginPath(); ctx.arc(tx, H - 3, 2.5, 0, Math.PI * 2); ctx.fill();
+    }
+  });
+}
+
 async function bpmAddToTrack() {
   const val = parseInt($('bpm-display').textContent);
   if (!val || isNaN(val)) { showToast('Tap a BPM first'); return; }
-  const v = _tpCurVersion();
-  if (!v) { showToast('No version selected'); return; }
-  const time = S.tp.audio.currentTime || 0;
-  const idx = S.songs.findIndex(s => s.name === S.tp.songName);
-  if (idx < 0) return;
-  if (!S.songs[idx].bpmTags) S.songs[idx].bpmTags = [];
-  S.songs[idx].bpmTags.push({ id: 'bpm_' + Date.now().toString(36), fileId: v.fileId, bpm: val, time });
-  try { await saveSongsJson(); showToast(`${val} BPM tagged`); } catch(e) { showToast('Save failed: ' + _errMsg(e)); }
+  const tg = _bpmTarget(_bpm.ctx);
+  if (!tg.fileId) { showToast('No recording selected'); return; }
+  const song = _bpmSong(tg.songName);
+  if (!song) { showToast(`"${tg.songName}" isn't a song or idea yet`); return; }
+  if (!song.bpmTags) song.bpmTags = [];
+  song.bpmTags.push({ id: 'bpm_' + Date.now().toString(36), fileId: tg.fileId, bpm: val, time: tg.audio.currentTime || 0 });
   closeBpmTapper();
-  renderBpmTags();
-  drawWave();
+  renderBpmTags(tg.ctx); tg.redraw();
+  try { await saveSongsJson(); showToast(`${val} BPM tagged`); } catch(e) { showToast('Save failed: ' + _errMsg(e)); }
 }
 
-function renderBpmTags() {
-  const body = $('tp-bpm-tags-body');
+function renderBpmTags(ctx) {
+  const tg = _bpmTarget(ctx);
+  const body = tg.body;
   if (!body) return;
-  const v = _tpCurVersion();
-  if (!v) { body.innerHTML = ''; return; }
-  const songEntry = S.songs.find(s => s.name === S.tp.songName);
-  const tags = (songEntry?.bpmTags || []).filter(t => t.fileId === v.fileId);
+  const tags = _bpmTagsFor(tg);
   body.innerHTML = '';
   if (!tags.length) return;
   tags.forEach(t => {
     const row = document.createElement('div');
     row.className = 'tp-bpm-tag-row';
     row.id = `bpm-row-${t.id}`;
-    const timeLabel = S.tp.audio?.duration > 0 ? fmt(t.time) : '';
+    const timeLabel = tg.audio?.duration > 0 ? fmt(t.time) : '';
     row.innerHTML = `
       <div class="tp-bpm-tag-item">
         <span class="tp-bpm-tag-note">♩</span> ${t.bpm} bpm
       </div>
       <span class="tp-bpm-tag-time">${timeLabel}</span>
-      <span class="tp-bpm-tag-del" onclick="event.stopPropagation();deleteBpmTag('${t.id}')">✕</span>
+      <span class="tp-bpm-tag-del" onclick="event.stopPropagation();deleteBpmTag('${t.id}','${tg.ctx}')">✕</span>
       <div class="tp-bpm-del-reveal">𓅮</div>`;
-    row.onclick = () => tpBpmSeek(t.id);
-    _attachBpmSwipe(row, t.id);
+    row.onclick = () => { tg.audio.currentTime = t.time; };
+    _attachBpmSwipe(row, t.id, tg.ctx);
     body.appendChild(row);
   });
 }
 
-function _attachBpmSwipe(row, tagId) {
+function _attachBpmSwipe(row, tagId, ctx) {
   let sx = null, sy = null, sdx = 0, slocked = null;
   const reveal = row.querySelector('.tp-bpm-del-reveal');
   row.addEventListener('touchstart', e => {
@@ -8009,7 +8026,7 @@ function _attachBpmSwipe(row, tagId) {
     const committed = slocked === 'h' && Math.abs(sdx) > window.innerWidth * 0.65;
     if (committed) {
       row.querySelectorAll(':not(.tp-bpm-del-reveal)').forEach(el => { if (el.parentElement === row) el.style.transition = 'transform 0.2s ease-out'; el.style.transform = `translateX(-${window.innerWidth}px)`; });
-      setTimeout(() => deleteBpmTag(tagId), 220);
+      setTimeout(() => deleteBpmTag(tagId, ctx), 220);
     } else {
       row.querySelectorAll(':not(.tp-bpm-del-reveal)').forEach(el => { if (el.parentElement === row) el.style.transform = ''; });
       if (reveal) reveal.style.opacity = 0;
@@ -8018,18 +8035,12 @@ function _attachBpmSwipe(row, tagId) {
   });
 }
 
-function tpBpmSeek(tagId) {
-  const songEntry = S.songs.find(s => s.name === S.tp.songName);
-  const tag = songEntry?.bpmTags?.find(t => t.id === tagId);
-  if (tag && S.tp.audio) S.tp.audio.currentTime = tag.time;
-}
-
-async function deleteBpmTag(tagId) {
-  const idx = S.songs.findIndex(s => s.name === S.tp.songName);
-  if (idx < 0) return;
-  S.songs[idx].bpmTags = (S.songs[idx].bpmTags || []).filter(t => t.id !== tagId);
+async function deleteBpmTag(tagId, ctx) {
+  const tg = _bpmTarget(ctx), song = _bpmSong(tg.songName);
+  if (!song) return;
+  song.bpmTags = (song.bpmTags || []).filter(t => t.id !== tagId);
+  renderBpmTags(tg.ctx); tg.redraw();
   try { await saveSongsJson(); } catch(e) { console.warn('BPM del:', e); }
-  renderBpmTags(); drawWave();
 }
 
 /* Trim a blob to [trimStart, trimEnd] and return a WAV blob */
