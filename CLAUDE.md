@@ -2,6 +2,9 @@
 
 A living log of how this codebase works and the practices that have worked well. **Update it when you learn something non-obvious.**
 
+## First thing, every session: the plan and the specs
+**Read [docs/PLAN.md](docs/PLAN.md) before anything else.** Patrick dips in and out and talks in rambles. Anything he says about what he wants, likes, dislikes or decides must be written down **before** building: decisions and open questions go in `PLAN.md`, feature visions in `docs/<FEATURE>_SPEC.md` (keep his raw words in the spec too). A whole evening of dictation about the doodle board was lost because it was never written to the repo. Don't let that happen again. Update `PLAN.md`'s "Now" section when work starts or finishes.
+
 ## Shape of the project
 - **Everything is in `index.html`** (about 9k lines: CSS, then HTML screens, then one big `<script>`). There's no build step, no bundler, no npm deps and no tests. Deployed as a static page.
 - Data lives in **Google Drive**. Shared JSON goes in the `_meta` folder (`songs.json`, `snippets.json`, `tabs.json`, `comments.json`, `structures.json` (legacy, read-only now), `feather_images.json`, `dev-notes.json`, `pins.json`).
@@ -20,7 +23,7 @@ A living log of how this codebase works and the practices that have worked well.
 - **Recordings** are mp3s in the dated session folders. `parseRecordingName()` reads `Title - 2 - 2025-03-01[ - extra].mp3` (also `V2`). **Never split filenames on every "-"**: it chops the date and breaks titles with hyphens. `_versionsFor(entry, name)` = index entries for that name, plus an idea's legacy `eggFileId`.
 - **Lengths** are `song.durations[fileId]`. They're only ever set by decoding that exact file (`analyseRecording` → `rememberDuration`). The old `versionDurations` field was polluted and is ignored.
 - **Comments:** there's one shared list, `_cdAllComments`. `S.tp.comments` and `SessPlayer.comments` are getters that filter it. Don't keep separate copies again.
-- **Structure:** the doodle board (`song.doodle`) is the only structure tool. Old `structures.json` entries only seed a song's doodle the first time (`_legacyStructureBars`).
+- **Structure:** the doodle board (`song.doodle`) is the only structure tool. Every dot has a permanent id in `doodle.barIds` (same order as `bars`; both are in `_ATOMIC_KEYS` so a merge can't pull them out of step). Attachments point at `barId`, **never a position**. Deleting a dot makes its attachments float, never deletes them. `barIdx` on pins is still written for older app copies but isn't trusted. The redesign plan is in `docs/DOODLE_SPEC.md`. Old `structures.json` entries only seed a song's doodle the first time (`_legacyStructureBars`).
 - Lyric annotations store the `text` they cover, and `_anchorAnnotations` re-finds it after the lyrics are edited.
 
 ## Working methodology

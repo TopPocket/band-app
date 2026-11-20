@@ -2380,7 +2380,7 @@ const BlobCache = {
    base = the copy we last loaded/saved, local = ours now, remote = what's on Drive now.
    Whatever we changed since base is applied on top of remote, so edits made by other
    people in the meantime survive. Lists of objects with an id merge item by item. */
-const _ATOMIC_KEYS = new Set(['bars', 'customTiles']); // ordered lists: last writer wins
+const _ATOMIC_KEYS = new Set(['bars', 'barIds', 'customTiles']); // ordered lists: last writer wins
 const _keyOf = x => (x && typeof x === 'object' && !Array.isArray(x)) ? (x.id ?? x.name ?? null) : null;
 const _isObj = x => !!x && typeof x === 'object' && !Array.isArray(x);
 const _clone = x => x === undefined ? undefined : JSON.parse(JSON.stringify(x));
@@ -5430,11 +5430,39 @@ const STRUCT_NAMES = { I:'Intro', V:'Verse', C:'Chorus', B:'Bridge', O:'Outro', 
 const CUSTOM_TILE_COLORS = ['#E878A0', '#78C8E8', '#98D040'];
 
 const DB = {
-  songName: null, bars: [], locked: false, cursor: 0, customTiles: [], pins: [],
+  songName: null, bars: [], barIds: [], locked: false, cursor: 0, customTiles: [], pins: [],
   _dotMenuBarIdx: -1, _syncInterval: null,
   _anchoringPinId: null, _noteEditPinId: null, _noteTargetBarIdx: null,
   _awaitingNewTabBarIdx: null, _awaitingNewSnipBarIdx: null,
 };
+
+/* Each dot has a permanent id (song.doodle.barIds, same order as bars). Attachments point at
+   the id, not the position, so adding, deleting or reordering dots never moves them onto the
+   wrong dot. A pin whose dot is gone (or barId null) floats until it's re-anchored. barIdx is
+   still written so older copies of the app show pins roughly in place. */
+function _dbNewBarId() { return 'b' + Date.now().toString(36).slice(-5) + Math.random().toString(36).slice(2, 6); }
+// barIds lined up with bars: fills gaps, drops extras and duplicates (old data, or an old app that changed bars alone)
+function _dbFitIds(bars, ids) {
+  const out = Array.isArray(ids) ? ids.slice(0, bars.length) : [];
+  const seen = new Set();
+  for (let i = 0; i < bars.length; i++) {
+    if (!out[i] || seen.has(out[i])) out[i] = _dbNewBarId();
+    seen.add(out[i]);
+  }
+  return out;
+}
+// Old pins only have barIdx: give them the id of the dot at that position
+function _dbMigratePins(pins, barIds) {
+  return pins.map(p => {
+    const q = { ...p };
+    if (!('barId' in q)) q.barId = (q.barIdx != null && q.barIdx >= 0 && q.barIdx < barIds.length) ? barIds[q.barIdx] : null;
+    return q;
+  });
+}
+function _dbPinDot(pin) { return pin.barId ? DB.barIds.indexOf(pin.barId) : -1; } // -1 = floating
+function _dbAnchorAt(idx) {
+  return (idx != null && idx >= 0 && idx < DB.barIds.length) ? { barId: DB.barIds[idx], barIdx: idx } : { barId: null, barIdx: null };
+}
 
 function dbGetTileColor(type) {
   const upper = type.toUpperCase();
@@ -5546,6 +5574,8 @@ async function openDoodleBoard() {
     const legacy = _legacyStructureBars(song);
     if (legacy) DB.bars = [...legacy];
   }
+  DB.barIds      = _dbFitIds(DB.bars, d.barIds);
+  DB.pins        = _dbMigratePins(DB.pins, DB.barIds);
   DB.cursor      = DB.bars.length;
   DB._dotMenuBarIdx = -1; DB._anchoringPinId = null;
   $('db-title').textContent = S.tp.songName;
@@ -5562,7 +5592,7 @@ async function openDoodleBoard() {
 function closeDoodleBoard() {
   // Bars typed but never locked used to be thrown away on close
   const song = S.songs?.find(s => s.name === DB.songName);
-  if (song && !_same(song.doodle?.bars || [], DB.bars)) _dbPersist();
+  if (song && (!_same(song.doodle?.bars || [], DB.bars) || !_same(song.doodle?.barIds || [], DB.barIds))) _dbPersist();
   dbCloseDotMenu(); dbClosePinDisplay(); dbClosePinMenu(); dbCancelAnchorMode();
   $('db-note-modal').classList.remove('open');
   $('db-pick-sheet').classList.remove('open');
@@ -5749,6 +5779,7 @@ function _dbScrollToCursor() {
 
 function dbPressKey(type, half) {
   DB.bars.splice(DB.cursor, 0, half ? type.toLowerCase() : type);
+  DB.barIds.splice(DB.cursor, 0, _dbNewBarId());
   DB.cursor++;
   dbRenderSpine();
   _dbScrollToCursor();
@@ -5757,25 +5788,20 @@ function dbPressKey(type, half) {
 function dbDeleteBar() {
   if (!DB.cursor) return;
   DB.bars.splice(--DB.cursor, 1);
+  DB.barIds.splice(DB.cursor, 1); // its pins float
   dbRenderSpine();
   _dbScrollToCursor();
 }
 
 function dbClear() {
-  if (DB.bars.length && !confirm('Clear all bars?')) return;
-  DB.bars = []; DB.cursor = 0;
+  if (DB.bars.length && !confirm('Clear all bars? Anything pinned to them is kept, floating.')) return;
+  DB.bars = []; DB.barIds = []; DB.cursor = 0;
   dbRenderSpine();
 }
 
 async function dbSaveAndLock() {
   if (!DB.bars.length) { showToast('Add some bars first'); return; }
-  // Warn if any pins reference dots that no longer exist
-  const orphaned = DB.pins.filter(p => p.barIdx != null && p.barIdx >= DB.bars.length);
-  if (orphaned.length) {
-    const n = orphaned.length;
-    if (!confirm(`${n} pin${n > 1 ? 's' : ''} will be unanchored because their dots were removed. Continue?`)) return;
-    orphaned.forEach(p => { p.barIdx = null; });
-  }
+  // Pins whose dots were deleted just float; nothing to confirm
   DB.locked = true;
   dbUpdateLockState();
   await _dbPersist();
@@ -5795,6 +5821,8 @@ async function _dbPersist() {
   if (!song) return;
   if (!song.doodle) song.doodle = {};
   song.doodle.bars        = [...DB.bars];
+  song.doodle.barIds      = [...DB.barIds];
+  DB.pins.forEach(p => { const i = _dbPinDot(p); p.barIdx = i >= 0 ? i : null; });
   song.doodle.locked      = DB.locked;
   song.doodle.customTiles = [...DB.customTiles];
   song.doodle.pins        = DB.pins.map(p => ({...p}));
@@ -5889,7 +5917,7 @@ async function dbDotMenuTab() {
 
 function dbPickItem(type, itemId, label, barIdx) {
   $('db-pick-sheet').classList.remove('open');
-  const pin = { id: 'pin_' + Date.now().toString(36), type, barIdx };
+  const pin = { id: 'pin_' + Date.now().toString(36), type, ..._dbAnchorAt(barIdx) };
   if (type === 'snip') { pin.snippetId = itemId; pin.snippetTitle = label; }
   else if (type === 'tab') { pin.tabId = itemId; pin.tabTitle = label; }
   DB.pins.push(pin);
@@ -5905,7 +5933,7 @@ function dbSubmitNote() {
     const pin = DB.pins.find(p => p.id === DB._noteEditPinId);
     if (pin) pin.text = text;
   } else {
-    DB.pins.push({ id: 'pin_' + Date.now().toString(36), type: 'note', barIdx: DB._noteTargetBarIdx, text });
+    DB.pins.push({ id: 'pin_' + Date.now().toString(36), type: 'note', ..._dbAnchorAt(DB._noteTargetBarIdx), text });
   }
   DB._noteEditPinId = null;
   dbRenderPins();
@@ -5982,7 +6010,8 @@ function dbRenderPins() {
   // Group pins by bar index, compute each pin's ideal x centred on its dot
   const byBar = {};
   DB.pins.forEach(pin => {
-    const k = pin.barIdx != null ? pin.barIdx : '__free__';
+    const di = _dbPinDot(pin);
+    const k = di >= 0 ? di : '__free__';
     (byBar[k] = byBar[k] || []).push(pin);
   });
 
@@ -6013,7 +6042,7 @@ function dbRenderPins() {
   const pinCy = 22;
   allPins.forEach(({ pin, cx, dot }) => {
     const el = document.createElement('div');
-    el.className = 'db-pin' + (pin.barIdx == null ? ' unanchored' : '');
+    el.className = 'db-pin' + (_dbPinDot(pin) < 0 ? ' unanchored' : '');
     el.dataset.pinId = pin.id;
     el.style.left = (cx - PIN_R) + 'px';
     el.style.top  = (pinCy - PIN_R) + 'px';
@@ -6094,7 +6123,7 @@ function dbShowPinMenu(pin, el) {
   };
 
   if (pin.type === 'note') addBtn('Edit note', '', () => dbEditNote(pin.id));
-  if (pin.barIdx == null)  addBtn('Anchor to dot', '', () => dbStartAnchorMode(pin.id));
+  addBtn(_dbPinDot(pin) < 0 ? 'Anchor to dot' : 'Move to dot', '', () => dbStartAnchorMode(pin.id));
   addBtn(pin.type === 'snip' ? 'Remove from board' : 'Delete', 'danger', () => dbDeletePin(pin.id));
   addBtn('Cancel', 'muted', () => {});
 
@@ -6116,7 +6145,7 @@ function dbEditNote(pinId) {
   const pin = DB.pins.find(p => p.id === pinId);
   if (!pin) return;
   DB._noteEditPinId = pinId;
-  DB._noteTargetBarIdx = pin.barIdx;
+  DB._noteTargetBarIdx = _dbPinDot(pin);
   $('db-note-hdr-title').textContent = 'Edit Note';
   $('db-note-textarea').value = pin.text || '';
   $('db-note-modal').classList.add('open');
@@ -6146,7 +6175,7 @@ function dbAnchorPinToDot(dotIdx) {
   if (!confirm('Anchor pin to this dot?')) return;
   const pin = DB.pins.find(p => p.id === pinId);
   if (!pin) return;
-  pin.barIdx = dotIdx;
+  Object.assign(pin, _dbAnchorAt(dotIdx));
   dbRenderPins();
   _dbPersist();
   showToast('Anchored');
