@@ -462,6 +462,16 @@ header[data-page="nav"] .hdr-t-nav { display: flex; }
 }
 .tp-ctrl-btn:hover { background: rgba(255,255,255,0.06); }
 .tp-ctrl-btn.play-btn { flex: 2; }
+/* Structure tab: one-line player [progress] [prev] [play] [next], no waveform */
+.tp-mini-prog { display: none; position: relative; flex: 3; align-self: stretch; margin: 6px 4px; border-radius: 6px; background: var(--c-surface2); border: 1px solid var(--c-border); overflow: hidden; cursor: pointer; touch-action: none; }
+#tp-mini-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--c-teal); opacity: 0.45; }
+#tp-mini-time { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-family: var(--f-mono); font-size: 10px; color: var(--c-text); pointer-events: none; }
+#screen-track.tp-compact .tp-waveform-wrap,
+#screen-track.tp-compact .pl-comment-btn,
+#screen-track.tp-compact .tp-bpm-ctrl-btn,
+#screen-track.tp-compact #tp-bpm-tags-body { display: none; }
+#screen-track.tp-compact .tp-mini-prog { display: block; }
+#screen-track.tp-compact .tp-ctrl-btn.play-btn { flex: 1; }
 .tp-ctrl-btn.comment-btn { flex: 2; font-size: 11px; color: var(--c-teal-pale); font-family: var(--f-mono); padding: 10px 4px; white-space: nowrap; }
 .tp-ctrl-skip { flex: 0.7 !important; font-size: 14px; padding: 10px 2px !important; }
 .tp-ctrl-btn.recording   { background: rgba(196,69,54,0.2); border-color: var(--c-accent); color: var(--c-accent); }
@@ -983,6 +993,13 @@ body.tab-view #tab-view-close { display:flex; }
   border: 1px solid var(--c-border); background: var(--c-bg); color: var(--c-teal-pale); cursor: pointer;
 }
 .db-cursor { height: 2px; background: var(--c-text); margin: 2px 0 2px 26px; border-radius: 1px; animation: se-blink 1s step-end infinite; }
+#db-mini { flex-shrink: 0; display: flex; gap: 2px; touch-action: none; padding: 6px 10px 4px; border-top: 1px solid var(--c-border); cursor: pointer; }
+#db-mini:empty { display: none; }
+.dbm-sec { display: flex; flex-direction: column; min-width: 0; }
+.dbm-blocks { display: flex; align-items: flex-end; gap: 1px; height: 24px; }
+.dbm-b { flex: 1 1 0; min-width: 0; border-radius: 1px; opacity: 0.45; transition: opacity 0.15s; }
+.dbm-b.vis { opacity: 1; }
+.dbm-lbl { font-family: var(--f-mono); font-size: 8px; color: var(--c-teal-pale); padding-top: 2px; white-space: nowrap; overflow: hidden; }
 #db-bottom { flex-shrink: 0; border-top: 1px solid var(--c-border); padding: 0 10px; }
 #tp-tabcontent-structure:not(.db-editing) #db-keyboard { display: none; }
 #db-bar { display: flex; align-items: center; gap: 6px; padding: 6px 0; }
@@ -1344,6 +1361,7 @@ body.tab-view #tab-view-close { display:flex; }
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-structure">
             <div id="db-scroll"><div id="db-rows"></div></div>
+            <div id="db-mini"></div>
             <div id="db-bottom">
               <div id="db-keyboard"></div>
               <div id="db-bar">
@@ -1378,6 +1396,7 @@ body.tab-view #tab-view-close { display:flex; }
       </div>
       <div class="tp-controls">
         <button class="tp-ctrl-btn comment-btn pl-comment-btn" id="tp-ctrl-comment">𓅦 Comment</button>
+        <div class="tp-mini-prog" id="tp-mini-prog"><div id="tp-mini-fill"></div><span id="tp-mini-time">0:00</span></div>
         <button class="tp-ctrl-btn tp-ctrl-skip" onclick="tpPrevVersion()" title="Previous version">⏮&#xFE0E;</button>
         <button class="tp-ctrl-btn play-btn" id="tp-ctrl-play" onclick="tpTogglePlay()"><svg class="pp-ic" viewBox="0 0 16 16"><path d="M4 2.5v11l9.5-5.5z" fill="currentColor"/></svg></button>
         <button class="tp-ctrl-btn tp-ctrl-skip" onclick="tpNextVersion()" title="Next version">⏭&#xFE0E;</button>
@@ -3037,7 +3056,7 @@ Object.keys(PL.cfg).forEach(id => {
   const panel = $('tp-tab-panel');
   let _tsX = null, _tsY = null, _tsDir = null;
   panel.addEventListener('touchstart', e => {
-    if (e.touches.length !== 1) return;
+    if (e.touches.length !== 1 || e.target.closest('#db-mini, #db-keyboard')) { _tsX = null; return; }
     _tsX = e.touches[0].clientX; _tsY = e.touches[0].clientY; _tsDir = null;
   }, { passive: true });
   panel.addEventListener('touchmove', e => {
@@ -3812,6 +3831,8 @@ function tpSwitchTab(tab) {
   if (_lyricsScrollOn && tab !== 'lyrics') tpLyricsScrollToggle();
   if (tab !== 'structure') { if (DB.editing) dbDoneEditing(); dbCancelAnchorMode(); _dbCloseEnergyPick(); }
   S.tp.activeTab = tab;
+  $('screen-track').classList.toggle('tp-compact', tab === 'structure');
+  if (tab === 'structure') _tpMiniProgress();
   document.querySelectorAll('.tp-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tp-tabcontent').forEach(d => d.classList.toggle('active', d.id === `tp-tabcontent-${tab}`));
   if (tab === 'structure') renderSongStructure();
@@ -4022,10 +4043,32 @@ function drawWave() {
   ctx.fillRect(px-1, 0, 2, H);
 }
 
+// Structure tab's one-line player: progress fill + time, tap/drag to seek
+function _tpMiniProgress() {
+  const a = S.tp.audio, fill = $('tp-mini-fill');
+  if (!fill || !$('screen-track').classList.contains('tp-compact')) return;
+  const d = isFinite(a.duration) ? a.duration : 0;
+  fill.style.width = d ? (100 * a.currentTime / d) + '%' : '0';
+  $('tp-mini-time').textContent = fmt(a.currentTime || 0) + (d ? ' / ' + fmt(d) : '');
+}
+['timeupdate', 'seeked', 'loadedmetadata', 'emptied'].forEach(ev => S.tp.audio.addEventListener(ev, _tpMiniProgress));
+(() => {
+  const bar = $('tp-mini-prog');
+  const seek = e => {
+    const a = S.tp.audio, r = bar.getBoundingClientRect();
+    if (!isFinite(a.duration) || !a.duration) return;
+    a.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * a.duration;
+    _tpMiniProgress(); drawWave();
+  };
+  bar.addEventListener('pointerdown', e => { bar.setPointerCapture(e.pointerId); seek(e); });
+  bar.addEventListener('pointermove', e => { if (bar.hasPointerCapture(e.pointerId)) seek(e); });
+})();
+
 function startWaveRaf() {
   if (S.tp.rafId) return;
   const loop = () => {
     drawWave();
+    _tpMiniProgress();
     if (!S.tp.audio.paused) S.tp.rafId = requestAnimationFrame(loop);
     else S.tp.rafId = null;
   };
@@ -5266,6 +5309,7 @@ function dbRender() {
                                   : 'No structure yet. Tap ✎ Edit structure to build one.';
     root.appendChild(hint);
     if (DB.editing) root.appendChild(_dbCursorEl());
+    $('db-mini').innerHTML = '';
     dbRenderBar();
     return;
   }
@@ -5284,8 +5328,59 @@ function dbRender() {
   });
   if (DB.editing && DB.cursor >= DB.bars.length) frag.appendChild(_dbCursorEl());
   root.appendChild(frag);
+  dbRenderMini(sections, labels, prof);
   dbRenderBar();
 }
+
+/* Mini strip under the board: one block per bar, height = energy, colour = section,
+   labels underneath. Tap = scroll the board there; blocks on screen are highlighted. */
+function dbRenderMini(sections, labels, prof) {
+  const box = $('db-mini');
+  if (!box) return;
+  let gi = 0, html = '';
+  sections.forEach((sec, si) => {
+    let blocks = '', w = 0;
+    for (let b = 0; b < sec.bars; b++, gi++) {
+      const half = _dbIsHalf(DB.bars[gi]), e = prof[gi];
+      const v = e ? (e[0] + e[1]) / 2 : 0;
+      const h = e ? 4 + v * 4 : 5;
+      w += half ? 0.5 : 1;
+      blocks += `<i class="dbm-b" data-i="${gi}" style="flex-grow:${half ? 0.5 : 1};height:${h}px;background:${dbGetTileColor(DB.bars[gi])}"></i>`;
+    }
+    html += `<div class="dbm-sec" style="flex:${w} 1 0"><div class="dbm-blocks">${blocks}</div><div class="dbm-lbl">${esc(labels[si])}</div></div>`;
+  });
+  box.innerHTML = html;
+  _dbMiniVisible();
+}
+
+function _dbMiniVisible() {
+  const sc = $('db-scroll'), box = $('db-mini');
+  if (!sc || !box) return;
+  const top = sc.getBoundingClientRect().top, bot = top + sc.clientHeight;
+  const vis = new Set();
+  sc.querySelectorAll('.db-row').forEach(r => {
+    const rr = r.getBoundingClientRect();
+    if (rr.bottom > top && rr.top < bot) vis.add(r.dataset.i);
+  });
+  box.querySelectorAll('.dbm-b').forEach(b => b.classList.toggle('vis', vis.has(b.dataset.i)));
+}
+
+(() => {
+  let raf = 0;
+  $('db-scroll')?.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; _dbMiniVisible(); }); }, { passive: true });
+  // tap (or slide along) the strip to jump the board to that bar
+  const box = $('db-mini');
+  const jump = e => {
+    const blocks = [...box.querySelectorAll('.dbm-b')];
+    if (!blocks.length) return;
+    let best = null, bd = Infinity;
+    blocks.forEach(b => { const r = b.getBoundingClientRect(), d = Math.abs(e.clientX - (r.left + r.width / 2)); if (d < bd) { bd = d; best = b; } });
+    const row = $('db-rows')?.querySelector(`.db-row[data-i="${best.dataset.i}"]`);
+    if (row) { const sc = $('db-scroll'); sc.scrollTop += row.getBoundingClientRect().top - sc.getBoundingClientRect().top - sc.clientHeight / 3; }
+  };
+  box?.addEventListener('pointerdown', e => { box.setPointerCapture(e.pointerId); jump(e); });
+  box?.addEventListener('pointermove', e => { if (box.hasPointerCapture(e.pointerId)) jump(e); });
+})();
 
 function _dbCursorEl() { const el = document.createElement('div'); el.className = 'db-cursor'; return el; }
 

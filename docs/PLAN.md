@@ -10,7 +10,7 @@ before building anything. Newest entries at the top of each section. Feature spe
   2026-11-20. Build order:
   1. ✅ (2026-11-20, pushed in 0b676bc, awaiting phone test) Permanent dot IDs (`doodle.barIds`), pins point at `barId`,
      deleted dot → pin floats, old `barIdx` pins migrated on open.
-  2. ✅ (2026-11-21, pushed, awaiting phone test) Board is the song page's Structure tab: vertical rows,
+  2. ✅ (2026-11-21, pushed; Patrick: "looks good" on phone) Board is the song page's Structure tab: vertical rows,
      energy | dots | lanes (empty for now) | callouts (existing pins as chips). Tap ⚡ strip = hype
      1–5. Tap a dot = expand with +Note/+Tab/+New tab/+Snip/Record. Edit structure = cursor + key
      tiles. Fix-links icon + tray. Notes tab and the full-screen overlay are gone. Tabs order:
@@ -21,7 +21,23 @@ before building anything. Newest entries at the top of each section. Feature spe
 - After pushing step 1: everyone should hard-refresh. An old app that edits a structure changes
   `bars` without `barIds`, and pins may then land on the wrong dot.
 
+## Working agreement
+- 2026-11-21: During the doodle-board sprint, **commit and push each finished, tested change
+  without asking**, so Patrick can test on his phone. (Commit messages as usual.)
+
+## Wishlist (not scheduled yet)
+- 2026-11-21: **Whole-song view:** a button that fits the full structure on one screen, a bit like
+  print preview, so you can see the whole song at a glance without scrolling. Not started. Ask about
+  details (what's shown, can you tap into it) before building.
+
 ## Decisions
+- 2026-11-21: **Mini structure strip** at the bottom of the Structure tab: one block per bar,
+  **height = energy**, colour = section type, section labels (C1 etc.) underneath. My additions:
+  half bars are half width, no energy = a low flat block, tap a block = scroll the board to that
+  bar, and the strip highlights what's on screen. (Built 2026-11-21.)
+- 2026-11-21: **On the Structure tab, the waveform is replaced by a one-line player:**
+  [progress bar] [⏮] [play] [⏭]. Tap or drag the progress bar to seek. Other tabs keep the full
+  waveform player. (Built 2026-11-21.)
 - 2026-11-20: Step 2 layout, from my proposals (Patrick: "ok"): one row per dot, scrolling
   vertically. Half bars get half-height rows. Faint divider between sections, label on the first dot. Tap
   the ⚡ column beside a dot → 1–5 picker (+ clear). Tap a dot → its row expands to show
