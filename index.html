@@ -330,7 +330,6 @@ header[data-page="nav"] .hdr-t-nav { display: flex; }
 /* snippet author egg icon */
 .tp-snip-author { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 18px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; border: 1px solid var(--c-amber); font-family: var(--f-mono); font-size: 8px; color: var(--c-amber-lt); flex-shrink: 0; vertical-align: middle; }
 /* notes tab images */
-.tp-notes-img { width: 100%; max-height: 280px; object-fit: contain; border-radius: 6px; background: var(--c-bg); display: block; }
 /* versions list */
 .tp-versions-body { }
 .tp-ver-row { border-bottom: 1px solid rgba(46,70,68,0.4); transition: background 0.15s; }
@@ -935,76 +934,76 @@ body.tab-view #tab-view-close { display:flex; }
 #tab-notenames-btn { position:absolute; bottom:6px; right:6px; background:rgba(17,26,26,0.88); border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:10px; padding:4px 9px; cursor:pointer; z-index:5; }
 #tab-notenames-btn.active { border-color:var(--c-amber-lt); color:var(--c-amber-lt); }
 
-/* ══ STRUCTURE DOTS (doodle board + previews) ══ */
-.struct-section { display:flex; flex-direction:column; align-items:center; border-left:2px solid var(--c-border); padding:0 4px; }
-.struct-section:first-child { border-left:none; }
-.struct-dots-row { display:flex; align-items:center; gap:5px; padding:4px 2px 6px; }
-.struct-dot { width:13px; height:13px; border-radius:50%; cursor:pointer; flex-shrink:0; transition:transform 0.08s; }
-.struct-dot:active { transform:scale(0.85); }
-.struct-cursor-el { width:2px; height:20px; background:var(--c-text); border-radius:1px; flex-shrink:0; animation:se-blink 1s step-end infinite; }
 @keyframes se-blink { 0%,100%{opacity:1} 50%{opacity:0} }
-.struct-label { font-family:var(--f-mono); font-size:9px; color:var(--c-teal-pale); text-align:center; min-width:14px; padding-bottom:8px; line-height:1; }
-.struct-keyboard { flex-shrink:0; display:flex; gap:5px; padding:10px 12px; background:var(--c-surface); border-top:1px solid var(--c-border); }
-/* Mini variant — used in Add Notes list, track panel, pinned */
-.struct-bar { display:flex; align-items:flex-end; flex-wrap:nowrap; }
-.struct-bar.mini { min-height:0; padding:0; }
-.struct-bar.mini .struct-section { border-left:1px solid var(--c-border); padding:0 2px; }
-.struct-bar.mini .struct-dots-row { gap:3px; padding:2px 2px 3px; }
-.struct-bar.mini .struct-dot { width:7px; height:7px; }
-.struct-bar.mini .struct-label { font-size:8px; padding-bottom:2px; }
-.struct-bar.mini .struct-cursor-el { height:12px; }
-@media (max-width:600px) {
-  .struct-bar.mini .struct-section { padding:0 1px; }
-  .struct-bar.mini .struct-dots-row { gap:2px; padding:1px 1px 2px; }
-  .struct-bar.mini .struct-dot { width:5px; height:5px; }
-  .struct-bar.mini .struct-label { font-size:7px; padding-bottom:1px; }
-  .struct-bar.mini .struct-cursor-el { height:9px; }
-}
-#tp-song-struct { padding:12px 14px 6px; overflow-x:auto; }
-.tp-song-struct-note { font-family:var(--f-mono); font-size:10px; color:var(--c-teal-pale); padding-top:8px; }
 .home-tools-label { font-family:var(--f-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--c-text-dim); margin:26px 0 8px; }
 .home-tools { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
 .home-tool { background:var(--c-surface); border:1px solid var(--c-border); border-radius:10px; padding:12px 4px 10px; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:10px; text-align:center; line-height:1.2; }
 .home-tool span { font-size:20px; color:var(--c-amber-lt); line-height:1; }
 .home-tool:active { background:var(--c-surface2); }
 
-/* ══ DOODLE BOARD ══ */
-#doodle-board {
-  position: fixed; inset: 0; z-index: 200;
-  background: var(--c-bg);
-  display: flex; flex-direction: column;
-  transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-  pointer-events: none;
+/* ══ DOODLE BOARD (song page Structure tab) ══ */
+/* columns: energy | dot + section label | member lanes | callouts */
+#tp-tabcontent-structure.active { overflow: hidden; }
+#db-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; padding: 6px 10px 12px 4px; }
+.db-empty { font-family: var(--f-mono); font-size: 11px; color: var(--c-teal-pale); padding: 18px 10px; line-height: 1.5; }
+.db-row {
+  display: grid; grid-template-columns: 22px 46px 26px minmax(0, 1fr);
+  min-height: 30px; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
-#doodle-board.open { transform: translateY(0); pointer-events: auto; }
-#db-header {
-  display: flex; align-items: center; padding: 10px 56px 8px 14px;
-  flex-shrink: 0; gap: 8px;
+.db-row.half { min-height: 16px; }
+.db-row.sec-start { border-top: 1px solid var(--c-border); }
+.db-row.open { background: var(--c-surface); border-radius: 6px; }
+#tp-tabcontent-structure.db-editing .db-row { cursor: text; }
+.db-en { position: relative; }
+.db-en::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px dotted var(--c-border); }
+.db-en svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.db-en-fill { fill: var(--c-amber); opacity: 0.5; }
+.db-en-fill.pt { opacity: 0.85; }
+.db-dotcell { display: flex; align-items: center; gap: 6px; padding-left: 5px; }
+.db-vdot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+.db-vdot.half { height: 7px; border-radius: 7px 7px 0 0; }
+.db-vdot.has { box-shadow: 0 0 0 2px var(--c-bg), 0 0 0 3.5px var(--ring); }
+.db-sec { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); white-space: nowrap; }
+.db-lanes { display: flex; justify-content: center; gap: 3px; }
+.db-lanes i { width: 2px; opacity: 0.28; }
+.db-call { display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden; padding: 2px 0 2px 8px; }
+.db-row.open .db-call { flex-direction: column; align-items: stretch; padding: 6px 6px 8px 8px; gap: 6px; }
+.db-chip {
+  flex: 0 1 auto; min-width: 0; max-width: 100%;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-family: var(--f-mono); font-size: 11px; color: var(--c-text);
+  background: var(--c-surface2); border: 1px solid var(--c-border); border-radius: 10px; padding: 2px 8px;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
-#db-title {
-  flex: 0 1 auto; font-family: var(--f-display); font-size: 15px; color: var(--c-teal-pale);
-  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.db-chip b { color: var(--c-accent); margin-right: 5px; }
+.db-row.open .db-chip { white-space: pre-wrap; border-radius: 6px; padding: 6px 8px; }
+.db-acts { display: flex; flex-wrap: wrap; gap: 5px; }
+.db-acts button {
+  font-family: var(--f-mono); font-size: 11px; padding: 6px 9px; border-radius: 6px;
+  border: 1px solid var(--c-border); background: var(--c-bg); color: var(--c-teal-pale); cursor: pointer;
 }
-#db-close-btn {
-  position: absolute; top: 10px; right: 12px; z-index: 5;
-  background: var(--c-surface); border: 1px solid var(--c-border);
-  border-radius: 50%; width: 32px; height: 32px; font-size: 14px;
-  cursor: pointer; color: var(--c-teal-pale);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+.db-cursor { height: 2px; background: var(--c-text); margin: 2px 0 2px 26px; border-radius: 1px; animation: se-blink 1s step-end infinite; }
+#db-bottom { flex-shrink: 0; border-top: 1px solid var(--c-border); padding: 0 10px; }
+#tp-tabcontent-structure:not(.db-editing) #db-keyboard { display: none; }
+#db-bar { display: flex; align-items: center; gap: 6px; padding: 6px 0; }
+#db-bar button {
+  font-family: var(--f-mono); font-size: 11px; padding: 7px 12px; border-radius: 6px;
+  border: 1px solid var(--c-border); background: var(--c-surface2); color: var(--c-teal-pale); cursor: pointer;
 }
-#db-body {
-  flex: 1; overflow-y: auto; display: flex; flex-direction: column;
-  align-items: flex-start; padding: 8px 14px 10px; gap: 0;
+#db-edit-btn.on { background: var(--c-teal); color: #fff; border-color: var(--c-teal); }
+#db-bar #db-fix-btn { margin-left: auto; color: var(--c-accent); padding: 5px 8px; display: flex; align-items: center; }
+#db-en-pop {
+  position: fixed; z-index: 270; display: flex; align-items: center; gap: 3px;
+  background: var(--c-surface); border: 1px solid var(--c-amber); border-radius: 8px; padding: 4px 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
-#db-spine { display: flex; align-items: flex-end; flex-wrap: nowrap; min-height: 56px; }
-/* Doodle board spine dots */
-#db-spine .struct-dot      { width: 14px; height: 14px; }
-#db-spine .struct-dot.half { height: 7px; border-radius: 7px 7px 0 0; }
-#db-spine .struct-dots-row { gap: 5px; padding: 4px 3px 7px; }
-#db-spine .struct-label    { font-size: 9px; padding-bottom: 7px; }
-#db-spine .struct-section  { border-left-width: 2px; padding: 0 4px; }
-#db-spine .struct-cursor-el { height: 20px; }
+#db-en-pop span { font-family: var(--f-mono); font-size: 9px; color: var(--c-teal-pale); text-transform: uppercase; margin-right: 3px; }
+#db-en-pop button {
+  width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--c-border);
+  background: var(--c-surface2); color: var(--c-text); font-family: var(--f-mono); font-size: 13px; cursor: pointer;
+}
+#db-en-pop button.on { background: var(--c-amber); color: #fff; border-color: var(--c-amber); }
+#db-en-pop button.clr { color: var(--c-accent); }
 /* Hold-label and half-dot float shown on key hold */
 .db-key-hold-label {
   position: fixed; background: var(--c-surface2); border: 1px solid var(--c-teal);
@@ -1024,16 +1023,10 @@ body.tab-view #tab-view-close { display:flex; }
 }
 .db-half-dot-float.show   { opacity: 0.8; }
 .db-half-dot-float.active { opacity: 1; box-shadow: 0 0 0 2px rgba(255,255,255,0.7); }
-/* Bottom panel */
-#db-bottom {
-  flex-shrink: 0; padding: 0 12px 8px;
-  border-top: 1px solid var(--c-border);
-}
 #db-keyboard {
   display: flex; gap: 4px; padding: 8px 0 4px; flex-wrap: nowrap;
   touch-action: none;
 }
-#db-keyboard.locked { display: none; }
 .db-key {
   flex: 1; min-width: 28px; padding: 11px 2px;
   border: 1px solid; border-radius: 6px;
@@ -1056,94 +1049,10 @@ body.tab-view #tab-view-close { display:flex; }
   -webkit-user-select: none; user-select: none;
 }
 .db-key-add:active { background: var(--c-surface2); }
-#db-actions {
-  display: flex; gap: 6px; padding: 4px 0 6px;
-}
-#db-actions.locked { display: none; }
-#db-locked-bar {
-  display: none; flex-direction: row; align-items: center; gap: 8px; padding: 6px 0 6px;
-}
-#db-locked-bar.show { display: flex; }
 .db-act-btn {
   flex: 1; padding: 8px 4px; border: none; border-radius: 6px;
   font-family: var(--f-mono); font-size: 11px; cursor: pointer; text-align: center;
 }
-#db-transport-row {
-  display: flex; justify-content: flex-end; align-items: center;
-  gap: 5px; padding: 5px 0 0; border-top: 1px solid rgba(46,70,68,0.3);
-}
-.db-transport-btn {
-  background: var(--c-surface); border: 1px solid var(--c-border);
-  border-radius: 6px; padding: 7px 11px; font-size: 14px;
-  cursor: pointer; color: var(--c-text);
-  -webkit-user-select: none; user-select: none;
-}
-.db-transport-btn:active { background: var(--c-surface2); }
-#db-transport-play {
-  border-color: var(--c-teal); color: var(--c-teal); padding: 7px 15px;
-}
-/* Landscape mobile: collapse keyboard + actions to one row */
-.db-act-ico { display: none; }
-@media (orientation:landscape) and (max-height:520px) {
-  #db-body { padding: 8px 12px 6px; }
-  #db-bottom { display: flex; flex-direction: row; align-items: center; padding: 0 8px 4px; gap: 0; border-top: 1px solid var(--c-border); }
-  #db-keyboard { flex: 1; padding: 4px 0; gap: 3px; }
-  .db-key { padding: 8px 1px; font-size: 12px; min-width: 20px; }
-  .db-key-del { flex: 0 0 28px; padding: 8px 1px; font-size: 13px; }
-  .db-key-add { flex: 0 0 24px; padding: 8px 1px; font-size: 12px; }
-  #db-actions { flex: 0 0 auto; flex-direction: row; padding: 4px 0 4px 8px; gap: 4px; border-left: 1px solid var(--c-border); margin-left: 6px; }
-  .db-act-btn { flex: 0 0 auto; padding: 8px 10px; font-size: 15px; }
-  .db-act-txt { display: none; }
-  .db-act-ico { display: inline; }
-  #db-transport-row { padding: 4px 0 0; border-top: none; border-left: 1px solid var(--c-border); margin-left: 4px; padding-left: 6px; }
-  #db-locked-bar { padding: 4px 0; }
-  #db-spine { min-height: 40px; }
-}
-/* Dot menu popup */
-#db-dot-menu {
-  position: fixed; z-index: 210; background: var(--c-surface);
-  border: 1px solid var(--c-teal); border-radius: 10px;
-  padding: 4px; min-width: 155px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.12s, transform 0.12s;
-  transform: scale(0.95) translateY(4px);
-}
-#db-dot-menu.open {
-  opacity: 1; pointer-events: auto; transform: scale(1) translateY(0);
-}
-.db-dot-menu-btn {
-  display: block; width: 100%; padding: 9px 14px;
-  border: none; border-radius: 7px; background: none;
-  font-family: var(--f-mono); font-size: 12px;
-  color: var(--c-text); text-align: left; cursor: pointer;
-}
-.db-dot-menu-btn:hover, .db-dot-menu-btn:active { background: var(--c-surface2); }
-.db-dot-menu-btn.db-menu-edit   { color: var(--c-teal); }
-.db-dot-menu-btn.db-menu-cancel { color: var(--c-text-dim); font-size: 11px; }
-/* Doodle board button, right end of the song page's tabs bar */
-.tp-tabs-doodle { margin: 4px 2px 4px auto; padding: 2px 8px; font-size: 13px; }
-.tp-doodle-btn {
-  padding: 5px 8px; border: 1px solid var(--c-border); border-radius: 6px;
-  font-size: 13px; cursor: pointer; background: var(--c-surface2);
-  color: var(--c-teal-pale); flex-shrink: 0; font-family: var(--f-mono);
-}
-.tp-doodle-btn:active { background: var(--c-surface); }
-/* ── DB Pins ── */
-#db-spine-wrap  { width: 100%; overflow-x: auto; }
-#db-spine-inner { position: relative; display: inline-flex; flex-direction: column; min-width: 100%; padding: 4px 0; }
-#db-pins-zone   { min-height: 80px; position: relative; }
-#db-pins-svg    { position: absolute; top: 0; left: 0; pointer-events: none; overflow: visible; }
-.db-pin {
-  position: absolute; width: 24px; height: 24px; border-radius: 50%;
-  background: var(--c-accent);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--f-mono); font-size: 9px; font-weight: 700; color: #fff;
-  cursor: pointer; -webkit-user-select: none; user-select: none; z-index: 2;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.5); transition: transform 0.08s;
-}
-.db-pin:active { transform: scale(0.87); }
-.db-pin.unanchored { background: transparent; border: 2px solid var(--c-accent); color: var(--c-accent); box-shadow: none; }
 /* Pin content display (slides down from top of doodle board) */
 #db-pin-display {
   position: fixed; top: 0; left: 0; right: 0; z-index: 265;
@@ -1399,15 +1308,13 @@ body.tab-view #tab-view-close { display:flex; }
   <div class="screen pl-screen" id="screen-track">
     <div class="tp-body pl-list" id="tp-body" data-expand="">
 
-      <!-- tabs: recordings / lyrics / structure / tabs / notes -->
+      <!-- tabs: recordings / lyrics / tabs / structure (the doodle board) -->
       <div class="tp-tabs-wrap" id="tp-tabs-wrap">
         <div class="tp-tabs-bar" id="tp-tabs-bar">
           <button class="tp-tab active" data-tab="recordings" onclick="tpSwitchTab('recordings')">Recordings</button>
           <button class="tp-tab" data-tab="lyrics" onclick="tpSwitchTab('lyrics')">Lyrics</button>
-          <button class="tp-tab" data-tab="structure" onclick="tpSwitchTab('structure')">Structure</button>
           <button class="tp-tab" data-tab="tabs" onclick="tpSwitchTab('tabs')">Tabs</button>
-          <button class="tp-tab" data-tab="notes" onclick="tpSwitchTab('notes')">Notes</button>
-          <button class="tp-doodle-btn tp-tabs-doodle" onclick="openDoodleBoard()" title="Doodle Board">✏️</button>
+          <button class="tp-tab" data-tab="structure" onclick="tpSwitchTab('structure')">Structure</button>
         </div>
         <div class="tp-tab-panel" id="tp-tab-panel">
           <div class="tp-tabcontent active" id="tp-tabcontent-recordings">
@@ -1436,24 +1343,19 @@ body.tab-view #tab-view-close { display:flex; }
             </div>
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-structure">
-            <div id="tp-song-struct">
-              <div id="tp-song-struct-bar" class="struct-bar"></div>
-              <div id="tp-song-struct-note" class="tp-song-struct-note"></div>
+            <div id="db-scroll"><div id="db-rows"></div></div>
+            <div id="db-bottom">
+              <div id="db-keyboard"></div>
+              <div id="db-bar">
+                <button id="db-edit-btn" onclick="dbToggleEdit()">✎ Edit structure</button>
+                <button id="db-clear-btn" onclick="dbClear()" style="display:none">Clear</button>
+                <button id="db-fix-btn" onclick="dbShowFloating()" title="Some things aren't attached to a dot" style="display:none"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6.5 9.5l-1.8 1.8a2.1 2.1 0 0 1-3-3l1.8-1.8"/><path d="M9.5 6.5l1.8-1.8a2.1 2.1 0 0 1 3 3l-1.8 1.8"/><path d="M5 1.5v2M1.5 5h2M11 14.5v-2M14.5 11h-2"/></svg></button>
+              </div>
             </div>
-            <button class="tp-add-tab-btn" onclick="openDoodleBoard()">✎ Open doodle board</button>
           </div>
           <div class="tp-tabcontent" id="tp-tabcontent-tabs">
             <div class="tp-tabs-list" id="tp-tabs-list"></div>
             <button class="tp-add-tab-btn" onclick="tabNewTab()">+ Add Tab</button>
-          </div>
-          <div class="tp-tabcontent" id="tp-tabcontent-notes">
-            <div id="tp-notes-wrap" style="flex:1;display:flex;flex-direction:column"
-                 onpointerdown="tpNotesPtrDown(event)" onpointerup="tpNotesPtrUp(event)" onpointermove="tpNotesPtrMove(event)">
-              <textarea class="tp-lyrics-text" id="tp-notes-text"
-                        placeholder="Add notes, ideas… (hold to add image)"
-                        oninput="tpNotesTextChanged()"></textarea>
-              <div id="tp-notes-images" style="padding:0 14px 14px"></div>
-            </div>
           </div>
         </div>
       </div>
@@ -2002,48 +1904,6 @@ body.tab-view #tab-view-close { display:flex; }
     <div id="db-pick-list"></div>
   </div>
 </div>
-<div id="doodle-board">
-  <div id="db-header">
-    <div id="db-title">—</div>
-    <button id="db-close-btn" onclick="closeDoodleBoard()">✕</button>
-  </div>
-  <div id="db-body">
-    <div id="db-spine-wrap">
-      <div id="db-spine-inner">
-        <div id="db-pins-zone"></div>
-        <div id="db-spine" class="struct-bar"></div>
-      </div>
-    </div>
-  </div>
-  <div id="db-bottom">
-    <div id="db-keyboard"></div>
-    <div id="db-actions">
-      <button class="db-act-btn" style="background:var(--c-surface2);color:var(--c-teal-pale);border:1px solid var(--c-border)" onclick="dbClear()"><span class="db-act-txt">Clear</span><span class="db-act-ico">✕</span></button>
-      <button class="db-act-btn" style="background:var(--c-teal);color:var(--c-text)" onclick="dbSaveAndLock()"><span class="db-act-txt">Save &amp; Lock</span><span class="db-act-ico">💾</span></button>
-    </div>
-    <div id="db-locked-bar">
-      <span style="flex:1;font-family:var(--f-mono);font-size:11px;color:var(--c-teal-pale)">Structure locked</span>
-      <button class="db-act-btn" style="flex:0 0 auto;background:var(--c-surface2);color:var(--c-teal-pale);border:1px solid var(--c-border);padding:7px 14px" onclick="dbUnlock()">Edit</button>
-    </div>
-    <div id="db-transport-row">
-      <button class="db-transport-btn" onclick="tpPrevVersion();dbSyncPlayBtn()">⏮&#xFE0E;</button>
-      <button class="db-transport-btn" id="db-transport-play" onclick="tpTogglePlay();dbSyncPlayBtn()">▶&#xFE0E;</button>
-      <button class="db-transport-btn" onclick="tpNextVersion();dbSyncPlayBtn()">⏭&#xFE0E;</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── DOODLE DOT MENU ── -->
-<div id="db-dot-menu">
-  <button class="db-dot-menu-btn" onclick="dbDotMenuNote()">+ Note</button>
-  <button class="db-dot-menu-btn" onclick="dbDotMenuTab()">+ Tab</button>
-  <button class="db-dot-menu-btn" onclick="dbDotMenuNewTab()">+ New Tab</button>
-  <button class="db-dot-menu-btn" onclick="dbDotMenuSnip()">+ Snip</button>
-  <button class="db-dot-menu-btn" onclick="dbDotMenuRecordSnip()">+ Record Snip</button>
-  <button class="db-dot-menu-btn db-menu-edit" onclick="dbDotMenuEdit()">Edit structure</button>
-  <button class="db-dot-menu-btn db-menu-cancel" onclick="dbCloseDotMenu()">Cancel</button>
-</div>
-
 <script>
 /* ══════════════════════════════════════════════════════
    CONFIG — edit these if credentials change
@@ -2139,7 +1999,7 @@ function _closeTopOverlay() {
     ['snip-panel', 'open', snipClose],
     ['bpm-overlay', 'open', closeBpmTapper],
     ['lyr-panel', 'open', lyrPanelClose],
-    ['doodle-board', 'open', closeDoodleBoard],
+    ['db-anchor-banner', 'show', dbCancelAnchorMode],
     ['plk-settings-overlay', 'open', plkCloseSettings],
     ['hdr-menu', 'open', closeTitleMenu],
     ['tuner-overlay', 'open', closeTuner],
@@ -2147,6 +2007,7 @@ function _closeTopOverlay() {
   for (const [id, cls, close] of layers) {
     if ($(id)?.classList.contains(cls)) { close(); return true; }
   }
+  if (DB.editing && $('tp-tabcontent-structure')?.classList.contains('active')) { dbDoneEditing(); return true; }
   const pl = document.querySelector('.pl-screen.active.pl-open');
   if (pl) { plSetOpen(pl.id, false); return true; }
   return false;
@@ -3172,7 +3033,7 @@ Object.keys(PL.cfg).forEach(id => {
 
 // Swipe left/right on the song page's tab panel to change tab
 (() => {
-  const _TP_TABS = ['recordings','lyrics','structure','tabs','notes'];
+  const _TP_TABS = ['recordings','lyrics','tabs','structure'];
   const panel = $('tp-tab-panel');
   let _tsX = null, _tsY = null, _tsDir = null;
   panel.addEventListener('touchstart', e => {
@@ -3566,7 +3427,7 @@ function _versionsFor(entry, name) {
 // Lyrics/notes save 1.5 s after typing stops; save now before the page changes song
 function flushPendingEdits() {
   if (S.tp.notesSaveTimer) { clearTimeout(S.tp.notesSaveTimer); S.tp.notesSaveTimer = null; saveSongNotes(); }
-  if (_tpNotesSaveTimer)   { clearTimeout(_tpNotesSaveTimer);   _tpNotesSaveTimer = null;   saveSongNotesText(); }
+  dbFlush();
 }
 document.addEventListener('visibilitychange', () => { if (document.hidden) flushPendingEdits(); });
 
@@ -3597,7 +3458,6 @@ async function openSong(songName) {
 
   if (_lyricsScrollOn) { _lyricsScrollOn = false; cancelAnimationFrame(_lyricsScrollRaf); _lyricsScrollRaf = null; $('tp-lyrics-scroll-btn')?.classList.remove('on'); }
   $('tp-lyrics-text').value = songEntry?.notes || '';
-  const notesEl = $('tp-notes-text'); if (notesEl) notesEl.value = songEntry?.noteText || '';
   tpSwitchTab('recordings');
 
   try {
@@ -3809,7 +3669,8 @@ function renderVersionsList() {
   // Snippets — load async if needed, then re-render
   if (!S.snippetsLoaded && !S._loadingSnippets) {
     S._loadingSnippets = true;
-    loadSnippets().then(() => { S._loadingSnippets = false; renderVersionsList(); });
+    // only re-render on success: a failed load would loop straight back here forever
+    loadSnippets().then(() => { S._loadingSnippets = false; if (S.snippetsLoaded) renderVersionsList(); });
     return;
   }
   const snips = (S.snippets || []).filter(sn => sn.songName === S.tp.songName && !sn.commentId);
@@ -3949,11 +3810,11 @@ S.tp.audio.addEventListener('ended', () => { _setPlayBtn('tp-ctrl-play', 'play')
 /* ── TABS ────────────────────────────────────────────── */
 function tpSwitchTab(tab) {
   if (_lyricsScrollOn && tab !== 'lyrics') tpLyricsScrollToggle();
+  if (tab !== 'structure') { if (DB.editing) dbDoneEditing(); dbCancelAnchorMode(); _dbCloseEnergyPick(); }
   S.tp.activeTab = tab;
   document.querySelectorAll('.tp-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tp-tabcontent').forEach(d => d.classList.toggle('active', d.id === `tp-tabcontent-${tab}`));
   if (tab === 'structure') renderSongStructure();
-  if (tab === 'notes') _renderNoteImages();
   if (tab === 'tabs') renderSongTabsData();
   if (tab === 'lyrics') { _lyricsCtx.songName = S.tp.songName; const _lyrEntry = S.songs.find(s => s.name === S.tp.songName); $('tp-lyrics-text').value = _lyrEntry?.notes || ''; _lyrRender('tp'); _lyrSetMode('tp', 'view'); }
 }
@@ -3992,92 +3853,6 @@ function _tpCurVersion() {
 }
 
 let _lyricsScrollRaf = null, _lyricsScrollOn = false;
-
-/* ── NOTES TAB (auto-save + images) ─────────────────── */
-let _tpNotesSaveTimer = null;
-function tpNotesTextChanged() {
-  clearTimeout(_tpNotesSaveTimer);
-  _tpNotesSaveTimer = setTimeout(saveSongNotesText, 1500);
-}
-async function saveSongNotesText() {
-  const text = $('tp-notes-text')?.value;
-  if (text === undefined) return;
-  const idx = S.songs.findIndex(s => s.name === S.tp.songName);
-  if (idx < 0) return;
-  S.songs[idx].noteText = text;
-  try { await saveSongsJson(); } catch(e) { showToast('Save failed: ' + _errMsg(e)); }
-}
-let _tpNotesHoldTimer = null, _tpNotesPtrMoved = false;
-function tpNotesPtrDown(e) {
-  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON' || e.target.tagName === 'IMG') return;
-  _tpNotesPtrMoved = false;
-  _tpNotesHoldTimer = setTimeout(() => {
-    if (!_tpNotesPtrMoved) _showAddImagePrompt();
-  }, 600);
-}
-function tpNotesPtrMove() { _tpNotesPtrMoved = true; clearTimeout(_tpNotesHoldTimer); }
-function tpNotesPtrUp() { clearTimeout(_tpNotesHoldTimer); }
-
-function _showAddImagePrompt() {
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:400;display:flex;align-items:center;justify-content:center';
-  overlay.innerHTML = `
-    <div style="background:var(--c-surface);border-radius:12px;padding:24px;text-align:center;border:1px solid var(--c-border);display:flex;flex-direction:column;gap:14px;min-width:200px">
-      <div style="font-size:28px">📷</div>
-      <div style="font-family:var(--f-mono);font-size:12px;color:var(--c-teal-pale)">Add image?</div>
-      <input type="file" id="tp-notes-img-input" accept="image/*" style="display:none" onchange="_uploadNoteImage(event)">
-      <div style="display:flex;gap:8px">
-        <button onclick="this.closest('div[style]').remove()" style="flex:1;padding:9px;background:var(--c-surface2);border:1px solid var(--c-border);border-radius:7px;color:var(--c-teal-pale);font-family:var(--f-mono);font-size:11px;cursor:pointer">Cancel</button>
-        <button onclick="document.getElementById('tp-notes-img-input').click()" style="flex:1;padding:9px;background:var(--c-teal);border:none;border-radius:7px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;cursor:pointer">Add</button>
-      </div>
-    </div>`;
-  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
-  document.body.appendChild(overlay);
-}
-async function _uploadNoteImage(e) {
-  const file = e.target.files?.[0];
-  if (!file) return;
-  document.querySelectorAll('#tp-notes-img-input')?.forEach(el => el.closest('div[style*="position:fixed"]')?.remove());
-  showLoading('Uploading image…');
-  try {
-    const metaId = S.folders._meta;
-    const fname  = `note_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._]/g,'_')}`;
-    const driveId = await Drive.uploadFile(file, file.type, fname, metaId);
-    const idx = S.songs.findIndex(s => s.name === S.tp.songName);
-    if (idx < 0) throw new Error('Song not found');
-    if (!S.songs[idx].noteImages) S.songs[idx].noteImages = [];
-    S.songs[idx].noteImages.push({ driveId, fileName: fname, createdAt: new Date().toISOString() });
-    await saveSongsJson();
-    hideLoading();
-    _renderNoteImages();
-  } catch(err) { hideLoading(); showToast('Upload failed: ' + _errMsg(err)); }
-}
-function _renderNoteImages() {
-  const el = $('tp-notes-images');
-  if (!el) return;
-  el.innerHTML = '';
-  const images = S.songs.find(s => s.name === S.tp.songName)?.noteImages || [];
-  images.forEach(img => {
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'position:relative;margin-bottom:8px';
-    const imgEl = document.createElement('img');
-    imgEl.className = 'tp-notes-img';
-    imgEl.alt = img.fileName;
-    Drive.fetchBlob(img.driveId).then(b => { imgEl.src = URL.createObjectURL(b); }).catch(() => {});
-    const del = document.createElement('button');
-    del.textContent = '✕';
-    del.style.cssText = 'position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.6);border:none;border-radius:50%;width:22px;height:22px;color:#fff;font-size:11px;cursor:pointer;line-height:1';
-    del.onclick = () => _deleteNoteImage(img.driveId);
-    wrap.appendChild(imgEl); wrap.appendChild(del);
-    el.appendChild(wrap);
-  });
-}
-async function _deleteNoteImage(driveId) {
-  const idx = S.songs.findIndex(s => s.name === S.tp.songName);
-  if (idx >= 0) S.songs[idx].noteImages = (S.songs[idx].noteImages||[]).filter(i => i.driveId !== driveId);
-  await saveSongsJson().catch(() => {});
-  _renderNoteImages();
-}
 
 /* ── NOTES (auto-save debounced) ─────────────────────── */
 function tpNotesChanged() {
@@ -5299,21 +5074,6 @@ async function loadStructures() {
   } catch(e) { S.structures = []; }
 }
 
-function _fitStructBar(bar) {
-  if (!bar) return;
-  bar.style.transform = '';
-  requestAnimationFrame(() => {
-    const wrap = bar.parentElement;
-    if (!wrap) return;
-    const barW = bar.scrollWidth;
-    const wrapW = wrap.clientWidth;
-    if (barW > 0 && wrapW > 0 && barW > wrapW) {
-      bar.style.transform = `scale(${wrapW / barW})`;
-      bar.style.transformOrigin = 'left top';
-    }
-  });
-}
-
 function _errMsg(e) {
   return e?.message || e?.result?.error?.message || (typeof e === 'string' ? e : JSON.stringify(e));
 }
@@ -5354,65 +5114,6 @@ function _legacyStructureBars(song) {
   return mine[0]?.bars || null;
 }
 
-// Track page Structure tab: the doodle board's structure
-async function renderSongStructure() {
-  const bar = $('tp-song-struct-bar'), note = $('tp-song-struct-note');
-  if (!bar) return;
-  const song = S.songs.find(s => s.name === S.tp.songName);
-  let bars = song?.doodle?.bars;
-  let msg = '';
-  if (!bars?.length) {
-    await loadStructures();
-    bars = _legacyStructureBars(song);
-    msg = bars ? 'From the old structure editor. Open the doodle board to keep working on it.'
-               : 'No structure yet. Build one on the doodle board.';
-  } else if (song.doodle.pins?.length) {
-    msg = `${song.doodle.pins.length} pin${song.doodle.pins.length > 1 ? 's' : ''} on the board`;
-  }
-  bar.innerHTML = '';
-  if (bars?.length) bar.appendChild(_buildDbSpineFrag(bars, -1, null));
-  note.textContent = msg;
-  _fitStructBar(bar);
-}
-
-// Build structure DOM — shared by previews
-function buildStructDOM(bars, { cursor = -1, onDotClick = null } = {}) {
-  const frag = document.createDocumentFragment();
-  if (!bars.length) {
-    if (cursor >= 0) frag.appendChild(_makeCursorEl());
-    return frag;
-  }
-  const sections = deriveSections(bars);
-  const labels   = getLabels(sections);
-  let gi = 0;
-  sections.forEach((sec, si) => {
-    const isLast = si === sections.length - 1;
-    const secEl  = document.createElement('div');
-    secEl.className = 'struct-section';
-    const row = document.createElement('div');
-    row.className = 'struct-dots-row';
-    for (let b = 0; b < sec.bars; b++) {
-      if (cursor >= 0 && gi === cursor) row.appendChild(_makeCursorEl());
-      const dot = document.createElement('span');
-      dot.className = 'struct-dot';
-      dot.style.background = STRUCT_COLORS[sec.type] || '#888';
-      if (onDotClick) { const ci = gi + 1; dot.addEventListener('click', () => onDotClick(ci)); }
-      row.appendChild(dot);
-      gi++;
-    }
-    if (isLast && cursor >= 0 && gi === cursor) row.appendChild(_makeCursorEl());
-    const lbl = document.createElement('div');
-    lbl.className = 'struct-label';
-    lbl.textContent = labels[si];
-    secEl.appendChild(row); secEl.appendChild(lbl);
-    frag.appendChild(secEl);
-  });
-  return frag;
-}
-
-function _makeCursorEl() {
-  const el = document.createElement('span'); el.className = 'struct-cursor-el'; return el;
-}
 
 
 
@@ -5424,14 +5125,18 @@ function _makeCursorEl() {
 
 
 /* ══════════════════════════════════════════════════════
-   DOODLE BOARD
+   DOODLE BOARD — the song page's Structure tab (plan: docs/DOODLE_SPEC.md)
+   Vertical rows, one per dot: energy | dot | member lanes | callouts.
+   "Edit structure" is the deeper level (key tiles + cursor); otherwise you pin things to dots.
 ══════════════════════════════════════════════════════ */
 const STRUCT_NAMES = { I:'Intro', V:'Verse', C:'Chorus', B:'Bridge', O:'Outro', X:'Misc', S:'Solo' };
 const CUSTOM_TILE_COLORS = ['#E878A0', '#78C8E8', '#98D040'];
+// Member lanes: one thin line each, colours kept clear of the section colours
+const MEMBER_COLORS = { Barn:'#2E6BE6', Christy:'#D6409F', Neda:'#E0A21B', Pat:'#2BB673', Rory:'#8A5CF6' };
 
 const DB = {
-  songName: null, bars: [], barIds: [], locked: false, cursor: 0, customTiles: [], pins: [],
-  _dotMenuBarIdx: -1, _syncInterval: null,
+  songName: null, bars: [], barIds: [], customTiles: [], pins: [], energy: {},
+  editing: false, cursor: 0, openIdx: -1, _saveTimer: null,
   _anchoringPinId: null, _noteEditPinId: null, _noteTargetBarIdx: null,
   _awaitingNewTabBarIdx: null, _awaitingNewSnipBarIdx: null,
 };
@@ -5463,6 +5168,7 @@ function _dbPinDot(pin) { return pin.barId ? DB.barIds.indexOf(pin.barId) : -1; 
 function _dbAnchorAt(idx) {
   return (idx != null && idx >= 0 && idx < DB.barIds.length) ? { barId: DB.barIds[idx], barIdx: idx } : { barId: null, barIdx: null };
 }
+const _dbIsHalf = t => t === t.toLowerCase() && t !== t.toUpperCase();
 
 function dbGetTileColor(type) {
   const upper = type.toUpperCase();
@@ -5472,206 +5178,245 @@ function dbGetTileColor(type) {
   return ci >= 0 ? CUSTOM_TILE_COLORS[ci % CUSTOM_TILE_COLORS.length] : '#888888';
 }
 
-/* ── Zoom / pan state for doodle board spine ── */
-let _dbZoom = 1, _dbPanDx = 0;
-
-function _dbApplyTransform() {
-  const inner = $('db-spine-inner');
-  const wrap  = $('db-spine-wrap');
-  if (!inner || !wrap) return;
-  if (_dbZoom <= 1) {
-    inner.style.transform = '';
-    wrap.style.overflowX = 'auto';
-    wrap.style.cursor = '';
-  } else {
-    const minDx = -(inner.scrollWidth * _dbZoom - wrap.clientWidth);
-    _dbPanDx = Math.max(Math.min(0, _dbPanDx), Math.min(0, minDx));
-    inner.style.transformOrigin = '0 0';
-    inner.style.transform = `translateX(${_dbPanDx}px) scale(${_dbZoom})`;
-    wrap.style.overflowX = 'hidden';
-    wrap.style.cursor = 'grab';
+/* Energy (hype 1–5) is set at chosen dots: energy[barId] = n. Returns [top, bottom] per row
+   (null = nothing set anywhere). A set point holds flat across its own dot, so one quiet dot reads
+   as a square step, not a spike. Rows between points taper (half bars count half). Before the
+   first point and after the last, hold that point's value. */
+function _dbEnergyProfile(barIds, energy, weights) {
+  const n = barIds.length, out = new Array(n).fill(null);
+  const val = i => energy[barIds[i]];
+  const isPt = i => val(i) >= 1 && val(i) <= 5;
+  const pts = []; for (let i = 0; i < n; i++) if (isPt(i)) pts.push(i);
+  if (!pts.length) return out;
+  const cum = [0]; for (let i = 0; i < n; i++) cum.push(cum[i] + (weights[i] ?? 1));
+  let p = -1; // index into pts of the last point at or before i
+  for (let i = 0; i < n; i++) {
+    while (p + 1 < pts.length && pts[p + 1] <= i) p++;
+    if (isPt(i)) { out[i] = [val(i), val(i)]; continue; }
+    const prev = p >= 0 ? pts[p] : null, next = pts[p + 1] ?? null;
+    if (prev == null) { out[i] = [val(next), val(next)]; continue; }
+    if (next == null) { out[i] = [val(prev), val(prev)]; continue; }
+    const a = val(prev), b = val(next), s = cum[prev + 1], e = cum[next];
+    const at = x => a + (b - a) * (x - s) / (e - s);
+    out[i] = [at(cum[i]), at(cum[i + 1])];
   }
+  return out;
 }
 
-function _dbInitZoomPan() {
-  _dbZoom = 1; _dbPanDx = 0;
-  _dbApplyTransform();
-  const wrap = $('db-spine-wrap');
-  if (!wrap || wrap._zpInited) return;
-  wrap._zpInited = true;
-
-  let pt0 = null, pt1 = null;
-  let startDist, startZoom, startDx, startMidX;
-  let panStart = null, panStartDx;
-
-  function getTouches(e) { return [...e.touches]; }
-
-  wrap.addEventListener('touchstart', e => {
-    const ts = getTouches(e);
-    if (ts.length === 2) {
-      e.preventDefault();
-      pt0 = ts[0]; pt1 = ts[1];
-      startDist  = Math.hypot(pt1.clientX - pt0.clientX, pt1.clientY - pt0.clientY);
-      startZoom  = _dbZoom;
-      startDx    = _dbPanDx;
-      startMidX  = (pt0.clientX + pt1.clientX) / 2 - wrap.getBoundingClientRect().left;
-      panStart   = null;
-    } else if (ts.length === 1 && _dbZoom > 1) {
-      panStart   = ts[0].clientX;
-      panStartDx = _dbPanDx;
-    }
-  }, { passive: false });
-
-  wrap.addEventListener('touchmove', e => {
-    const ts = getTouches(e);
-    if (ts.length >= 2 && startDist) {
-      e.preventDefault();
-      const d = Math.hypot(ts[1].clientX - ts[0].clientX, ts[1].clientY - ts[0].clientY);
-      const newZoom = Math.max(1, Math.min(6, startZoom * (d / startDist)));
-      // zoom around the original midpoint
-      const origX   = (startMidX - startDx) / startZoom;
-      _dbZoom  = newZoom;
-      _dbPanDx = startMidX - origX * _dbZoom;
-      _dbApplyTransform();
-    } else if (ts.length === 1 && panStart !== null && _dbZoom > 1) {
-      e.preventDefault();
-      _dbPanDx = panStartDx + (ts[0].clientX - panStart);
-      _dbApplyTransform();
-    }
-  }, { passive: false });
-
-  wrap.addEventListener('touchend', e => {
-    if (e.touches.length < 2) { startDist = 0; pt0 = pt1 = null; }
-    if (e.touches.length < 1) { panStart = null; }
-    if (e.touches.length === 0 && _dbZoom <= 1) { _dbZoom = 1; _dbPanDx = 0; _dbApplyTransform(); }
-  }, { passive: true });
-
-  // Ctrl+wheel zoom on desktop
-  wrap.addEventListener('wheel', e => {
-    if (!e.ctrlKey && !e.metaKey) return;
-    e.preventDefault();
-    const rect = wrap.getBoundingClientRect();
-    const cx   = e.clientX - rect.left;
-    const origX = (cx - _dbPanDx) / _dbZoom;
-    _dbZoom  = Math.max(1, Math.min(6, _dbZoom * (e.deltaY > 0 ? 0.9 : 1.1)));
-    _dbPanDx = cx - origX * _dbZoom;
-    _dbApplyTransform();
-  }, { passive: false });
-}
-
-async function openDoodleBoard() {
+/* ── Load / save ── */
+// Load the open song's board into DB. Pending edits for the previous song are saved first.
+async function dbLoad() {
   const song = S.songs?.find(s => s.name === S.tp?.songName);
-  if (!song) return;
-  DB.songName = S.tp.songName;
+  if (!song) return false;
+  dbFlush();
+  if (DB.songName !== song.name) { DB.editing = false; DB.openIdx = -1; }
+  DB.songName = song.name;
   const d = song.doodle || {};
   DB.bars        = Array.isArray(d.bars)        ? [...d.bars]        : [];
-  DB.locked      = !!d.locked;
   DB.customTiles = Array.isArray(d.customTiles) ? [...d.customTiles] : [];
   DB.pins        = Array.isArray(d.pins)        ? d.pins.map(p => ({...p})) : [];
+  DB.energy      = _isObj(d.energy) ? { ...d.energy } : {};
   // First time: start from the song's structure in the old editors, if it had one
   if (!DB.bars.length) {
-    if (!S.structuresLoaded) { showLoading('Loading…'); await loadStructures(); hideLoading(); }
+    await loadStructures();
+    if (DB.songName !== S.tp?.songName) return false;
     const legacy = _legacyStructureBars(song);
     if (legacy) DB.bars = [...legacy];
   }
-  DB.barIds      = _dbFitIds(DB.bars, d.barIds);
-  DB.pins        = _dbMigratePins(DB.pins, DB.barIds);
-  DB.cursor      = DB.bars.length;
-  DB._dotMenuBarIdx = -1; DB._anchoringPinId = null;
-  $('db-title').textContent = S.tp.songName;
-  dbRenderSpine();
-  dbRenderKeyboard();
-  dbUpdateLockState();
-  dbSyncPlayBtn();
-  if (DB._syncInterval) clearInterval(DB._syncInterval);
-  DB._syncInterval = setInterval(dbSyncPlayBtn, 500);
-  $('doodle-board').classList.add('open');
-  requestAnimationFrame(_dbInitZoomPan);
+  DB.barIds = _dbFitIds(DB.bars, d.barIds);
+  DB.pins   = _dbMigratePins(DB.pins, DB.barIds);
+  if (!DB.editing) DB.cursor = DB.bars.length;
+  return true;
 }
 
-function closeDoodleBoard() {
-  // Bars typed but never locked used to be thrown away on close
+async function _dbPersist() {
+  clearTimeout(DB._saveTimer); DB._saveTimer = null;
   const song = S.songs?.find(s => s.name === DB.songName);
-  if (song && (!_same(song.doodle?.bars || [], DB.bars) || !_same(song.doodle?.barIds || [], DB.barIds))) _dbPersist();
-  dbCloseDotMenu(); dbClosePinDisplay(); dbClosePinMenu(); dbCancelAnchorMode();
-  $('db-note-modal').classList.remove('open');
-  $('db-pick-sheet').classList.remove('open');
-  if (DB._syncInterval) { clearInterval(DB._syncInterval); DB._syncInterval = null; }
-  $('doodle-board').classList.remove('open');
-  _dbZoom = 1; _dbPanDx = 0; _dbApplyTransform();
-  DB.songName = null;
-  // Refresh structure tab if currently visible
-  if ($('tp-tabcontent-structure')?.classList.contains('active')) renderSongStructure();
+  if (!song) return;
+  DB.pins.forEach(p => { const i = _dbPinDot(p); p.barIdx = i >= 0 ? i : null; });
+  song.doodle = Object.assign(song.doodle || {}, {
+    bars: [...DB.bars], barIds: [...DB.barIds], customTiles: [...DB.customTiles],
+    pins: DB.pins.map(p => ({...p})), energy: { ...DB.energy },
+    locked: true, // older app copies only show pins on a locked board
+  });
+  try { await saveSongsJson(); }
+  catch(e) { showToast('Save failed: ' + _errMsg(e)); }
+}
+function _dbSaveSoon() { clearTimeout(DB._saveTimer); DB._saveTimer = setTimeout(_dbPersist, 1500); }
+function dbFlush() { if (DB._saveTimer) _dbPersist(); }
+
+// Song page Structure tab
+async function renderSongStructure() {
+  if (!(DB.editing && DB.songName === S.tp.songName)) {
+    if (!await dbLoad()) return;
+  }
+  dbRender();
 }
 
-function dbRenderSpine() {
-  const c = $('db-spine');
-  if (!c) return;
-  c.innerHTML = '';
+/* ── Rendering ── */
+function dbRender() {
+  const root = $('db-rows');
+  if (!root) return;
+  root.innerHTML = '';
+  $('tp-tabcontent-structure')?.classList.toggle('db-editing', DB.editing);
   if (!DB.bars.length) {
-    if (!DB.locked) {
-      const hint = document.createElement('div');
-      hint.style.cssText = 'font-family:var(--f-mono);font-size:11px;color:var(--c-teal-pale);padding:12px 4px;opacity:0.7';
-      hint.textContent = 'Tap keys below to build structure…';
-      c.appendChild(hint);
-    }
+    const hint = document.createElement('div');
+    hint.className = 'db-empty';
+    hint.textContent = DB.editing ? 'Tap the keys below to add bars. Hold a key and slide up for a half bar.'
+                                  : 'No structure yet. Tap ✎ Edit structure to build one.';
+    root.appendChild(hint);
+    if (DB.editing) root.appendChild(_dbCursorEl());
+    dbRenderBar();
     return;
   }
-  const onDotClick = DB.locked
-    ? (idx, dotEl) => { if (DB._anchoringPinId) dbAnchorPinToDot(idx); else dbShowDotMenu(dotEl, idx); }
-    : (idx) => { DB.cursor = idx + 1; dbRenderSpine(); };
-  c.appendChild(_buildDbSpineFrag(DB.bars, DB.locked ? -1 : DB.cursor, onDotClick));
-  if (DB.locked) requestAnimationFrame(dbRenderPins);
-}
-
-function _buildDbSpineFrag(bars, cursor, onDotClick) {
-  const frag = document.createDocumentFragment();
-  if (!bars.length) return frag;
-  const normBars = bars.map(b => b.toUpperCase());
-  const sections = deriveSections(normBars);
+  const sections = deriveSections(DB.bars.map(b => b.toUpperCase()));
   const labels   = getLabels(sections);
+  const prof     = _dbEnergyProfile(DB.barIds, DB.energy, DB.bars.map(b => _dbIsHalf(b) ? 0.5 : 1));
+  const byDot    = {};
+  DB.pins.forEach(p => { const i = _dbPinDot(p); if (i >= 0) (byDot[i] = byDot[i] || []).push(p); });
+  const frag = document.createDocumentFragment();
   let gi = 0;
   sections.forEach((sec, si) => {
-    const isLast = si === sections.length - 1;
-    const secEl  = document.createElement('div');
-    secEl.className = 'struct-section';
-    const row = document.createElement('div');
-    row.className = 'struct-dots-row';
-    for (let b = 0; b < sec.bars; b++) {
-      if (cursor >= 0 && gi === cursor) row.appendChild(_makeCursorEl());
-      const origType = bars[gi];
-      const isHalf   = origType === origType.toLowerCase() && origType !== origType.toUpperCase();
-      const dot = document.createElement('span');
-      dot.className = 'struct-dot db-dot' + (isHalf ? ' half' : '');
-      dot.style.background = dbGetTileColor(origType);
-      if (onDotClick) {
-        const ci = gi;
-        dot.addEventListener('click', e => { e.stopPropagation(); onDotClick(ci, dot); });
-      }
-      row.appendChild(dot);
-      gi++;
+    for (let b = 0; b < sec.bars; b++, gi++) {
+      if (DB.editing && gi === DB.cursor) frag.appendChild(_dbCursorEl());
+      frag.appendChild(_dbRowEl(gi, b === 0 ? labels[si] : '', si > 0 && b === 0, prof[gi], byDot[gi] || []));
     }
-    if (isLast && cursor >= 0 && gi === cursor) row.appendChild(_makeCursorEl());
-    const lbl = document.createElement('div');
-    lbl.className = 'struct-label';
-    lbl.textContent = labels[si];
-    secEl.appendChild(row); secEl.appendChild(lbl);
-    frag.appendChild(secEl);
   });
-  return frag;
+  if (DB.editing && DB.cursor >= DB.bars.length) frag.appendChild(_dbCursorEl());
+  root.appendChild(frag);
+  dbRenderBar();
 }
 
+function _dbCursorEl() { const el = document.createElement('div'); el.className = 'db-cursor'; return el; }
+
+const _DB_PIN_ICON = { note: '✎', tab: 'T', snip: '▸' };
+function _dbPinLabel(p) {
+  return p.type === 'note' ? (p.text || '') : p.type === 'tab' ? (p.tabTitle || 'Tab') : (p.snippetTitle || 'Snippet');
+}
+
+function _dbRowEl(i, label, secStart, energy, pins) {
+  const type = DB.bars[i], half = _dbIsHalf(type), open = !DB.editing && DB.openIdx === i;
+  const row = document.createElement('div');
+  row.className = 'db-row' + (half ? ' half' : '') + (secStart ? ' sec-start' : '') + (open ? ' open' : '');
+  row.dataset.i = i;
+
+  // energy: a trapezoid from this row's top width to its bottom width
+  const en = document.createElement('div');
+  en.className = 'db-en';
+  if (energy) {
+    const w = v => 3 + (v - 1) * 3.75, c = 11;
+    const [t, b] = energy.map(w);
+    const pt = DB.energy[DB.barIds[i]] ? ' pt' : '';
+    en.innerHTML = `<svg viewBox="0 0 22 10" preserveAspectRatio="none"><polygon class="db-en-fill${pt}" points="${c - t/2},0 ${c + t/2},0 ${c + b/2},10 ${c - b/2},10"/></svg>`;
+  }
+  en.addEventListener('click', e => { e.stopPropagation(); dbEnergyPick(i, en); });
+
+  const dc = document.createElement('div');
+  dc.className = 'db-dotcell';
+  const dot = document.createElement('span');
+  dot.className = 'db-vdot' + (half ? ' half' : '') + (pins.length ? ' has' : '');
+  dot.style.background = dbGetTileColor(type);
+  dot.style.setProperty('--ring', dbGetTileColor(type));
+  dc.appendChild(dot);
+  if (label) { const l = document.createElement('span'); l.className = 'db-sec'; l.textContent = label; dc.appendChild(l); }
+
+  const lanes = document.createElement('div');
+  lanes.className = 'db-lanes';
+  lanes.innerHTML = CONFIG.BAND_MEMBERS.map(m => `<i style="background:${MEMBER_COLORS[m] || '#888'}"></i>`).join('');
+
+  const call = document.createElement('div');
+  call.className = 'db-call';
+  pins.forEach(p => call.appendChild(_dbChipEl(p)));
+  if (open) call.appendChild(_dbActionsEl(i));
+
+  row.append(en, dc, lanes, call);
+  row.addEventListener('click', e => dbRowTap(i, e, row));
+  return row;
+}
+
+function _dbChipEl(p) {
+  const chip = document.createElement('span');
+  chip.className = 'db-chip db-chip-' + p.type;
+  chip.innerHTML = `<b>${_DB_PIN_ICON[p.type] || '•'}</b>${esc(_dbPinLabel(p))}`;
+  _dbTapHold(chip, () => dbTapPin(p), () => dbShowPinMenu(p, chip));
+  return chip;
+}
+
+function _dbActionsEl(i) {
+  const box = document.createElement('div');
+  box.className = 'db-acts';
+  [['+ Note', dbAddNote], ['+ Tab', dbAddTab], ['+ New tab', dbNewTab], ['+ Snip', dbAddSnip], ['🎙 Record', dbRecordSnip]]
+    .forEach(([txt, fn]) => {
+      const b = document.createElement('button');
+      b.textContent = txt;
+      b.addEventListener('click', e => { e.stopPropagation(); fn(i); });
+      box.appendChild(b);
+    });
+  return box;
+}
+
+// Tap and long-press that still lets the list scroll (no preventDefault on touch)
+function _dbTapHold(el, onTap, onHold) {
+  let timer = null, x0 = 0, y0 = 0, held = false, moved = false;
+  el.addEventListener('pointerdown', e => {
+    x0 = e.clientX; y0 = e.clientY; held = false; moved = false;
+    clearTimeout(timer);
+    timer = setTimeout(() => { if (!moved) { held = true; onHold(); } }, 450);
+  });
+  el.addEventListener('pointermove', e => { if (Math.hypot(e.clientX - x0, e.clientY - y0) > 8) { moved = true; clearTimeout(timer); } });
+  el.addEventListener('pointerup', () => clearTimeout(timer));
+  el.addEventListener('pointercancel', () => { moved = true; clearTimeout(timer); });
+  el.addEventListener('contextmenu', e => e.preventDefault());
+  el.addEventListener('click', e => { e.stopPropagation(); if (!held && !moved) onTap(); });
+}
+
+function dbRowTap(i, e, row) {
+  if (DB.editing) {
+    // top half of a row = cursor before it, bottom half = after it
+    const r = row.getBoundingClientRect();
+    DB.cursor = (e.clientY - r.top) < r.height / 2 ? i : i + 1;
+    dbRender();
+    return;
+  }
+  if (DB._anchoringPinId) { dbAnchorPinToDot(i); return; }
+  DB.openIdx = DB.openIdx === i ? -1 : i;
+  dbRender();
+}
+
+/* ── Bottom bar: Edit structure / Done, fix links ── */
+function dbRenderBar() {
+  const floating = DB.pins.filter(p => _dbPinDot(p) < 0).length;
+  $('db-edit-btn').textContent = DB.editing ? 'Done' : '✎ Edit structure';
+  $('db-edit-btn').classList.toggle('on', DB.editing);
+  $('db-clear-btn').style.display = DB.editing ? '' : 'none';
+  $('db-fix-btn').style.display = floating && !DB.editing ? '' : 'none';
+}
+
+function dbToggleEdit() { DB.editing ? dbDoneEditing() : dbStartEditing(); }
+function dbStartEditing() {
+  DB.editing = true; DB.openIdx = -1; DB.cursor = DB.bars.length;
+  dbCancelAnchorMode();
+  dbRenderKeyboard();
+  dbRender();
+  _dbScrollToCursor();
+}
+function dbDoneEditing() {
+  if (!DB.editing) return;
+  DB.editing = false;
+  dbRender();
+  _dbPersist();
+}
+
+function _dbScrollToCursor() {
+  requestAnimationFrame(() => $('db-rows')?.querySelector('.db-cursor')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
+}
+
+/* ── Edit structure: key tiles ── */
 function dbRenderKeyboard() {
   const kb = $('db-keyboard');
   if (!kb) return;
   kb.innerHTML = '';
-  const stdKeys = [
-    { type:'I', color:'#4A9AA8' }, { type:'V', color:'#C07840' },
-    { type:'C', color:'#D04848' }, { type:'B', color:'#5A9868' },
-    { type:'O', color:'#7A90B8' }, { type:'X', color:'#9070A8' },
-    { type:'S', color:'#C8B840' },
-  ];
-  const allKeys = [...stdKeys];
+  const allKeys = Object.entries(STRUCT_COLORS).map(([type, color]) => ({ type, color }));
   DB.customTiles.forEach((t, i) => allKeys.push({ type: t, color: CUSTOM_TILE_COLORS[i % CUSTOM_TILE_COLORS.length] }));
   allKeys.forEach(({ type, color }) => {
     const btn = document.createElement('button');
@@ -5761,111 +5506,74 @@ function _dbAttachKeyHold(btn, type, color) {
   btn.addEventListener('click', () => { if (Date.now() - _lastTouchTime < 600) return; /* desktop handled in mousedown/up */ });
 }
 
-function _dbScrollToCursor() {
-  requestAnimationFrame(() => {
-    const wrap = $('db-spine-wrap');
-    const cur  = wrap?.querySelector('.struct-cursor-el');
-    if (!wrap || !cur) return;
-    if (_dbZoom <= 1) {
-      cur.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
-    } else {
-      const wr = wrap.getBoundingClientRect(), cr = cur.getBoundingClientRect();
-      const margin = 24;
-      if (cr.left < wr.left + margin)        { _dbPanDx += wr.left + margin - cr.left; _dbApplyTransform(); }
-      else if (cr.right > wr.right - margin) { _dbPanDx -= cr.right - (wr.right - margin); _dbApplyTransform(); }
-    }
-  });
-}
 
 function dbPressKey(type, half) {
   DB.bars.splice(DB.cursor, 0, half ? type.toLowerCase() : type);
   DB.barIds.splice(DB.cursor, 0, _dbNewBarId());
   DB.cursor++;
-  dbRenderSpine();
+  dbRender();
   _dbScrollToCursor();
+  _dbSaveSoon();
 }
 
 function dbDeleteBar() {
   if (!DB.cursor) return;
   DB.bars.splice(--DB.cursor, 1);
-  DB.barIds.splice(DB.cursor, 1); // its pins float
-  dbRenderSpine();
+  DB.barIds.splice(DB.cursor, 1); // anything pinned to it floats
+  dbRender();
   _dbScrollToCursor();
+  _dbSaveSoon();
 }
 
-function dbClear() {
-  if (DB.bars.length && !confirm('Clear all bars? Anything pinned to them is kept, floating.')) return;
+async function dbClear() {
+  if (DB.bars.length && !await _confirmModal('Clear structure?', 'Removes every bar. Anything pinned to them is kept, floating.', { yes: 'Clear' })) return;
   DB.bars = []; DB.barIds = []; DB.cursor = 0;
-  dbRenderSpine();
+  dbRender();
+  _dbSaveSoon();
 }
 
-async function dbSaveAndLock() {
-  if (!DB.bars.length) { showToast('Add some bars first'); return; }
-  // Pins whose dots were deleted just float; nothing to confirm
-  DB.locked = true;
-  dbUpdateLockState();
-  await _dbPersist();
-  showToast('Structure saved & locked');
+function dbAddCustomTile() {
+  if (DB.customTiles.length >= 3) { showToast('Maximum 3 custom tiles'); return; }
+  const existing = [...Object.keys(STRUCT_COLORS), ...DB.customTiles];
+  const raw    = (prompt('Enter a single letter (A–Z) for your custom tile:') || '').trim();
+  const letter = raw.toUpperCase()[0];
+  if (!letter || !/[A-Z]/.test(letter)) { if (raw) showToast('Must be a single letter A–Z'); return; }
+  if (existing.includes(letter)) { showToast(`'${letter}' is already in use`); return; }
+  DB.customTiles.push(letter);
+  dbRenderKeyboard();
+  _dbSaveSoon();
 }
 
-async function dbUnlock() {
-  DB.locked = false;
-  DB.cursor = DB.bars.length;
-  dbUpdateLockState();
-  dbCloseDotMenu();
-  await _dbPersist();
+/* ── Energy picker (tap the strip left of a dot) ── */
+function dbEnergyPick(i, cell) {
+  _dbCloseEnergyPick();
+  const id = DB.barIds[i], cur = DB.energy[id];
+  const pop = document.createElement('div');
+  pop.id = 'db-en-pop';
+  pop.innerHTML = '<span>Hype</span>' + [1, 2, 3, 4, 5].map(v => `<button data-v="${v}" class="${v === cur ? 'on' : ''}">${v}</button>`).join('')
+                + (cur ? '<button data-v="0" class="clr">✕</button>' : '');
+  document.body.appendChild(pop);
+  const r = cell.getBoundingClientRect();
+  pop.style.left = Math.min(r.right + 6, window.innerWidth - pop.offsetWidth - 8) + 'px';
+  pop.style.top  = Math.max(8, r.top + r.height / 2 - pop.offsetHeight / 2) + 'px';
+  pop.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const v = +b.dataset.v;
+    if (v) DB.energy[id] = v; else delete DB.energy[id];
+    _dbCloseEnergyPick();
+    dbRender();
+    _dbPersist();
+  });
+  setTimeout(() => document.addEventListener('pointerdown', _dbEnergyOutside), 0);
+}
+function _dbEnergyOutside(e) { if (!$('db-en-pop')?.contains(e.target)) _dbCloseEnergyPick(); }
+function _dbCloseEnergyPick() {
+  $('db-en-pop')?.remove();
+  document.removeEventListener('pointerdown', _dbEnergyOutside);
 }
 
-async function _dbPersist() {
-  const song = S.songs?.find(s => s.name === DB.songName);
-  if (!song) return;
-  if (!song.doodle) song.doodle = {};
-  song.doodle.bars        = [...DB.bars];
-  song.doodle.barIds      = [...DB.barIds];
-  DB.pins.forEach(p => { const i = _dbPinDot(p); p.barIdx = i >= 0 ? i : null; });
-  song.doodle.locked      = DB.locked;
-  song.doodle.customTiles = [...DB.customTiles];
-  song.doodle.pins        = DB.pins.map(p => ({...p}));
-  try { await saveSongsJson(); }
-  catch(e) { showToast('Save failed: ' + _errMsg(e)); }
-}
-
-function dbUpdateLockState() {
-  $('db-keyboard')?.classList.toggle('locked', DB.locked);
-  $('db-actions')?.classList.toggle('locked', DB.locked);
-  $('db-locked-bar')?.classList.toggle('show', DB.locked);
-  dbRenderSpine();
-}
-
-function dbShowDotMenu(dotEl, barIdx) {
-  dbCloseDotMenu();
-  const menu = $('db-dot-menu');
-  if (!menu) return;
-  DB._dotMenuBarIdx = barIdx;
-  const rect = dotEl.getBoundingClientRect();
-  let top  = rect.top - 220;
-  if (top < 60) top = rect.bottom + 10;
-  let left = rect.left + rect.width / 2 - 77;
-  if (left < 8) left = 8;
-  if (left + 165 > window.innerWidth) left = window.innerWidth - 173;
-  menu.style.left = left + 'px';
-  menu.style.top  = top  + 'px';
-  menu.classList.add('open');
-  setTimeout(() => document.addEventListener('click', _dbMenuOutsideClick, { once: true }), 20);
-}
-
-function _dbMenuOutsideClick(e) {
-  if (!$('db-dot-menu')?.contains(e.target)) dbCloseDotMenu();
-}
-
-function dbCloseDotMenu() {
-  $('db-dot-menu')?.classList.remove('open');
-  DB._dotMenuBarIdx = -1;
-}
-
-function dbDotMenuNote() {
-  const barIdx = DB._dotMenuBarIdx;
-  dbCloseDotMenu();
+/* ── Adding things to a dot ── */
+function dbAddNote(barIdx) {
   DB._noteEditPinId = null; DB._noteTargetBarIdx = barIdx;
   $('db-note-hdr-title').textContent = 'Add Note';
   $('db-note-textarea').value = '';
@@ -5873,43 +5581,36 @@ function dbDotMenuNote() {
   setTimeout(() => $('db-note-textarea').focus(), 120);
 }
 
-async function dbDotMenuSnip() {
-  const barIdx = DB._dotMenuBarIdx;
-  dbCloseDotMenu();
+async function dbAddSnip(barIdx) {
   if (!S.snippetsLoaded) { showLoading('Loading…'); await loadSnippets(); hideLoading(); }
   const snips = (S.snippets || []).filter(s => s.songName === DB.songName && !s.commentId);
-  if (!snips.length) { showToast('No snippets for this track'); return; }
-  $('db-pick-title').textContent = 'Pick a Snippet';
-  const list = $('db-pick-list');
-  list.innerHTML = '';
-  snips.forEach(sn => {
-    const item = document.createElement('div');
-    item.className = 'db-pick-item';
+  if (!snips.length) { showToast('No snippets for this song yet'); return; }
+  _dbPickSheet('Pick a Snippet', snips.map(sn => {
     const name = sn.title || sn.fileName || 'Snippet';
-    const sub  = sn.duration ? fmt(sn.duration) : '';
-    item.innerHTML = `<div class="db-pick-item-name">${esc(name)}</div><div class="db-pick-item-sub">${sub}</div>`;
-    item.addEventListener('click', () => dbPickItem('snip', sn.id, name, barIdx));
-    list.appendChild(item);
-  });
-  $('db-pick-sheet').classList.add('open');
+    return { name, sub: sn.duration ? fmt(sn.duration) : '', pick: () => dbPickItem('snip', sn.id, name, barIdx) };
+  }));
 }
 
-async function dbDotMenuTab() {
-  const barIdx = DB._dotMenuBarIdx;
-  dbCloseDotMenu();
+async function dbAddTab(barIdx) {
   if (!S.tabsLoaded) { showLoading('Loading…'); await loadTabs(); hideLoading(); }
   const tabs = (S.tabs || []).filter(t => t.songName === DB.songName || !t.songName);
   tabs.sort((a, b) => (b.songName === DB.songName ? 1 : 0) - (a.songName === DB.songName ? 1 : 0));
-  if (!tabs.length) { showToast('No tabs found — create tabs in the Feathers page first'); return; }
-  $('db-pick-title').textContent = 'Pick a Tab';
+  if (!tabs.length) { showToast('No tabs yet. Use + New tab'); return; }
+  _dbPickSheet('Pick a Tab', tabs.map(tab => {
+    const name = tab.title || 'Untitled';
+    return { name, sub: tab.instrument || '', pick: () => dbPickItem('tab', tab.id, name, barIdx) };
+  }));
+}
+
+function _dbPickSheet(title, items) {
+  $('db-pick-title').textContent = title;
   const list = $('db-pick-list');
   list.innerHTML = '';
-  tabs.forEach(tab => {
+  items.forEach(({ name, sub, pick }) => {
     const item = document.createElement('div');
     item.className = 'db-pick-item';
-    const name = tab.title || 'Untitled';
-    item.innerHTML = `<div class="db-pick-item-name">${esc(name)}</div><div class="db-pick-item-sub">${esc(tab.instrument)}</div>`;
-    item.addEventListener('click', () => dbPickItem('tab', tab.id, name, barIdx));
+    item.innerHTML = `<div class="db-pick-item-name">${esc(name)}</div><div class="db-pick-item-sub">${esc(sub)}</div>`;
+    item.addEventListener('click', () => { $('db-pick-sheet').classList.remove('open'); pick(); });
     list.appendChild(item);
   });
   $('db-pick-sheet').classList.add('open');
@@ -5921,7 +5622,7 @@ function dbPickItem(type, itemId, label, barIdx) {
   if (type === 'snip') { pin.snippetId = itemId; pin.snippetTitle = label; }
   else if (type === 'tab') { pin.tabId = itemId; pin.tabTitle = label; }
   DB.pins.push(pin);
-  dbRenderPins();
+  dbRender();
   _dbPersist();
 }
 
@@ -5936,167 +5637,33 @@ function dbSubmitNote() {
     DB.pins.push({ id: 'pin_' + Date.now().toString(36), type: 'note', ..._dbAnchorAt(DB._noteTargetBarIdx), text });
   }
   DB._noteEditPinId = null;
-  dbRenderPins();
+  dbRender();
   _dbPersist();
 }
 
-function dbDotMenuEdit()  { dbUnlock(); }
-
-async function dbDotMenuNewTab() {
-  const barIdx = DB._dotMenuBarIdx;
-  dbCloseDotMenu();
-  // Hide overlay without clearing DB state so we can restore it after save
-  $('doodle-board').classList.remove('open');
+async function dbNewTab(barIdx) {
   const picked = await _simplePickerModal('Instrument', ['Bass', 'Guitar'], 'Bass');
-  if (picked === null) { $('doodle-board').classList.add('open'); return; }
+  if (picked === null) return;
   DB._awaitingNewTabBarIdx = barIdx;
   TE.instrument = picked.toLowerCase();
   openTabEditor(null);
 }
 
-function dbDotMenuRecordSnip() {
-  const barIdx = DB._dotMenuBarIdx;
-  dbCloseDotMenu();
+function dbRecordSnip(barIdx) {
   DB._awaitingNewSnipBarIdx = barIdx;
   openSnipRecorder('doodle', null, DB.songName);
 }
 
-function dbAddCustomTile() {
-  if (DB.customTiles.length >= 3) { showToast('Maximum 3 custom tiles'); return; }
-  const existing = [...Object.keys(STRUCT_COLORS), ...DB.customTiles];
-  const raw    = (prompt('Enter a single letter (A–Z) for your custom tile:') || '').trim();
-  const letter = raw.toUpperCase()[0];
-  if (!letter || !/[A-Z]/.test(letter)) { if (raw) showToast('Must be a single letter A–Z'); return; }
-  if (existing.includes(letter)) { showToast(`'${letter}' is already in use`); return; }
-  DB.customTiles.push(letter);
-  dbRenderKeyboard();
-}
-
-function dbSyncPlayBtn() {
-  const btn = $('db-transport-play');
-  if (!btn) return;
-  const playing = S.tp?.audio && !S.tp.audio.paused;
-  _setPlayBtn(btn, playing ? 'pause' : 'play');
-}
-
-/* ── Pin rendering ── */
-function dbRenderPins() {
-  const inner = $('db-spine-inner');
-  const spine = $('db-spine');
-  if (!inner || !spine) return;
-  inner.querySelectorAll('.db-pin').forEach(e => e.remove());
-  inner.querySelector('#db-pins-svg')?.remove();
-  if (!DB.locked || !DB.pins.length) return;
-
-  const innerRect = inner.getBoundingClientRect();
-  const pinsZone  = $('db-pins-zone');
-  const pzH = pinsZone ? pinsZone.offsetHeight : 80;
-
-  const dotEls  = [...spine.querySelectorAll('.db-dot')];
-  const dotCtrs = dotEls.map(d => {
-    const r = d.getBoundingClientRect();
-    return { x: r.left - innerRect.left + r.width/2, y: r.top - innerRect.top + r.height/2 };
-  });
-
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(svgNS, 'svg');
-  svg.id = 'db-pins-svg';
-  svg.style.cssText = `position:absolute;top:0;left:0;width:${inner.scrollWidth}px;height:${inner.scrollHeight + 10}px;pointer-events:none;overflow:visible`;
-  inner.appendChild(svg);
-
-  const PIN_R = 12;
-  const MIN_SPACING = PIN_R * 2 + 4; // minimum gap between pin centres
-
-  // Group pins by bar index, compute each pin's ideal x centred on its dot
-  const byBar = {};
-  DB.pins.forEach(pin => {
-    const di = _dbPinDot(pin);
-    const k = di >= 0 ? di : '__free__';
-    (byBar[k] = byBar[k] || []).push(pin);
-  });
-
-  const allPins = [];
-  let freeX = 20;
-  Object.entries(byBar).forEach(([bk, grpPins]) => {
-    const bi  = bk === '__free__' ? -1 : parseInt(bk);
-    const dot = bi >= 0 && bi < dotCtrs.length ? dotCtrs[bi] : null;
-    grpPins.forEach((pin, pi) => {
-      const spread = (pi - (grpPins.length - 1) / 2) * MIN_SPACING;
-      const cx = dot ? dot.x + spread : freeX + pi * MIN_SPACING;
-      allPins.push({ pin, cx, dot });
-    });
-    if (!dot) freeX += grpPins.length * MIN_SPACING + 10;
-  });
-
-  // Sort by x, then resolve overlaps across all groups with forward+backward passes
-  allPins.sort((a, b) => a.cx - b.cx);
-  for (let i = 1; i < allPins.length; i++) {
-    if (allPins[i].cx < allPins[i-1].cx + MIN_SPACING)
-      allPins[i].cx = allPins[i-1].cx + MIN_SPACING;
-  }
-  for (let i = allPins.length - 2; i >= 0; i--) {
-    if (allPins[i].cx > allPins[i+1].cx - MIN_SPACING)
-      allPins[i].cx = allPins[i+1].cx - MIN_SPACING;
-  }
-
-  const pinCy = 22;
-  allPins.forEach(({ pin, cx, dot }) => {
-    const el = document.createElement('div');
-    el.className = 'db-pin' + (_dbPinDot(pin) < 0 ? ' unanchored' : '');
-    el.dataset.pinId = pin.id;
-    el.style.left = (cx - PIN_R) + 'px';
-    el.style.top  = (pinCy - PIN_R) + 'px';
-    el.textContent = pin.type === 'note' ? 'N' : pin.type === 'tab' ? 'T' : '▸';
-    inner.appendChild(el);
-    _dbAttachPinInteraction(el, pin);
-
-    if (dot) {
-      const x1 = cx, y1 = pinCy + PIN_R;
-      const x2 = dot.x, y2 = dot.y - 10;
-      const mid = (y1 + y2) / 2;
-      const path = document.createElementNS(svgNS, 'path');
-      path.setAttribute('d', `M${x1},${y1} C${x1},${mid} ${x2},${mid} ${x2},${y2}`);
-      path.setAttribute('stroke', '#C4503A');
-      path.setAttribute('stroke-width', '1.5');
-      path.setAttribute('fill', 'none');
-      path.setAttribute('opacity', '0.5');
-      svg.appendChild(path);
-    }
-  });
-}
-
-function _dbAttachPinInteraction(el, pin) {
-  let holdTimer = null, holdFired = false, lastTouch = 0;
-
-  function onDown(e) {
-    e.stopPropagation();
-    if (e.type === 'touchstart') { lastTouch = Date.now(); e.preventDefault(); }
-    holdFired = false;
-    holdTimer = setTimeout(() => { holdFired = true; dbShowPinMenu(pin, el); }, 400);
-  }
-  function onUp(e) {
-    e.stopPropagation();
-    clearTimeout(holdTimer);
-    if (!holdFired) dbTapPin(pin);
-    holdFired = false;
-  }
-  el.addEventListener('touchstart', onDown, { passive: false });
-  el.addEventListener('touchend',   onUp,   { passive: false });
-  el.addEventListener('mousedown',  onDown);
-  el.addEventListener('mouseup',    onUp);
-  el.addEventListener('click', e => e.stopPropagation());
-}
-
+/* ── Pins: tap, menu, move ── */
 async function dbTapPin(pin) {
-  if (DB._anchoringPinId) return; // tap-to-anchor mode — ignore pin taps
+  if (DB._anchoringPinId) return;
   if (pin.type === 'note') {
     $('db-pin-display-type').textContent = 'Note';
     $('db-pin-display-body').textContent = pin.text || '(empty)';
     $('db-pin-display').classList.add('open');
   } else if (pin.type === 'tab') {
     if (!S.tabsLoaded) { showLoading('…'); await loadTabs(); hideLoading(); }
-    const tab = S.tabs?.find(t => t.id === pin.tabId);
-    if (!tab) { showToast('Tab not found'); return; }
+    if (!S.tabs?.find(t => t.id === pin.tabId)) { showToast('Tab not found'); return; }
     tabViewTab(pin.tabId);
   } else if (pin.type === 'snip') {
     if (!S.snippetsLoaded) { showLoading('…'); await loadSnippets(); hideLoading(); }
@@ -6112,7 +5679,6 @@ function dbShowPinMenu(pin, el) {
   const menu = $('db-pin-menu');
   const body = $('db-pin-menu-body');
   if (!menu || !body) return;
-
   body.innerHTML = '';
   const addBtn = (text, cls, fn) => {
     const btn = document.createElement('button');
@@ -6121,12 +5687,10 @@ function dbShowPinMenu(pin, el) {
     btn.addEventListener('click', () => { dbClosePinMenu(); fn(); });
     body.appendChild(btn);
   };
-
   if (pin.type === 'note') addBtn('Edit note', '', () => dbEditNote(pin.id));
-  addBtn(_dbPinDot(pin) < 0 ? 'Anchor to dot' : 'Move to dot', '', () => dbStartAnchorMode(pin.id));
+  addBtn(_dbPinDot(pin) < 0 ? 'Attach to a dot' : 'Move to dot', '', () => dbStartAnchorMode(pin.id));
   addBtn(pin.type === 'snip' ? 'Remove from board' : 'Delete', 'danger', () => dbDeletePin(pin.id));
   addBtn('Cancel', 'muted', () => {});
-
   const rect = el.getBoundingClientRect();
   let top  = rect.top - (body.children.length * 42 + 20);
   if (top < 60) top = rect.bottom + 8;
@@ -6154,12 +5718,13 @@ function dbEditNote(pinId) {
 
 async function dbDeletePin(pinId) {
   DB.pins = DB.pins.filter(p => p.id !== pinId);
-  dbRenderPins();
+  dbRender();
   await _dbPersist();
   showToast('Pin removed');
 }
 
 function dbStartAnchorMode(pinId) {
+  if (DB.editing) dbDoneEditing();
   DB._anchoringPinId = pinId;
   $('db-anchor-banner')?.classList.add('show');
 }
@@ -6170,25 +5735,24 @@ function dbCancelAnchorMode() {
 }
 
 function dbAnchorPinToDot(dotIdx) {
-  const pinId = DB._anchoringPinId;
+  const pin = DB.pins.find(p => p.id === DB._anchoringPinId);
   dbCancelAnchorMode();
-  if (!confirm('Anchor pin to this dot?')) return;
-  const pin = DB.pins.find(p => p.id === pinId);
   if (!pin) return;
   Object.assign(pin, _dbAnchorAt(dotIdx));
-  dbRenderPins();
+  dbRender();
   _dbPersist();
-  showToast('Anchored');
 }
 
-
-
-
-
-
-
-
-
+/* ── Floating things (their dot was deleted): the fix-links tray ── */
+function dbShowFloating() {
+  const floating = DB.pins.filter(p => _dbPinDot(p) < 0);
+  if (!floating.length) return;
+  _dbPickSheet('Not attached: tap one, then tap a dot', floating.map(p => ({
+    name: (_DB_PIN_ICON[p.type] || '•') + ' ' + _dbPinLabel(p),
+    sub: p.type,
+    pick: () => dbStartAnchorMode(p.id),
+  })));
+}
 
 /* ══════════════════════════════════════════════════════
    TAB STORAGE
@@ -8913,7 +8477,6 @@ async function tabSave() {
         if (DB._awaitingNewTabBarIdx != null && DB.songName && DB.songName === TE.songName) {
           const pendingIdx = DB._awaitingNewTabBarIdx;
           DB._awaitingNewTabBarIdx = null;
-          $('doodle-board').classList.add('open');
           dbPickItem('tab', tabData.id, tabData.title || 'Untitled tab', pendingIdx);
         }
       } catch(e) { hideLoading(); showToast('Save failed: ' + (e?.message||e)); }

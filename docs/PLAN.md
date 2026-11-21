@@ -8,10 +8,13 @@ before building anything. Newest entries at the top of each section. Feature spe
 ## Now
 - **Doodle Board / Song Canvas redesign:** see [DOODLE_SPEC.md](DOODLE_SPEC.md). Design agreed
   2026-11-20. Build order:
-  1. ✅ (2026-11-20, not yet pushed) Permanent dot IDs (`doodle.barIds`), pins point at `barId`,
+  1. ✅ (2026-11-20, pushed in 0b676bc, awaiting phone test) Permanent dot IDs (`doodle.barIds`), pins point at `barId`,
      deleted dot → pin floats, old `barIdx` pins migrated on open.
-  2. Board becomes the song page's Structure tab: vertical, energy | dots | lanes | lyrics, with
-     Edit structure as the deeper level. Notes tab removed. Fix-links icon for floating items.
+  2. ✅ (2026-11-21, pushed, awaiting phone test) Board is the song page's Structure tab: vertical rows,
+     energy | dots | lanes (empty for now) | callouts (existing pins as chips). Tap ⚡ strip = hype
+     1–5. Tap a dot = expand with +Note/+Tab/+New tab/+Snip/Record. Edit structure = cursor + key
+     tiles. Fix-links icon + tray. Notes tab and the full-screen overlay are gone. Tabs order:
+     Recordings, Lyrics, Tabs, Structure.
   3. Lyrics linking (even spread, per-line tweaks from both sides, broken links in Lyrics edit mode).
   4. Member lanes and moments. 5. Layers (comments/tabs callouts, lyrics fade, linked track
      comment ▶). 6. Versions, then the horizontal toggle.
@@ -19,6 +22,12 @@ before building anything. Newest entries at the top of each section. Feature spe
   `bars` without `barIds`, and pins may then land on the wrong dot.
 
 ## Decisions
+- 2026-11-20: Step 2 layout, from my proposals (Patrick: "ok"): one row per dot, scrolling
+  vertically. Half bars get half-height rows. Faint divider between sections, label on the first dot. Tap
+  the ⚡ column beside a dot → 1–5 picker (+ clear). Tap a dot → its row expands to show
+  attachments + quick actions (+Comment, +Tab, +Snip). Edit structure = the same vertical list with
+  a cursor between rows and key tiles at the bottom, Done to return. Bottom bar: Edit structure,
+  layers, fix-links icon (only when something floats).
 - 2026-11-20: **Versions:** people can save versions (snapshots) of the structure and lanes.
   Details open (Q18).
 - 2026-11-20: **Anyone can edit any lane.** Each chunk records who made it.
@@ -89,6 +98,11 @@ Asked 2026-11-20, awaiting answers:
 ## Known problems
 - ~~Doodle pins store `barIdx` (position), so inserting a bar shifts every later pin.~~ Fixed by
   step 1 (2026-11-20).
+
+## Notes for later steps
+- Step 2 shows existing pins as chips in the callout column. When lyrics arrive (step 3), the
+  default view becomes lyrics, and pins/comments move behind the layers toggle (step 5).
+- Landscape compaction of the key tiles was dropped with the old overlay. Re-check in landscape.
 
 ## Parked / someday
 - Pin to the gaps between dots.
