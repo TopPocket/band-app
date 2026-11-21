@@ -18,7 +18,8 @@ before building anything. Newest entries at the top of each section. Feature spe
   3. ✅ (2026-11-21, pushed, awaiting phone test) Lyrics linking: "♪ Fit lyrics" button, lyric
      lines in the callout column, ▲▼✕ in the expanded row, faded chorus echoes, margin tags on the
      Lyrics page (tap to pick a dot), edit-mode warning, lost/floating lines in the fix tray.
-     Not done: dragging lines (only ▲▼ for now).
+     2026-11-21 follow-up (pushed): ▲▼ replaced by hold-and-drag with bump physics, on both the
+     Structure tab and a new ⇅ Place mode on the Lyrics page. Verse is blue, outro warm grey.
   4. Member lanes and moments. 5. Layers (comments/tabs callouts, lyrics fade, linked track
      comment ▶). 6. Versions, then the horizontal toggle.
 - After pushing step 1: everyone should hard-refresh. An old app that edits a structure changes
@@ -34,6 +35,20 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-21 (after testing step 3):
+  - **Verse and chorus colours too similar** (dark orange vs red). Verse changed to blue. Outro
+    moved off slate-blue to warm grey so it doesn't clash. Barn's lane changed to cyan.
+  - **Hold and drag lyric lines to a new dot** instead of ▲▼.
+  - **Assign lyrics from the Lyrics page:** it's where they're in order. A place mode shows the
+    structure on the left with every dot as a row (empty rows expand), and lines get dragged onto
+    them.
+  - **Bump physics (his spec):** lines keep their order, one per dot. Dragging the bottom line of a
+    block up moves the lines above it up too, **until that block meets the block above** (no space
+    left), then it stops. Release and drag again: now the merged block moves together and fills
+    the space above it. This stops accidental nudges. My additions: dragging down mirrors it; a
+    middle line drags the lines on its leading side; on entering place mode any unplaced lines are
+    auto-placed (Fit, then just after the previous line) so every line has a dot; the same drag
+    works on the Structure tab.
 - 2026-11-21 (feedback after phone test of the strip; Patrick: "bars look great"):
   - **Strip "in view" marker:** dimming wasn't clear. All blocks stay full colour, with a **thin
     outlined window** around the part in view (he also floated a sideways "[" bracket).

@@ -987,6 +987,26 @@ body.tab-view #tab-view-close { display:flex; }
 .db-rng.top { top: 7px; border-top: 2px solid; width: 4px; }
 .db-rng.bot { bottom: 7px; border-bottom: 2px solid; width: 4px; }
 .db-rng.top.bot { top: 7px; bottom: 7px; }
+.db-lyrs { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--f-sans); font-size: 13px; color: var(--c-text); align-self: stretch; display: flex; align-items: center; gap: 10px; }
+.db-lyrs:empty { flex: 0 0 0; }
+.db-lyr-ln { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; border-radius: 5px; padding: 1px 3px; cursor: grab; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.db-lyr-ln.echo { opacity: 0.4; font-style: italic; cursor: default; }
+.db-row.open .db-lyrs { flex-direction: column; align-items: stretch; white-space: normal; }
+.db-row.open .db-lyr-ln { white-space: normal; display: flex; align-items: center; gap: 6px; }
+.db-lyr-x { margin-left: auto; flex: 0 0 auto; width: 26px; height: 24px; border-radius: 6px; border: 1px solid var(--c-border); background: var(--c-bg); color: var(--c-teal-pale); font-size: 11px; cursor: pointer; }
+.lift { background: var(--c-surface2); outline: 1.5px dashed var(--c-teal); box-shadow: 0 3px 10px rgba(0,0,0,0.25); }
+.lyr-dragging, .lyr-dragging * { -webkit-user-select: none; user-select: none; }
+.tp-lyr-place { flex: 1; overflow-y: auto; overscroll-behavior-y: contain; padding: 4px 12px 16px 8px; }
+.tp-lyr-place.hidden { display: none; }
+.lp-hint { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); padding: 6px 4px 10px; line-height: 1.5; }
+.lp-row { display: grid; grid-template-columns: 18px 28px minmax(0, 1fr); align-items: center; min-height: 34px; }
+.lp-row.sec-start { border-top: 1px solid var(--c-border); }
+.lp-dot { width: 12px; height: 12px; border-radius: 50%; justify-self: center; }
+.lp-dot.half { height: 6px; border-radius: 6px 6px 0 0; }
+.lp-sec { font-family: var(--f-mono); font-size: 9px; color: var(--c-teal-pale); }
+.lp-h { display: flex; flex-direction: column; gap: 2px; min-height: 30px; justify-content: center; }
+.lp-ln { display: block; padding: 5px 9px; border-radius: 6px; background: var(--c-surface); border: 1px solid var(--c-border); font-family: var(--f-sans); font-size: 13px; color: var(--c-text); -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; cursor: grab; }
+#tp-lyr-place-btn.on { background: var(--c-teal); color: #fff; border-color: var(--c-teal); }
 .db-lyr { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--f-sans); font-size: 13px; color: var(--c-text); }
 .db-lyr.echo, .db-lyr-open.echo { opacity: 0.4; font-style: italic; }
 .db-lyr-open { display: flex; align-items: center; gap: 4px; font-family: var(--f-sans); font-size: 13px; color: var(--c-text); }
@@ -1374,6 +1394,7 @@ body.tab-view #tab-view-close { display:flex; }
             <div class="tp-lyrics-wrap">
               <div class="tp-lyrics-view" id="tp-lyrics-view"
                    onclick="tpLyricsViewClick(event)"></div>
+              <div class="tp-lyr-place hidden" id="tp-lyr-place"></div>
               <div class="tp-lyr-warn hidden" id="tp-lyr-warn"></div>
               <textarea class="tp-lyrics-text" id="tp-lyrics-text"
                         placeholder="Add lyrics, chords…"
@@ -1381,6 +1402,7 @@ body.tab-view #tab-view-close { display:flex; }
             </div>
             <div class="tp-lyric-tooltip" id="tp-lyric-tooltip"></div>
             <div class="lyr-scroll-bar hidden" id="tp-lyrics-scroll-bar">
+              <button class="lyr-scroll-btn" id="tp-lyr-place-btn" onclick="lyrTogglePlace()" title="Drag lines onto the structure">⇅ Place</button>
               <button class="lyr-scroll-btn" id="tp-lyrics-scroll-btn" onclick="tpLyricsScrollToggle()">⟳ Auto</button>
               <input type="range" class="lyr-speed" id="tp-lyrics-speed" min="1" max="1000" value="250">
               <button class="lyr-scroll-btn" id="tp-lyrics-edit-btn" onclick="tpLyricsEditMode()" style="margin-left:auto">✏ Edit</button>
@@ -3867,6 +3889,7 @@ S.tp.audio.addEventListener('ended', () => { _setPlayBtn('tp-ctrl-play', 'play')
 function tpSwitchTab(tab) {
   if (_lyricsScrollOn && tab !== 'lyrics') tpLyricsScrollToggle();
   if (tab !== 'structure') { if (DB.editing) dbDoneEditing(); dbCancelAnchorMode(); _dbCloseEnergyPick(); }
+  if (tab !== 'lyrics' && _lyrPlacing) lyrTogglePlace(false);
   S.tp.activeTab = tab;
   $('screen-track').classList.toggle('tp-compact', tab === 'structure');
   if (tab === 'structure') { _tpMiniProgress(); _tpMiniLabel(); }
@@ -5162,8 +5185,8 @@ async function anPlaySnippet(snipId) {
    STRUCTURE EDITOR
 ══════════════════════════════════════════════════════ */
 const STRUCT_COLORS = {
-  I:'#4A9AA8', V:'#A8501C', C:'#D04848',
-  B:'#5A9868', O:'#7A90B8', X:'#9070A8', S:'#C8B840',
+  I:'#4A9AA8', V:'#3F72C0', C:'#D04848',
+  B:'#5A9868', O:'#8C8279', X:'#9070A8', S:'#C8B840',
 };
 
 Object.assign(S, { structures: [], structuresLoaded: false });
@@ -5234,7 +5257,7 @@ function _legacyStructureBars(song) {
 const STRUCT_NAMES = { I:'Intro', V:'Verse', C:'Chorus', B:'Bridge', O:'Outro', X:'Misc', S:'Solo' };
 const CUSTOM_TILE_COLORS = ['#E878A0', '#78C8E8', '#98D040'];
 // Member lanes: one thin line each, colours kept clear of the section colours
-const MEMBER_COLORS = { Barn:'#2E6BE6', Christy:'#D6409F', Neda:'#E0A21B', Pat:'#2BB673', Rory:'#8A5CF6' };
+const MEMBER_COLORS = { Barn:'#14A9C9', Christy:'#D6409F', Neda:'#E0A21B', Pat:'#2BB673', Rory:'#8A5CF6' };
 
 const DB = {
   songName: null, bars: [], barIds: [], customTiles: [], pins: [], energy: {},
@@ -5528,14 +5551,26 @@ function _dbRowEl(i, label, secStart, energy, pins, ranges, lyrics) {
     seg.style.borderColor = r.color;
     call.appendChild(seg);
   });
-  // lyrics take the column; pins sit after them as dots
-  if (open) lyrics.forEach(l => call.appendChild(_dbLyricLineEl(l, i)));
-  else if (lyrics.length) {
-    const ly = document.createElement('span');
-    ly.className = 'db-lyr' + (lyrics.every(l => l.echo) ? ' echo' : '');
-    ly.textContent = lyrics.map(l => l.text).join('  /  ');
-    call.appendChild(ly);
-  }
+  // lyrics take the column (hold a line and drag it to another dot); pins sit after them as dots
+  const lh = document.createElement('span');
+  lh.className = 'db-lyrs';
+  lyrics.forEach(l => {
+    const sp = document.createElement('span');
+    sp.className = 'db-lyr-ln' + (l.echo ? ' echo' : '');
+    sp.textContent = l.text;
+    if (!l.echo) {
+      sp.dataset.li = l.li;
+      if (open) {
+        const x = document.createElement('button');
+        x.className = 'db-lyr-x'; x.textContent = '✕'; x.title = 'Take this line off the board';
+        x.addEventListener('click', e => { e.stopPropagation(); dbUnlinkLyric(l.id); });
+        sp.appendChild(x);
+      }
+      if (!DB.editing) _lyrBeadAttach(sp, _dbBoardBeadCtx);
+    }
+    lh.appendChild(sp);
+  });
+  call.appendChild(lh);
   // addressed notes first, so their lines reach them
   [...pins].sort((a, b) => _dbPinTo(b).length - _dbPinTo(a).length).forEach(p => call.appendChild(_dbChipEl(p, open)));
   if (open) call.appendChild(_dbActionsEl(i));
@@ -5556,20 +5591,6 @@ function _dbRowEl(i, label, secStart, energy, pins, ranges, lyrics) {
 }
 
 // A pin is a small dot until tapped (or "Aa" shows all names); a second tap opens it
-function _dbLyricLineEl(l, i) {
-  const row = document.createElement('div');
-  row.className = 'db-lyr-open' + (l.echo ? ' echo' : '');
-  row.innerHTML = `<span>${esc(l.text)}</span>`;
-  if (!l.echo) {
-    [['▲', () => dbMoveLyric(l.id, -1)], ['▼', () => dbMoveLyric(l.id, 1)], ['✕', () => dbUnlinkLyric(l.id)]].forEach(([t, fn]) => {
-      const b = document.createElement('button');
-      b.textContent = t;
-      b.addEventListener('click', e => { e.stopPropagation(); fn(); });
-      row.appendChild(b);
-    });
-  }
-  return row;
-}
 
 function _dbChipEl(p, full) {
   const named = full || DB.showNames || DB.openChips.has(p.id);
@@ -6205,23 +6226,81 @@ function dbFitLyrics() {
   placed.forEach(({ line, bar }) => DB.lyricLinks.push({ id: _dbLyrId(), text: st.lines[line].text, occ: _lyrOcc(st.lines, line), barId: DB.barIds[bar] }));
   dbRender();
   _dbPersist();
-  showToast(`Placed ${placed.length} line${placed.length > 1 ? 's' : ''}. Tap a dot to nudge them`);
+  showToast(`Placed ${placed.length} line${placed.length > 1 ? 's' : ''}. Hold a line to drag it`);
 }
 
-function dbMoveLyric(id, d) {
-  const lk = DB.lyricLinks.find(x => x.id === id);
-  const i = lk ? DB.barIds.indexOf(lk.barId) : -1, j = i + d;
-  if (i < 0 || j < 0 || j >= DB.barIds.length) return;
-  lk.barId = DB.barIds[j];
-  DB.openIdx = j;
-  dbRender();
-  _dbSaveSoon();
+
+// Drag context for the Structure tab: the lines on the board, in lyric order
+function _dbBoardBeadCtx() {
+  const st = DB._lyr, rows = $('db-rows');
+  if (!st || !rows || DB.editing) return null;
+  const holders = [...rows.querySelectorAll('.db-lyrs')];
+  const spans = [...rows.querySelectorAll('.db-lyr-ln[data-li]')].sort((a, b) => a.dataset.li - b.dataset.li);
+  const lis = spans.map(sp => +sp.dataset.li);
+  const pos = _lyrNormalize(lis.map(li => DB.barIds.indexOf(st.byLine.get(li)?.barId)), holders.length);
+  return { spans, pos, holders, scroller: $('db-scroll'), onDrop: p => {
+    lis.forEach((li, k) => { const lk = st.byLine.get(li); if (lk) lk.barId = DB.barIds[p[k]]; });
+    dbRender(); _dbPersist();
+  } };
 }
 
 function dbUnlinkLyric(id) {
   DB.lyricLinks = DB.lyricLinks.filter(x => x.id !== id);
   dbRender();
   _dbPersist();
+}
+
+/* Lyrics page place mode: the structure down the left, every dot a row, the lyric lines (in order)
+   on their dots. Hold a line and drag it; lines push each other along (see _lyrDragMove). */
+let _lyrPlacing = false;
+async function lyrTogglePlace(force) {
+  const on = force ?? !_lyrPlacing;
+  if (on) {
+    flushPendingEdits();
+    if (!(DB.editing && DB.songName === S.tp.songName) && !await dbLoad()) return;
+    if (!DB.bars.length) { showToast('Build a structure on the Structure tab first'); return; }
+    if (!_lyrLines(S.songs.find(x => x.name === DB.songName)?.notes).some(_lyrIsLyric)) { showToast('No lyrics yet'); return; }
+  }
+  _lyrPlacing = on;
+  $('tp-lyr-place')?.classList.toggle('hidden', !on);
+  $('tp-lyrics-view')?.classList.toggle('active', !on);
+  const btn = $('tp-lyr-place-btn');
+  if (btn) { btn.textContent = on ? 'Done' : '⇅ Place'; btn.classList.toggle('on', on); }
+  $('tp-lyrics-scroll-btn').style.display = $('tp-lyrics-speed').style.display = $('tp-lyrics-edit-btn').style.display = on ? 'none' : '';
+  if (on) lyrRenderPlace(); else _lyrRender('tp');
+}
+
+function lyrRenderPlace() {
+  const box = $('tp-lyr-place');
+  if (!box) return;
+  const st = _dbLyrState();
+  const { lyricIdx } = _dbBeadPositions(st);
+  let { pos } = _dbBeadPositions(st);
+  const secs = deriveSections(DB.bars.map(b => b.toUpperCase())), labels = getLabels(secs);
+  box.innerHTML = '<div class="lp-hint">Hold a line, then drag it onto a bar. Lines push each other along. A block stops when it meets the one above; drag again to move them together.</div>';
+  const holders = [];
+  let gi = 0;
+  secs.forEach((sec, si) => {
+    for (let b = 0; b < sec.bars; b++, gi++) {
+      const row = document.createElement('div');
+      row.className = 'lp-row' + (si > 0 && b === 0 ? ' sec-start' : '');
+      const half = _dbIsHalf(DB.bars[gi]);
+      row.innerHTML = `<span class="lp-dot${half ? ' half' : ''}" style="background:${dbGetTileColor(DB.bars[gi])}"></span><span class="lp-sec">${b === 0 ? esc(labels[si]) : ''}</span>`;
+      const h = document.createElement('span'); h.className = 'lp-h';
+      row.appendChild(h); holders.push(h); box.appendChild(row);
+    }
+  });
+  const spans = lyricIdx.map((li, k) => {
+    const sp = document.createElement('span');
+    sp.className = 'lp-ln';
+    sp.textContent = st.lines[li].text;
+    holders[pos[k]].appendChild(sp);
+    return sp;
+  });
+  spans.forEach(sp => _lyrBeadAttach(sp, () => ({ spans, pos, holders, scroller: box, onDrop: p => {
+    _dbSaveBeads(st, lyricIdx, p);
+    const t = box.scrollTop; lyrRenderPlace(); box.scrollTop = t; // fresh links for the next drag
+  } })));
 }
 
 // Lyrics page: tap a line's margin tag to put it on a dot (or take it off the board)
@@ -6264,6 +6343,120 @@ function _lyrTagsFor(song) {
     return { state: 'on', label: barLbl[bi], color: STRUCT_COLORS[d.bars[bi].toUpperCase()] || '#888' };
   });
   return { tags, problems: lost.length + tags.filter(t => t?.state === 'float').length };
+}
+
+/* ── Dragging lyric lines between dots ("beads": lines keep their order, one per dot) ──
+   A drag moves the dragged line plus the lines touching it on its leading side (the block it's
+   pushing). The block stops when it meets the next block; it never shoves that one. Let go and
+   drag again and the two count as one block. That's what stops accidental nudges. */
+// positions (dot index or null per line, in lyric order) → strictly increasing, inside 0..n-1
+function _lyrNormalize(pos, n) {
+  const out = []; let prev = -1;
+  pos.forEach(p => { const v = p == null ? prev + 1 : Math.max(p, prev + 1); out.push(v); prev = v; });
+  let next = n;
+  for (let k = out.length - 1; k >= 0; k--) { if (out[k] > next - 1) out[k] = next - 1; next = out[k]; }
+  return out.map(v => Math.max(0, Math.min(n - 1, v))); // more lines than dots: they bunch at the top
+}
+// Where everything sits if line d (start position start[d]) is dragged to dot `target`
+function _lyrDragMove(start, d, target, n) {
+  const pos = start.slice(), delta = target - start[d];
+  if (delta < 0) {
+    let a = d; while (a > 0 && start[a - 1] === start[a] - 1) a--;
+    const floor = a > 0 ? start[a - 1] + 1 : 0;
+    const mv = Math.max(delta, floor - start[a]);
+    for (let k = a; k <= d; k++) pos[k] = start[k] + mv;
+  } else if (delta > 0) {
+    let b = d; while (b < start.length - 1 && start[b + 1] === start[b] + 1) b++;
+    const ceil = b < start.length - 1 ? start[b + 1] - 1 : n - 1;
+    const mv = Math.min(delta, ceil - start[b]);
+    for (let k = d; k <= b; k++) pos[k] = start[k] + mv;
+  }
+  return pos;
+}
+
+/* The gesture. ctx = { spans: [el per line], pos: [dot per line], holders: [el per dot],
+   scroller, onDrop(pos) }. Touch: hold ~0.3 s then drag (a quick swipe still scrolls).
+   Mouse: drag straight away. Line elements are moved between holders, never re-created, so the
+   touch keeps its target. */
+function _lyrBeadAttach(el, getCtx) {
+  let ctx = null, k = -1, start = null, cur = null, timer = null, y0 = 0, lastY = 0, raf = 0, dragging = false;
+  const rowOf = h => h.closest('.db-row, .lp-row') || h;
+  const targetAt = y => {
+    let best = 0, bd = Infinity;
+    ctx.holders.forEach((h, i) => { const r = rowOf(h).getBoundingClientRect(); const d = y < r.top ? r.top - y : y > r.bottom ? y - r.bottom : 0; if (d < bd) { bd = d; best = i; } });
+    return best;
+  };
+  const paint = pos => pos.forEach((p, j) => { if (ctx.spans[j].parentElement !== ctx.holders[p]) ctx.holders[p].appendChild(ctx.spans[j]); });
+  const move = y => { lastY = y; cur = _lyrDragMove(start, k, targetAt(y), ctx.holders.length); paint(cur); };
+  const tick = () => {
+    if (!dragging) return;
+    const r = ctx.scroller.getBoundingClientRect();
+    const step = lastY < r.top + 40 ? -8 : lastY > r.bottom - 40 ? 8 : 0;
+    if (step) { ctx.scroller.scrollTop += step; move(lastY); }
+    raf = requestAnimationFrame(tick);
+  };
+  const begin = y => {
+    ctx = getCtx(); if (!ctx) return;
+    k = ctx.spans.indexOf(el); if (k < 0) { ctx = null; return; }
+    start = ctx.pos.slice(); cur = start; dragging = true;
+    el.classList.add('lift'); ctx.scroller.classList.add('lyr-dragging');
+    navigator.vibrate?.(12);
+    lastY = y; raf = requestAnimationFrame(tick);
+  };
+  const end = () => {
+    clearTimeout(timer); timer = null;
+    if (!dragging) return;
+    dragging = false; cancelAnimationFrame(raf);
+    el.classList.remove('lift'); ctx.scroller.classList.remove('lyr-dragging');
+    el._justDragged = Date.now();
+    if (cur.some((p, j) => p !== start[j])) ctx.onDrop(cur);
+    ctx = null;
+  };
+  el.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    y0 = e.touches[0].clientY;
+    timer = setTimeout(() => begin(y0), 300);
+  }, { passive: true });
+  el.addEventListener('touchmove', e => {
+    const y = e.touches[0].clientY;
+    if (dragging) { e.preventDefault(); move(y); }
+    else if (Math.abs(y - y0) > 8) { clearTimeout(timer); timer = null; }
+  }, { passive: false });
+  el.addEventListener('touchend', end);
+  el.addEventListener('touchcancel', end);
+  el.addEventListener('contextmenu', e => e.preventDefault());
+  el.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    y0 = e.clientY;
+    const mm = ev => { if (!dragging && Math.abs(ev.clientY - y0) > 4) begin(y0); if (dragging) move(ev.clientY); };
+    const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); end(); };
+    document.addEventListener('mousemove', mm);
+    document.addEventListener('mouseup', mu);
+  });
+  // a drag shouldn't also count as a tap on the row
+  el.addEventListener('click', e => { if (Date.now() - (el._justDragged || 0) < 400) e.stopPropagation(); });
+}
+
+// Positions for every lyric line: saved links, then Fit for whole paragraphs, then just after the line before
+function _dbBeadPositions(st) {
+  const lyricIdx = st.lines.map((l, i) => _lyrIsLyric(l) ? i : -1).filter(i => i >= 0);
+  const pos = {};
+  st.byLine.forEach((lk, li) => { const d = DB.barIds.indexOf(lk.barId); if (d >= 0) pos[li] = d; });
+  const placedBars = new Set(Object.values(pos).map(d => DB.barIds[d]));
+  _dbFitLyrics(st.lines, DB.bars, new Set(Object.keys(pos).map(Number)), i => placedBars.has(DB.barIds[i]))
+    .forEach(({ line, bar }) => { pos[line] = bar; });
+  return { lyricIdx, pos: _lyrNormalize(lyricIdx.map(li => pos[li] ?? null), DB.bars.length) };
+}
+
+// Save where each dragged line ended up
+function _dbSaveBeads(st, lyricIdx, pos) {
+  lyricIdx.forEach((li, k) => {
+    const barId = DB.barIds[pos[k]];
+    const lk = st.byLine.get(li);
+    if (lk) lk.barId = barId;
+    else DB.lyricLinks.push({ id: _dbLyrId(), text: st.lines[li].text, occ: _lyrOcc(st.lines, li), barId });
+  });
+  _dbPersist();
 }
 
 /* ══════════════════════════════════════════════════════
