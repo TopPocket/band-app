@@ -987,6 +987,18 @@ body.tab-view #tab-view-close { display:flex; }
 .db-rng.top { top: 7px; border-top: 2px solid; width: 4px; }
 .db-rng.bot { bottom: 7px; border-bottom: 2px solid; width: 4px; }
 .db-rng.top.bot { top: 7px; bottom: 7px; }
+.db-lyr { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--f-sans); font-size: 13px; color: var(--c-text); }
+.db-lyr.echo, .db-lyr-open.echo { opacity: 0.4; font-style: italic; }
+.db-lyr-open { display: flex; align-items: center; gap: 4px; font-family: var(--f-sans); font-size: 13px; color: var(--c-text); }
+.db-lyr-open span { flex: 1; min-width: 0; }
+.db-lyr-open button { flex: 0 0 auto; width: 28px; height: 26px; border-radius: 6px; border: 1px solid var(--c-border); background: var(--c-bg); color: var(--c-teal-pale); font-size: 11px; cursor: pointer; }
+.lyr-ln { display: flex; gap: 8px; min-height: 1.8em; }
+.lyr-tag { flex: 0 0 24px; font-family: var(--f-mono); font-size: 9px; line-height: 1; padding-top: 0.6em; text-align: right; color: var(--tc, var(--c-teal-pale)); cursor: pointer; font-weight: 700; }
+.lyr-tag.none { opacity: 0.3; font-weight: 400; }
+.lyr-tag.float { color: var(--c-accent); }
+.lyr-tx { flex: 1; min-width: 0; white-space: pre-wrap; }
+.tp-lyr-warn { font-family: var(--f-mono); font-size: 11px; color: var(--c-accent); padding: 8px 14px 0; }
+.tp-lyr-warn.hidden { display: none; }
 .db-chip.min { flex: 0 0 auto; width: 20px; height: 20px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
 .db-chip.min b { margin: 0; font-size: 10px; }
 .db-chip em { font-style: normal; color: var(--c-teal-pale); font-size: 10px; margin-left: 6px; }
@@ -1362,6 +1374,7 @@ body.tab-view #tab-view-close { display:flex; }
             <div class="tp-lyrics-wrap">
               <div class="tp-lyrics-view" id="tp-lyrics-view"
                    onclick="tpLyricsViewClick(event)"></div>
+              <div class="tp-lyr-warn hidden" id="tp-lyr-warn"></div>
               <textarea class="tp-lyrics-text" id="tp-lyrics-text"
                         placeholder="Add lyrics, chords…"
                         oninput="tpNotesChanged()"></textarea>
@@ -1388,6 +1401,7 @@ body.tab-view #tab-view-close { display:flex; }
                 <button id="db-edit-btn" onclick="dbToggleEdit()">✎ Edit structure</button>
                 <button id="db-clear-btn" onclick="dbClear()" style="display:none">Clear</button>
                 <button id="db-names-btn" onclick="dbToggleNames()" title="Show the names of everything pinned">Aa</button>
+                <button id="db-fit-btn" onclick="dbFitLyrics()" title="Place lyric paragraphs on the sections" style="display:none">♪ Fit lyrics</button>
                 <button id="db-fix-btn" onclick="dbShowFloating()" title="Some things aren't attached to a dot" style="display:none"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6.5 9.5l-1.8 1.8a2.1 2.1 0 0 1-3-3l1.8-1.8"/><path d="M9.5 6.5l1.8-1.8a2.1 2.1 0 0 1 3 3l-1.8 1.8"/><path d="M5 1.5v2M1.5 5h2M11 14.5v-2M14.5 11h-2"/></svg></button>
               </div>
             </div>
@@ -3858,7 +3872,7 @@ function tpSwitchTab(tab) {
   if (tab === 'structure') { _tpMiniProgress(); _tpMiniLabel(); }
   document.querySelectorAll('.tp-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tp-tabcontent').forEach(d => d.classList.toggle('active', d.id === `tp-tabcontent-${tab}`));
-  if (tab === 'structure') renderSongStructure();
+  if (tab === 'structure') { flushPendingEdits(); renderSongStructure(); }
   if (tab === 'tabs') renderSongTabsData();
   if (tab === 'lyrics') { _lyricsCtx.songName = S.tp.songName; const _lyrEntry = S.songs.find(s => s.name === S.tp.songName); $('tp-lyrics-text').value = _lyrEntry?.notes || ''; _lyrRender('tp'); _lyrSetMode('tp', 'view'); }
 }
@@ -5226,7 +5240,7 @@ const DB = {
   songName: null, bars: [], barIds: [], customTiles: [], pins: [], energy: {},
   editing: false, cursor: 0, openIdx: -1, _saveTimer: null,
   openChips: new Set(), showNames: (() => { try { return localStorage.getItem('ng_db_names') === '1'; } catch(e) { return false; } })(),
-  _rangePinId: null, _noteTo: [],
+  _rangePinId: null, _noteTo: [], lyricLinks: [], _anchoringLyricId: null, _lyr: null,
   _anchoringPinId: null, _noteEditPinId: null, _noteTargetBarIdx: null,
   _awaitingNewTabBarIdx: null, _awaitingNewSnipBarIdx: null,
 };
@@ -5306,6 +5320,7 @@ async function dbLoad() {
   DB.customTiles = Array.isArray(d.customTiles) ? [...d.customTiles] : [];
   DB.pins        = Array.isArray(d.pins)        ? d.pins.map(p => ({...p})) : [];
   DB.energy      = _isObj(d.energy) ? { ...d.energy } : {};
+  DB.lyricLinks  = Array.isArray(d.lyricLinks) ? d.lyricLinks.map(l => ({...l})) : [];
   // First time: start from the song's structure in the old editors, if it had one
   if (!DB.bars.length) {
     await loadStructures();
@@ -5324,9 +5339,12 @@ async function _dbPersist() {
   const song = S.songs?.find(s => s.name === DB.songName);
   if (!song) return;
   DB.pins.forEach(p => { const i = _dbPinDot(p); p.barIdx = i >= 0 ? i : null; });
+  // keep each lyric link's text/occurrence matching the lyrics as they are now
+  const st = _dbLyrState();
+  st.byLine.forEach((lk, li) => { lk.text = st.lines[li].text; lk.occ = _lyrOcc(st.lines, li); });
   song.doodle = Object.assign(song.doodle || {}, {
     bars: [...DB.bars], barIds: [...DB.barIds], customTiles: [...DB.customTiles],
-    pins: DB.pins.map(p => ({...p})), energy: { ...DB.energy },
+    pins: DB.pins.map(p => ({...p})), energy: { ...DB.energy }, lyricLinks: DB.lyricLinks.map(l => ({...l})),
     locked: true, // older app copies only show pins on a locked board
   });
   try { await saveSongsJson(); }
@@ -5366,12 +5384,13 @@ function dbRender() {
   const byDot    = {};
   DB.pins.forEach(p => { const i = _dbPinDot(p); if (i >= 0) (byDot[i] = byDot[i] || []).push(p); });
   const ranges   = _dbRangeSegments();
+  const lyr      = _dbLyricsByDot(_dbLyrState(), sections);
   const frag = document.createDocumentFragment();
   let gi = 0;
   sections.forEach((sec, si) => {
     for (let b = 0; b < sec.bars; b++, gi++) {
       if (DB.editing && gi === DB.cursor) frag.appendChild(_dbCursorEl());
-      frag.appendChild(_dbRowEl(gi, b === 0 ? labels[si] : '', si > 0 && b === 0, prof[gi], byDot[gi] || [], ranges[gi] || []));
+      frag.appendChild(_dbRowEl(gi, b === 0 ? labels[si] : '', si > 0 && b === 0, prof[gi], byDot[gi] || [], ranges[gi] || [], lyr[gi] || []));
     }
   });
   if (DB.editing && DB.cursor >= DB.bars.length) frag.appendChild(_dbCursorEl());
@@ -5466,7 +5485,7 @@ const _dbPinTo = p => (p.to || []).filter(m => MEMBER_COLORS[m]);
 // Lane centres inside the row (energy 22 + dot 46, then 5 lines of 2px, 3px apart, centred in 26px)
 const _DB_LANE_X = j => 22 + 46 + 2 + j * 5 + 1;
 
-function _dbRowEl(i, label, secStart, energy, pins, ranges) {
+function _dbRowEl(i, label, secStart, energy, pins, ranges, lyrics) {
   const type = DB.bars[i], half = _dbIsHalf(type), open = !DB.editing && DB.openIdx === i;
   const row = document.createElement('div');
   row.className = 'db-row' + (half ? ' half' : '') + (secStart ? ' sec-start' : '') + (open ? ' open' : '');
@@ -5509,6 +5528,14 @@ function _dbRowEl(i, label, secStart, energy, pins, ranges) {
     seg.style.borderColor = r.color;
     call.appendChild(seg);
   });
+  // lyrics take the column; pins sit after them as dots
+  if (open) lyrics.forEach(l => call.appendChild(_dbLyricLineEl(l, i)));
+  else if (lyrics.length) {
+    const ly = document.createElement('span');
+    ly.className = 'db-lyr' + (lyrics.every(l => l.echo) ? ' echo' : '');
+    ly.textContent = lyrics.map(l => l.text).join('  /  ');
+    call.appendChild(ly);
+  }
   // addressed notes first, so their lines reach them
   [...pins].sort((a, b) => _dbPinTo(b).length - _dbPinTo(a).length).forEach(p => call.appendChild(_dbChipEl(p, open)));
   if (open) call.appendChild(_dbActionsEl(i));
@@ -5529,6 +5556,21 @@ function _dbRowEl(i, label, secStart, energy, pins, ranges) {
 }
 
 // A pin is a small dot until tapped (or "Aa" shows all names); a second tap opens it
+function _dbLyricLineEl(l, i) {
+  const row = document.createElement('div');
+  row.className = 'db-lyr-open' + (l.echo ? ' echo' : '');
+  row.innerHTML = `<span>${esc(l.text)}</span>`;
+  if (!l.echo) {
+    [['▲', () => dbMoveLyric(l.id, -1)], ['▼', () => dbMoveLyric(l.id, 1)], ['✕', () => dbUnlinkLyric(l.id)]].forEach(([t, fn]) => {
+      const b = document.createElement('button');
+      b.textContent = t;
+      b.addEventListener('click', e => { e.stopPropagation(); fn(); });
+      row.appendChild(b);
+    });
+  }
+  return row;
+}
+
 function _dbChipEl(p, full) {
   const named = full || DB.showNames || DB.openChips.has(p.id);
   const to = _dbPinTo(p), end = _dbPinEnd(p), s = _dbPinDot(p);
@@ -5584,13 +5626,21 @@ function dbRowTap(i, e, row) {
   }
   if (DB._anchoringPinId) { dbAnchorPinToDot(i); return; }
   if (DB._rangePinId) { dbSetRangeEnd(i); return; }
+  if (DB._anchoringLyricId) {
+    const lk = DB.lyricLinks.find(x => x.id === DB._anchoringLyricId);
+    dbCancelAnchorMode();
+    if (lk) { lk.barId = DB.barIds[i]; dbRender(); _dbPersist(); }
+    return;
+  }
   DB.openIdx = DB.openIdx === i ? -1 : i;
   dbRender();
 }
 
 /* ── Bottom bar: Edit structure / Done, fix links ── */
 function dbRenderBar() {
-  const floating = DB.pins.filter(p => _dbPinDot(p) < 0).length;
+  const st = DB._lyr || _dbLyrState();
+  const floating = DB.pins.filter(p => _dbPinDot(p) < 0).length + st.floating.length + st.lost.length;
+  $('db-fit-btn').style.display = !DB.editing && DB.bars.length && st.unplaced ? '' : 'none';
   $('db-edit-btn').textContent = DB.editing ? 'Done' : '✎ Edit structure';
   $('db-edit-btn').classList.toggle('on', DB.editing);
   $('db-clear-btn').style.display = DB.editing ? '' : 'none';
@@ -5974,7 +6024,7 @@ function dbStartAnchorMode(pinId) {
 }
 
 function dbCancelAnchorMode() {
-  DB._anchoringPinId = null; DB._rangePinId = null;
+  DB._anchoringPinId = null; DB._rangePinId = null; DB._anchoringLyricId = null;
   _dbBanner(null);
 }
 
@@ -6026,13 +6076,194 @@ function dbAnchorPinToDot(dotIdx) {
 
 /* ── Floating things (their dot was deleted): the fix-links tray ── */
 function dbShowFloating() {
-  const floating = DB.pins.filter(p => _dbPinDot(p) < 0);
-  if (!floating.length) return;
-  _dbPickSheet('Not attached: tap one, then tap a dot', floating.map(p => ({
-    name: (_DB_PIN_ICON[p.type] || '•') + ' ' + _dbPinLabel(p),
-    sub: p.type,
-    pick: () => dbStartAnchorMode(p.id),
-  })));
+  const st = _dbLyrState();
+  const items = DB.pins.filter(p => _dbPinDot(p) < 0).map(p => ({
+    name: (_DB_PIN_ICON[p.type] || '•') + ' ' + _dbPinLabel(p), sub: p.type, pick: () => dbStartAnchorMode(p.id),
+  }));
+  st.floating.forEach(([li, lk]) => items.push({ name: '♪ ' + st.lines[li].text, sub: 'lyric', pick: () => dbStartLyricAnchor(lk.id) }));
+  st.lost.forEach(lk => items.push({ name: '♪ “' + lk.text + '”', sub: 'line no longer in the lyrics: tap to remove', pick: () => dbUnlinkLyric(lk.id) }));
+  if (!items.length) return;
+  _dbPickSheet('Not attached: tap one, then tap a dot', items);
+}
+function dbStartLyricAnchor(id) {
+  if (DB.editing) dbDoneEditing();
+  DB._anchoringPinId = null; DB._rangePinId = null;
+  DB._anchoringLyricId = id;
+  _dbBanner('Tap the dot this line goes on');
+}
+
+/* ── LYRICS ↔ DOTS (doodle.lyricLinks) ──
+   A link is { id, text, occ, barId }: "the occ-th line reading `text` sits on this dot". The lyrics
+   stay in song.notes; a link finds its line again by its text after edits (exact first, then
+   ignoring case/punctuation). A link whose line can't be found is "lost"; one whose dot was
+   deleted floats. Both show in the fix-links tray. */
+// "Chorus", "[Verse 2]", "Chorus x2:", "(Bridge)" (but not a lyric that starts with "bridge…")
+const _LYR_HEAD = /^\s*[\[(]?\s*(intro|verse|chorus|refrain|hook|pre-?chorus|bridge|middle 8|outro|solo|instrumental)\s*(\d+|[ivx]+)?\s*(x\s*\d+|\(\s*x?\s*\d+\s*\))?\s*[\])]?\s*:?\s*$/i;
+const _LYR_HEAD_TYPE = { intro:'I', verse:'V', chorus:'C', refrain:'C', hook:'C', prechorus:'', bridge:'B', 'middle 8':'B', outro:'O', solo:'S', instrumental:'S' };
+const _lyrNorm = t => t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+// Lines of the lyrics: { text (trimmed), head } where head is a section letter for a heading line
+// like "[Chorus]" ('' = a heading with no section type, e.g. Pre-chorus) or null for a lyric line
+function _lyrLines(text) {
+  return (text || '').split('\n').map(raw => {
+    const t = raw.trim(), m = t.match(_LYR_HEAD);
+    return { text: t, head: m ? (_LYR_HEAD_TYPE[m[1].toLowerCase().replace('-', '')] ?? '') : null };
+  });
+}
+const _lyrIsLyric = l => !!l.text && l.head === null;
+function _lyrOcc(lines, i) { let n = 0; for (let k = 0; k < i; k++) if (lines[k].text === lines[i].text) n++; return n; }
+
+function _dbResolveLyrics(lines, links) {
+  const byText = {}, byNorm = {};
+  lines.forEach((l, i) => {
+    if (!_lyrIsLyric(l)) return;
+    (byText[l.text] = byText[l.text] || []).push(i);
+    const n = _lyrNorm(l.text); (byNorm[n] = byNorm[n] || []).push(i);
+  });
+  const claimed = new Set(), byLine = new Map(), lost = [], loose = [];
+  const pick = (c, occ) => {
+    if (!c) return -1;
+    if (c[occ] != null && !claimed.has(c[occ])) return c[occ];
+    const f = c.find(i => !claimed.has(i)); return f ?? -1;
+  };
+  // exact matches first, so an edited line can't take another line's place
+  links.forEach(lk => { const i = pick(byText[lk.text], lk.occ || 0); if (i >= 0) { claimed.add(i); byLine.set(i, lk); } else loose.push(lk); });
+  loose.forEach(lk => { const i = pick(byNorm[_lyrNorm(lk.text || '')], lk.occ || 0); if (i >= 0) { claimed.add(i); byLine.set(i, lk); } else lost.push(lk); });
+  return { byLine, lost };
+}
+
+/* Smart default: paragraphs fill the song's sections in order. A heading such as "[Chorus]" picks
+   that section type; otherwise Intro/Outro/Solo/Misc are skipped. Lines spread evenly over the
+   section's dots. Only paragraphs with no placed lines go, and only into sections with no lyrics,
+   so it never undoes anyone's tweaks. Returns [{ line, bar }]. */
+function _dbFitLyrics(lines, bars, linkedLines, barHasLyric) {
+  const secs = [];
+  bars.forEach((b, i) => {
+    const t = b.toUpperCase(), last = secs[secs.length - 1];
+    if (last && last.type === t) last.len++; else secs.push({ type: t, start: i, len: 1 });
+  });
+  const used = secs.map(s => { for (let i = s.start; i < s.start + s.len; i++) if (barHasLyric(i)) return true; return false; });
+  const paras = []; let cur = null;
+  lines.forEach((l, i) => {
+    if (!l.text) { cur = null; return; }
+    if (l.head !== null) { cur = { head: l.head || null, lines: [] }; paras.push(cur); return; }
+    if (!cur) { cur = { head: null, lines: [] }; paras.push(cur); }
+    cur.lines.push(i);
+  });
+  const SKIP = new Set(['I', 'O', 'S', 'X']);
+  const out = []; let ptr = 0;
+  paras.forEach(p => {
+    if (!p.lines.length || p.lines.some(i => linkedLines.has(i))) return;
+    const ok = j => !used[j] && (p.head ? secs[j].type === p.head : !SKIP.has(secs[j].type));
+    let k = secs.findIndex((s, j) => j >= ptr && ok(j));
+    if (k < 0 && p.head) k = secs.findIndex((s, j) => ok(j));
+    if (k < 0) return;
+    used[k] = true; ptr = k + 1;
+    const s = secs[k], n = p.lines.length;
+    p.lines.forEach((li, j) => out.push({ line: li, bar: s.start + Math.floor(j * s.len / n) }));
+  });
+  return out;
+}
+
+// Current lyrics against DB's links (kept on DB._lyr for the render and the save)
+function _dbLyrState() {
+  const song = S.songs?.find(s => s.name === DB.songName);
+  const lines = _lyrLines(song?.notes || '');
+  const { byLine, lost } = _dbResolveLyrics(lines, DB.lyricLinks);
+  const floating = [...byLine.entries()].filter(([, lk]) => !DB.barIds.includes(lk.barId));
+  const unplaced = lines.some((l, i) => _lyrIsLyric(l) && !byLine.has(i));
+  return (DB._lyr = { lines, byLine, lost, floating, unplaced });
+}
+
+// Lyric lines per dot, plus faded echoes on later choruses that have no lyrics of their own
+function _dbLyricsByDot(st, sections) {
+  const by = {};
+  st.byLine.forEach((lk, li) => {
+    const d = DB.barIds.indexOf(lk.barId);
+    if (d >= 0) (by[d] = by[d] || []).push({ li, text: st.lines[li].text, id: lk.id });
+  });
+  Object.values(by).forEach(a => a.sort((x, y) => x.li - y.li));
+  let start = 0; const secs = sections.map(s => { const r = { type: s.type, start, len: s.bars }; start += s.bars; return r; });
+  const has = s => { for (let i = s.start; i < s.start + s.len; i++) if (by[i]?.some(x => !x.echo)) return true; return false; };
+  secs.forEach(s => {
+    if (s.type !== 'C' || has(s)) return;
+    const src = secs.find(o => o.type === 'C' && o !== s && has(o));
+    if (!src) return;
+    for (let o = 0; o < Math.min(s.len, src.len); o++)
+      (by[src.start + o] || []).forEach(x => { if (!x.echo) (by[s.start + o] = by[s.start + o] || []).push({ text: x.text, echo: true }); });
+  });
+  return by;
+}
+
+function _dbLyrId() { return 'ly' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+
+function dbFitLyrics() {
+  const st = _dbLyrState();
+  const placedBars = new Set([...st.byLine.values()].map(lk => lk.barId));
+  const placed = _dbFitLyrics(st.lines, DB.bars, new Set(st.byLine.keys()), i => placedBars.has(DB.barIds[i]));
+  if (!placed.length) { showToast('No whole paragraphs left to fit. Place single lines from their tag on the Lyrics page'); return; }
+  placed.forEach(({ line, bar }) => DB.lyricLinks.push({ id: _dbLyrId(), text: st.lines[line].text, occ: _lyrOcc(st.lines, line), barId: DB.barIds[bar] }));
+  dbRender();
+  _dbPersist();
+  showToast(`Placed ${placed.length} line${placed.length > 1 ? 's' : ''}. Tap a dot to nudge them`);
+}
+
+function dbMoveLyric(id, d) {
+  const lk = DB.lyricLinks.find(x => x.id === id);
+  const i = lk ? DB.barIds.indexOf(lk.barId) : -1, j = i + d;
+  if (i < 0 || j < 0 || j >= DB.barIds.length) return;
+  lk.barId = DB.barIds[j];
+  DB.openIdx = j;
+  dbRender();
+  _dbSaveSoon();
+}
+
+function dbUnlinkLyric(id) {
+  DB.lyricLinks = DB.lyricLinks.filter(x => x.id !== id);
+  dbRender();
+  _dbPersist();
+}
+
+// Lyrics page: tap a line's margin tag to put it on a dot (or take it off the board)
+async function lyrPickDot(li) {
+  if (DB.songName !== S.tp.songName && !await dbLoad()) return;
+  if (!DB.bars.length) { showToast('Build a structure on the Structure tab first'); return; }
+  const st = _dbLyrState();
+  const lk = st.byLine.get(li);
+  const labels = getLabels(deriveSections(DB.bars.map(b => b.toUpperCase())));
+  const opts = [], idxOf = {};
+  let gi = 0;
+  deriveSections(DB.bars.map(b => b.toUpperCase())).forEach((sec, si) => {
+    for (let b = 0; b < sec.bars; b++, gi++) { const o = `${labels[si]} · bar ${b + 1}`; opts.push(o); idxOf[o] = gi; }
+  });
+  const OFF = '— Not on the board —';
+  const cur = lk && DB.barIds.includes(lk.barId) ? opts[DB.barIds.indexOf(lk.barId)] : null;
+  const pick = await _simplePickerModal(`“${st.lines[li].text.slice(0, 40)}” goes on…`, lk ? [OFF, ...opts] : opts, cur);
+  if (pick == null) return;
+  if (pick === OFF) DB.lyricLinks = DB.lyricLinks.filter(x => x !== lk);
+  else if (lk) lk.barId = DB.barIds[idxOf[pick]];
+  else DB.lyricLinks.push({ id: _dbLyrId(), text: st.lines[li].text, occ: _lyrOcc(st.lines, li), barId: DB.barIds[idxOf[pick]] });
+  await _dbPersist();
+  _lyrRender('tp');
+}
+
+// For the Lyrics page, straight from saved data: per line { label, color, state }
+function _lyrTagsFor(song) {
+  const d = song?.doodle;
+  if (!d?.bars?.length) return null;
+  const lines = _lyrLines(song.notes || ''), ids = d.barIds || [];
+  const { byLine, lost } = _dbResolveLyrics(lines, d.lyricLinks || []);
+  const secs = deriveSections(d.bars.map(b => b.toUpperCase())), labels = getLabels(secs);
+  const barLbl = []; secs.forEach((s, si) => { for (let b = 0; b < s.bars; b++) barLbl.push(labels[si]); });
+  const tags = lines.map((l, i) => {
+    if (!_lyrIsLyric(l)) return null;
+    const lk = byLine.get(i);
+    if (!lk) return { state: 'none', label: '+' };
+    const bi = ids.indexOf(lk.barId);
+    if (bi < 0) return { state: 'float', label: '?' };
+    return { state: 'on', label: barLbl[bi], color: STRUCT_COLORS[d.bars[bi].toUpperCase()] || '#888' };
+  });
+  return { tags, problems: lost.length + tags.filter(t => t?.state === 'float').length };
 }
 
 /* ══════════════════════════════════════════════════════
@@ -7553,6 +7784,14 @@ function _lyrSetMode(ctx, mode) {
   $(el.viewId)?.classList.toggle('active', isView);
   $(el.scrollBarId)?.classList.toggle('hidden', !isView);
   $(el.annBarId)?.classList.toggle('hidden', isView);
+  if (ctx === 'tp') {
+    const t = _lyrTagsFor(S.songs.find(s => s.name === S.tp.songName));
+    const w = $('tp-lyr-warn');
+    if (w) {
+      w.classList.toggle('hidden', isView || !t?.problems);
+      if (t?.problems) w.textContent = `⚠ ${t.problems > 1 ? t.problems + ' lines have lost their' : '1 line has lost its'} place on the structure: fix on the Structure tab (🔗)`;
+    }
+  }
 }
 
 if (window.visualViewport) {
@@ -7655,6 +7894,28 @@ function _anchorAnnotations(text, anns) {
   }).filter(a => a && a.start < a.end && a.end <= text.length);
 }
 
+// One row per line: a margin tag (its dot's section, ? = dot gone, + = not on the board) then the text
+function _lyrTaggedHtml(text, anns, tags) {
+  const cls = a => a.type === 'note' ? 'lyr-note' : a.type === 'snippet' ? 'lyr-snip' : 'lyr-hl';
+  let off = 0, html = '';
+  text.split('\n').forEach((line, i) => {
+    const a0 = off, b0 = off + line.length;
+    let tx = '', pos = a0;
+    anns.filter(x => x.end > a0 && x.start < b0).forEach(x => {
+      const s = Math.max(x.start, a0), e = Math.min(x.end, b0);
+      if (s < pos) return;
+      tx += esc(text.slice(pos, s)) + `<span class="${cls(x)}" data-ann-id="${x.id}">${esc(text.slice(s, e))}</span>`;
+      pos = e;
+    });
+    tx += esc(text.slice(pos, b0));
+    const t = tags[i];
+    const tag = t ? `<span class="lyr-tag ${t.state}" data-ln="${i}"${t.color ? ` style="--tc:${t.color}"` : ''}>${esc(t.label)}</span>` : '<span class="lyr-tag"></span>';
+    html += `<div class="lyr-ln">${tag}<span class="lyr-tx">${tx}</span></div>`;
+    off = b0 + 1;
+  });
+  return html;
+}
+
 function _lyrRender(ctx) {
   const el = _LYR[ctx] || _LYR.tp;
   const viewEl = $(el.viewId);
@@ -7664,6 +7925,8 @@ function _lyrRender(ctx) {
   const songEntry = S.songs.find(s => s.name === songName);
   const text = taEl?.value || songEntry?.notes || '';
   const anns = _anchorAnnotations(text, songEntry?.lyricsAnnotations || []).sort((a,b) => a.start - b.start);
+  const tagged = ctx === 'tp' ? _lyrTagsFor(songEntry ? { ...songEntry, notes: text } : null) : null;
+  if (tagged) { viewEl.innerHTML = _lyrTaggedHtml(text, anns, tagged.tags); return; }
   if (!anns.length) { viewEl.innerHTML = esc(text).replace(/\n/g,'<br>'); return; }
   let result = '', pos = 0;
   const pts = new Set(); anns.forEach(a => { pts.add(a.start); pts.add(a.end); });
@@ -7717,7 +7980,11 @@ async function _saveLyricsAnnotation(ann, songName, ctx) {
   _lyrRender(ctx || 'tp');
 }
 
-function tpLyricsViewClick(e) { _lyricsHandleViewClick(e, 'tp'); }
+function tpLyricsViewClick(e) {
+  const tag = e.target.closest?.('.lyr-tag[data-ln]');
+  if (tag) { lyrPickDot(+tag.dataset.ln); return; }
+  _lyricsHandleViewClick(e, 'tp');
+}
 function _lyricsHandleViewClick(e, ctx) {
   const el = _LYR[ctx] || _LYR.tp;
   const tt = $(el.ttId);

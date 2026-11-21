@@ -15,7 +15,10 @@ before building anything. Newest entries at the top of each section. Feature spe
      1–5. Tap a dot = expand with +Note/+Tab/+New tab/+Snip/Record. Edit structure = cursor + key
      tiles. Fix-links icon + tray. Notes tab and the full-screen overlay are gone. Tabs order:
      Recordings, Lyrics, Tabs, Structure.
-  3. Lyrics linking (even spread, per-line tweaks from both sides, broken links in Lyrics edit mode).
+  3. ✅ (2026-11-21, pushed, awaiting phone test) Lyrics linking: "♪ Fit lyrics" button, lyric
+     lines in the callout column, ▲▼✕ in the expanded row, faded chorus echoes, margin tags on the
+     Lyrics page (tap to pick a dot), edit-mode warning, lost/floating lines in the fix tray.
+     Not done: dragging lines (only ▲▼ for now).
   4. Member lanes and moments. 5. Layers (comments/tabs callouts, lyrics fade, linked track
      comment ▶). 6. Versions, then the horizontal toggle.
 - After pushing step 1: everyone should hard-refresh. An old app that edits a structure changes
