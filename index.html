@@ -465,6 +465,10 @@ header[data-page="nav"] .hdr-t-nav { display: flex; }
 /* Structure tab: one-line player [progress] [prev] [play] [next], no waveform */
 .tp-mini-prog { display: none; position: relative; flex: 3; align-self: stretch; margin: 6px 4px; border-radius: 6px; background: var(--c-surface2); border: 1px solid var(--c-border); overflow: hidden; cursor: pointer; touch-action: none; }
 #tp-mini-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--c-teal); opacity: 0.45; }
+#tp-mini-lbl { position: absolute; left: 8px; right: 78px; top: 50%; transform: translateY(-50%); overflow: hidden; white-space: nowrap; pointer-events: none; }
+#tp-mini-mq { display: inline-block; font-family: var(--f-mono); font-size: 10px; color: var(--c-text); }
+#tp-mini-mq.mq-on { animation: tp-mq 6s ease-in-out infinite alternate; }
+@keyframes tp-mq { 0%, 15% { transform: translateX(0); } 85%, 100% { transform: translateX(var(--mq)); } }
 #tp-mini-time { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-family: var(--f-mono); font-size: 10px; color: var(--c-text); pointer-events: none; }
 #screen-track.tp-compact .tp-waveform-wrap,
 #screen-track.tp-compact .pl-comment-btn,
@@ -957,7 +961,7 @@ body.tab-view #tab-view-close { display:flex; }
 #db-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; padding: 6px 10px 12px 4px; }
 .db-empty { font-family: var(--f-mono); font-size: 11px; color: var(--c-teal-pale); padding: 18px 10px; line-height: 1.5; }
 .db-row {
-  display: grid; grid-template-columns: 22px 46px 26px minmax(0, 1fr);
+  position: relative; display: grid; grid-template-columns: 22px 46px 26px minmax(0, 1fr);
   min-height: 30px; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
 .db-row.half { min-height: 16px; }
@@ -976,7 +980,21 @@ body.tab-view #tab-view-close { display:flex; }
 .db-sec { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); white-space: nowrap; }
 .db-lanes { display: flex; justify-content: center; gap: 3px; }
 .db-lanes i { width: 2px; opacity: 0.28; }
-.db-call { display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden; padding: 2px 0 2px 8px; }
+.db-lanes i.hot { opacity: 1; }
+.db-conn { position: absolute; height: 1.5px; pointer-events: none; opacity: 0.9; }
+.db-call { position: relative; }
+.db-rng { position: absolute; top: 0; bottom: 0; border-left: 2px solid; pointer-events: none; }
+.db-rng.top { top: 7px; border-top: 2px solid; width: 4px; }
+.db-rng.bot { bottom: 7px; border-bottom: 2px solid; width: 4px; }
+.db-rng.top.bot { top: 7px; bottom: 7px; }
+.db-chip.min { flex: 0 0 auto; width: 20px; height: 20px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+.db-chip.min b { margin: 0; font-size: 10px; }
+.db-chip em { font-style: normal; color: var(--c-teal-pale); font-size: 10px; margin-left: 6px; }
+#db-note-to { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+#db-note-to span { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); margin-right: 2px; }
+#db-note-to button { font-family: var(--f-mono); font-size: 11px; padding: 5px 9px; border-radius: 12px; border: 1.5px solid var(--mc); background: none; color: var(--c-text); cursor: pointer; }
+#db-note-to button.on { background: var(--mc); color: #fff; }
+.db-call { display: flex; flex-wrap: nowrap; align-items: center; gap: 4px; min-width: 0; overflow: hidden; padding: 2px 0 2px 8px; }
 .db-row.open .db-call { flex-direction: column; align-items: stretch; padding: 6px 6px 8px 8px; gap: 6px; }
 .db-chip {
   flex: 0 1 auto; min-width: 0; max-width: 100%;
@@ -993,16 +1011,18 @@ body.tab-view #tab-view-close { display:flex; }
   border: 1px solid var(--c-border); background: var(--c-bg); color: var(--c-teal-pale); cursor: pointer;
 }
 .db-cursor { height: 2px; background: var(--c-text); margin: 2px 0 2px 26px; border-radius: 1px; animation: se-blink 1s step-end infinite; }
-#db-mini { flex-shrink: 0; display: flex; gap: 2px; touch-action: none; padding: 6px 10px 4px; border-top: 1px solid var(--c-border); cursor: pointer; }
+#db-mini { position: relative; flex-shrink: 0; display: flex; gap: 2px; touch-action: none; padding: 6px 10px 4px; border-top: 1px solid var(--c-border); cursor: pointer; }
 #db-mini:empty { display: none; }
 .dbm-sec { display: flex; flex-direction: column; min-width: 0; }
 .dbm-blocks { display: flex; align-items: flex-end; gap: 1px; height: 24px; }
-.dbm-b { flex: 1 1 0; min-width: 0; border-radius: 1px; opacity: 0.45; transition: opacity 0.15s; }
-.dbm-b.vis { opacity: 1; }
-.dbm-lbl { font-family: var(--f-mono); font-size: 8px; color: var(--c-teal-pale); padding-top: 2px; white-space: nowrap; overflow: hidden; }
+.dbm-b { flex: 1 1 0; min-width: 0; border-radius: 1px; }
+.dbm-lbl { font-family: var(--f-mono); font-size: 8px; color: var(--c-teal-pale); padding-top: 2px; white-space: nowrap; overflow: hidden; text-align: center; }
+#dbm-win { position: absolute; top: 3px; height: 30px; border: 1px solid var(--c-text); border-radius: 3px; opacity: 0.6; pointer-events: none; }
 #db-bottom { flex-shrink: 0; border-top: 1px solid var(--c-border); padding: 0 10px; }
 #tp-tabcontent-structure:not(.db-editing) #db-keyboard { display: none; }
-#db-bar { display: flex; align-items: center; gap: 6px; padding: 6px 0; }
+#db-bar { display: flex; align-items: center; gap: 6px; padding: 5px 0; }
+#db-names-btn.on { background: var(--c-teal); color: #fff; border-color: var(--c-teal); }
+#screen-track.tp-compact .tp-tab-panel { padding-bottom: 0; }
 #db-bar button {
   font-family: var(--f-mono); font-size: 11px; padding: 7px 12px; border-radius: 6px;
   border: 1px solid var(--c-border); background: var(--c-surface2); color: var(--c-teal-pale); cursor: pointer;
@@ -1367,6 +1387,7 @@ body.tab-view #tab-view-close { display:flex; }
               <div id="db-bar">
                 <button id="db-edit-btn" onclick="dbToggleEdit()">✎ Edit structure</button>
                 <button id="db-clear-btn" onclick="dbClear()" style="display:none">Clear</button>
+                <button id="db-names-btn" onclick="dbToggleNames()" title="Show the names of everything pinned">Aa</button>
                 <button id="db-fix-btn" onclick="dbShowFloating()" title="Some things aren't attached to a dot" style="display:none"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6.5 9.5l-1.8 1.8a2.1 2.1 0 0 1-3-3l1.8-1.8"/><path d="M9.5 6.5l1.8-1.8a2.1 2.1 0 0 1 3 3l-1.8 1.8"/><path d="M5 1.5v2M1.5 5h2M11 14.5v-2M14.5 11h-2"/></svg></button>
               </div>
             </div>
@@ -1396,7 +1417,7 @@ body.tab-view #tab-view-close { display:flex; }
       </div>
       <div class="tp-controls">
         <button class="tp-ctrl-btn comment-btn pl-comment-btn" id="tp-ctrl-comment">𓅦 Comment</button>
-        <div class="tp-mini-prog" id="tp-mini-prog"><div id="tp-mini-fill"></div><span id="tp-mini-time">0:00</span></div>
+        <div class="tp-mini-prog" id="tp-mini-prog"><div id="tp-mini-fill"></div><span id="tp-mini-lbl"><span id="tp-mini-mq"></span></span><span id="tp-mini-time">0:00</span></div>
         <button class="tp-ctrl-btn tp-ctrl-skip" onclick="tpPrevVersion()" title="Previous version">⏮&#xFE0E;</button>
         <button class="tp-ctrl-btn play-btn" id="tp-ctrl-play" onclick="tpTogglePlay()"><svg class="pp-ic" viewBox="0 0 16 16"><path d="M4 2.5v11l9.5-5.5z" fill="currentColor"/></svg></button>
         <button class="tp-ctrl-btn tp-ctrl-skip" onclick="tpNextVersion()" title="Next version">⏭&#xFE0E;</button>
@@ -1908,6 +1929,7 @@ body.tab-view #tab-view-close { display:flex; }
       <button style="background:none;border:none;color:var(--c-teal-pale);font-size:16px;cursor:pointer" onclick="$('db-note-modal').classList.remove('open')">✕</button>
     </div>
     <textarea id="db-note-textarea" placeholder="Type your note…"></textarea>
+    <div id="db-note-to"></div>
     <div class="db-note-btns">
       <button class="db-act-btn" style="background:var(--c-surface2);color:var(--c-teal-pale);border:1px solid var(--c-border)" onclick="$('db-note-modal').classList.remove('open')">Cancel</button>
       <button class="db-act-btn" style="background:var(--c-teal);color:var(--c-text)" onclick="dbSubmitNote()">OK</button>
@@ -3809,6 +3831,7 @@ async function selectVersion(idx, autoPlay = true) {
   if (!v) return;
   S.tp.versionIdx = idx;
   S.tp.snippetId  = null;
+  _tpMiniLabel();
   renderComments(); // comments + BPM tags follow the selected version straight away
   renderBpmTags();
   await _tpLoadAudio(v.fileId, `tpver-${idx}`, { songName: S.tp.songName, autoPlay });
@@ -3832,7 +3855,7 @@ function tpSwitchTab(tab) {
   if (tab !== 'structure') { if (DB.editing) dbDoneEditing(); dbCancelAnchorMode(); _dbCloseEnergyPick(); }
   S.tp.activeTab = tab;
   $('screen-track').classList.toggle('tp-compact', tab === 'structure');
-  if (tab === 'structure') _tpMiniProgress();
+  if (tab === 'structure') { _tpMiniProgress(); _tpMiniLabel(); }
   document.querySelectorAll('.tp-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tp-tabcontent').forEach(d => d.classList.toggle('active', d.id === `tp-tabcontent-${tab}`));
   if (tab === 'structure') renderSongStructure();
@@ -3863,6 +3886,7 @@ async function selectSnippet(snipId) {
   const sn = (S.snippets || []).find(s => s.id === snipId);
   if (!sn) return;
   S.tp.snippetId = snipId; // no recording selected: comments/BPM markers hide
+  _tpMiniLabel();
   renderComments();
   renderBpmTags();
   await _tpLoadAudio(sn.driveFileId, `tpsnip-${snipId}`, { label: 'Loading snippet…' });
@@ -4041,6 +4065,27 @@ function drawWave() {
   const px = ((playFrac - viewStart) / visFrac) * W;
   ctx.fillStyle = '#C44536';
   ctx.fillRect(px-1, 0, 2, H);
+}
+
+// Which take is loaded, shown inside the one-line player; slides back and forth if it doesn't fit
+function _tpMiniLabel() {
+  const mq = $('tp-mini-mq');
+  if (!mq) return;
+  let txt = '';
+  if (S.tp.snippetId) {
+    const sn = (S.snippets || []).find(x => x.id === S.tp.snippetId);
+    txt = 'Snippet · ' + (sn?.title || sn?.fileName || '');
+  } else {
+    const v = S.tp.versions?.[S.tp.versionIdx];
+    if (v) txt = [v.sessionDate ? fmtDate(v.sessionDate) : '', S.tp.isEgg ? '' : 'V' + v.version,
+                  v.fileName ? parseRecordingName(v.fileName).extra : ''].filter(Boolean).join(' · ');
+  }
+  mq.textContent = txt;
+  mq.classList.remove('mq-on');
+  requestAnimationFrame(() => {
+    const over = mq.scrollWidth - mq.parentElement.clientWidth;
+    if (over > 2) { mq.style.setProperty('--mq', -over + 'px'); mq.style.animationDuration = Math.max(4, over / 12) + 's'; mq.classList.add('mq-on'); }
+  });
 }
 
 // Structure tab's one-line player: progress fill + time, tap/drag to seek
@@ -5103,7 +5148,7 @@ async function anPlaySnippet(snipId) {
    STRUCTURE EDITOR
 ══════════════════════════════════════════════════════ */
 const STRUCT_COLORS = {
-  I:'#4A9AA8', V:'#C07840', C:'#D04848',
+  I:'#4A9AA8', V:'#A8501C', C:'#D04848',
   B:'#5A9868', O:'#7A90B8', X:'#9070A8', S:'#C8B840',
 };
 
@@ -5180,6 +5225,8 @@ const MEMBER_COLORS = { Barn:'#2E6BE6', Christy:'#D6409F', Neda:'#E0A21B', Pat:'
 const DB = {
   songName: null, bars: [], barIds: [], customTiles: [], pins: [], energy: {},
   editing: false, cursor: 0, openIdx: -1, _saveTimer: null,
+  openChips: new Set(), showNames: (() => { try { return localStorage.getItem('ng_db_names') === '1'; } catch(e) { return false; } })(),
+  _rangePinId: null, _noteTo: [],
   _anchoringPinId: null, _noteEditPinId: null, _noteTargetBarIdx: null,
   _awaitingNewTabBarIdx: null, _awaitingNewSnipBarIdx: null,
 };
@@ -5252,7 +5299,7 @@ async function dbLoad() {
   const song = S.songs?.find(s => s.name === S.tp?.songName);
   if (!song) return false;
   dbFlush();
-  if (DB.songName !== song.name) { DB.editing = false; DB.openIdx = -1; }
+  if (DB.songName !== song.name) { DB.editing = false; DB.openIdx = -1; DB.openChips.clear(); }
   DB.songName = song.name;
   const d = song.doodle || {};
   DB.bars        = Array.isArray(d.bars)        ? [...d.bars]        : [];
@@ -5318,12 +5365,13 @@ function dbRender() {
   const prof     = _dbEnergyProfile(DB.barIds, DB.energy, DB.bars.map(b => _dbIsHalf(b) ? 0.5 : 1));
   const byDot    = {};
   DB.pins.forEach(p => { const i = _dbPinDot(p); if (i >= 0) (byDot[i] = byDot[i] || []).push(p); });
+  const ranges   = _dbRangeSegments();
   const frag = document.createDocumentFragment();
   let gi = 0;
   sections.forEach((sec, si) => {
     for (let b = 0; b < sec.bars; b++, gi++) {
       if (DB.editing && gi === DB.cursor) frag.appendChild(_dbCursorEl());
-      frag.appendChild(_dbRowEl(gi, b === 0 ? labels[si] : '', si > 0 && b === 0, prof[gi], byDot[gi] || []));
+      frag.appendChild(_dbRowEl(gi, b === 0 ? labels[si] : '', si > 0 && b === 0, prof[gi], byDot[gi] || [], ranges[gi] || []));
     }
   });
   if (DB.editing && DB.cursor >= DB.bars.length) frag.appendChild(_dbCursorEl());
@@ -5332,8 +5380,30 @@ function dbRender() {
   dbRenderBar();
 }
 
+/* Ranged pins (barId → endBarId) draw a bracket down the callout column. Overlapping ranges
+   get their own column (k). A missing end dot shrinks the pin back to its start dot. */
+function _dbPinEnd(p) {
+  const s = _dbPinDot(p), e = p.endBarId ? DB.barIds.indexOf(p.endBarId) : -1;
+  return s >= 0 && e > s ? e : s;
+}
+function _dbRangeSegments() {
+  const out = {}, cols = []; // cols[k] = last row used by column k
+  DB.pins.map(p => ({ p, s: _dbPinDot(p), e: _dbPinEnd(p) }))
+    .filter(r => r.s >= 0 && r.e > r.s)
+    .sort((a, b) => a.s - b.s)
+    .forEach(({ p, s, e }) => {
+      let k = cols.findIndex(last => last < s);
+      if (k < 0) k = cols.length;
+      cols[k] = e;
+      const color = MEMBER_COLORS[(p.to || [])[0]] || 'var(--c-accent)';
+      for (let i = s; i <= e; i++) (out[i] = out[i] || []).push({ k, top: i === s, bot: i === e, color });
+    });
+  return out;
+}
+
 /* Mini strip under the board: one block per bar, height = energy, colour = section,
-   labels underneath. Tap = scroll the board there; blocks on screen are highlighted. */
+   labels centred under their section. A thin window outlines the part in view.
+   Tap or slide = scroll the board there. */
 function dbRenderMini(sections, labels, prof) {
   const box = $('db-mini');
   if (!box) return;
@@ -5342,33 +5412,36 @@ function dbRenderMini(sections, labels, prof) {
     let blocks = '', w = 0;
     for (let b = 0; b < sec.bars; b++, gi++) {
       const half = _dbIsHalf(DB.bars[gi]), e = prof[gi];
-      const v = e ? (e[0] + e[1]) / 2 : 0;
-      const h = e ? 4 + v * 4 : 5;
+      const h = e ? 4 + (e[0] + e[1]) / 2 * 4 : 5;
       w += half ? 0.5 : 1;
       blocks += `<i class="dbm-b" data-i="${gi}" style="flex-grow:${half ? 0.5 : 1};height:${h}px;background:${dbGetTileColor(DB.bars[gi])}"></i>`;
     }
     html += `<div class="dbm-sec" style="flex:${w} 1 0"><div class="dbm-blocks">${blocks}</div><div class="dbm-lbl">${esc(labels[si])}</div></div>`;
   });
-  box.innerHTML = html;
+  box.innerHTML = html + '<div id="dbm-win"></div>';
   _dbMiniVisible();
 }
 
 function _dbMiniVisible() {
-  const sc = $('db-scroll'), box = $('db-mini');
-  if (!sc || !box) return;
+  const sc = $('db-scroll'), box = $('db-mini'), win = $('dbm-win');
+  if (!sc || !box || !win) return;
   const top = sc.getBoundingClientRect().top, bot = top + sc.clientHeight;
-  const vis = new Set();
+  let first = null, last = null;
   sc.querySelectorAll('.db-row').forEach(r => {
     const rr = r.getBoundingClientRect();
-    if (rr.bottom > top && rr.top < bot) vis.add(r.dataset.i);
+    if (rr.bottom > top + 2 && rr.top < bot - 2) { if (first === null) first = r.dataset.i; last = r.dataset.i; }
   });
-  box.querySelectorAll('.dbm-b').forEach(b => b.classList.toggle('vis', vis.has(b.dataset.i)));
+  if (first === null) { win.style.display = 'none'; return; }
+  const a = box.querySelector(`.dbm-b[data-i="${first}"]`), b = box.querySelector(`.dbm-b[data-i="${last}"]`);
+  const br = box.getBoundingClientRect(), ar = a.getBoundingClientRect(), zr = b.getBoundingClientRect();
+  win.style.display = '';
+  win.style.left  = (ar.left - br.left - 2) + 'px';
+  win.style.width = (zr.right - ar.left + 4) + 'px';
 }
 
 (() => {
   let raf = 0;
   $('db-scroll')?.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; _dbMiniVisible(); }); }, { passive: true });
-  // tap (or slide along) the strip to jump the board to that bar
   const box = $('db-mini');
   const jump = e => {
     const blocks = [...box.querySelectorAll('.dbm-b')];
@@ -5388,8 +5461,12 @@ const _DB_PIN_ICON = { note: '✎', tab: 'T', snip: '▸' };
 function _dbPinLabel(p) {
   return p.type === 'note' ? (p.text || '') : p.type === 'tab' ? (p.tabTitle || 'Tab') : (p.snippetTitle || 'Snippet');
 }
+const _dbPinTo = p => (p.to || []).filter(m => MEMBER_COLORS[m]);
 
-function _dbRowEl(i, label, secStart, energy, pins) {
+// Lane centres inside the row (energy 22 + dot 46, then 5 lines of 2px, 3px apart, centred in 26px)
+const _DB_LANE_X = j => 22 + 46 + 2 + j * 5 + 1;
+
+function _dbRowEl(i, label, secStart, energy, pins, ranges) {
   const type = DB.bars[i], half = _dbIsHalf(type), open = !DB.editing && DB.openIdx === i;
   const row = document.createElement('div');
   row.className = 'db-row' + (half ? ' half' : '') + (secStart ? ' sec-start' : '') + (open ? ' open' : '');
@@ -5415,25 +5492,57 @@ function _dbRowEl(i, label, secStart, energy, pins) {
   dc.appendChild(dot);
   if (label) { const l = document.createElement('span'); l.className = 'db-sec'; l.textContent = label; dc.appendChild(l); }
 
+  // member lanes; a lane lights up where a note is addressed to that member
+  const to = new Set(pins.flatMap(_dbPinTo));
   const lanes = document.createElement('div');
   lanes.className = 'db-lanes';
-  lanes.innerHTML = CONFIG.BAND_MEMBERS.map(m => `<i style="background:${MEMBER_COLORS[m] || '#888'}"></i>`).join('');
+  lanes.innerHTML = CONFIG.BAND_MEMBERS.map(m => `<i class="${to.has(m) ? 'hot' : ''}" style="background:${MEMBER_COLORS[m] || '#888'}"></i>`).join('');
 
   const call = document.createElement('div');
   call.className = 'db-call';
-  pins.forEach(p => call.appendChild(_dbChipEl(p)));
+  const kMax = ranges.reduce((m, r) => Math.max(m, r.k + 1), 0);
+  if (kMax) call.style.paddingLeft = (10 + kMax * 4) + 'px';
+  ranges.forEach(r => {
+    const seg = document.createElement('i');
+    seg.className = 'db-rng' + (r.top ? ' top' : '') + (r.bot ? ' bot' : '');
+    seg.style.left = (3 + r.k * 4) + 'px';
+    seg.style.borderColor = r.color;
+    call.appendChild(seg);
+  });
+  // addressed notes first, so their lines reach them
+  [...pins].sort((a, b) => _dbPinTo(b).length - _dbPinTo(a).length).forEach(p => call.appendChild(_dbChipEl(p, open)));
   if (open) call.appendChild(_dbActionsEl(i));
 
   row.append(en, dc, lanes, call);
+  // lines from each addressed member's lane across to the callouts
+  [...to].forEach((m, n) => {
+    const j = CONFIG.BAND_MEMBERS.indexOf(m), ln = document.createElement('i');
+    ln.className = 'db-conn';
+    ln.style.left = _DB_LANE_X(j) + 'px';
+    ln.style.width = (22 + 46 + 26 + 8 - _DB_LANE_X(j) + (kMax ? kMax * 4 + 2 : 0)) + 'px';
+    ln.style.top = `calc(${open ? '15px' : '50%'} + ${n * 3}px)`;
+    ln.style.background = MEMBER_COLORS[m];
+    row.appendChild(ln);
+  });
   row.addEventListener('click', e => dbRowTap(i, e, row));
   return row;
 }
 
-function _dbChipEl(p) {
+// A pin is a small dot until tapped (or "Aa" shows all names); a second tap opens it
+function _dbChipEl(p, full) {
+  const named = full || DB.showNames || DB.openChips.has(p.id);
+  const to = _dbPinTo(p), end = _dbPinEnd(p), s = _dbPinDot(p);
   const chip = document.createElement('span');
-  chip.className = 'db-chip db-chip-' + p.type;
-  chip.innerHTML = `<b>${_DB_PIN_ICON[p.type] || '•'}</b>${esc(_dbPinLabel(p))}`;
-  _dbTapHold(chip, () => dbTapPin(p), () => dbShowPinMenu(p, chip));
+  chip.className = 'db-chip db-chip-' + p.type + (named ? '' : ' min');
+  if (to.length) chip.style.borderColor = MEMBER_COLORS[to[0]];
+  const span = end > s ? `<em>${end - s + 1} bars</em>` : '';
+  const who  = to.length ? `<em>→ ${esc(to.join(', '))}</em>` : '';
+  chip.innerHTML = `<b>${_DB_PIN_ICON[p.type] || '•'}</b>` + (named ? `<span>${esc(_dbPinLabel(p))}</span>${who}${span}` : '');
+  chip.title = _dbPinLabel(p);
+  _dbTapHold(chip, () => {
+    if (named) dbTapPin(p);
+    else { DB.openChips.add(p.id); dbRender(); }
+  }, () => dbShowPinMenu(p, chip));
   return chip;
 }
 
@@ -5474,6 +5583,7 @@ function dbRowTap(i, e, row) {
     return;
   }
   if (DB._anchoringPinId) { dbAnchorPinToDot(i); return; }
+  if (DB._rangePinId) { dbSetRangeEnd(i); return; }
   DB.openIdx = DB.openIdx === i ? -1 : i;
   dbRender();
 }
@@ -5484,7 +5594,16 @@ function dbRenderBar() {
   $('db-edit-btn').textContent = DB.editing ? 'Done' : '✎ Edit structure';
   $('db-edit-btn').classList.toggle('on', DB.editing);
   $('db-clear-btn').style.display = DB.editing ? '' : 'none';
+  $('db-names-btn').style.display = DB.editing ? 'none' : '';
+  $('db-names-btn').classList.toggle('on', DB.showNames);
   $('db-fix-btn').style.display = floating && !DB.editing ? '' : 'none';
+}
+
+function dbToggleNames() {
+  DB.showNames = !DB.showNames;
+  try { localStorage.setItem('ng_db_names', DB.showNames ? '1' : '0'); } catch(e) {}
+  if (!DB.showNames) DB.openChips.clear();
+  dbRender();
 }
 
 function dbToggleEdit() { DB.editing ? dbDoneEditing() : dbStartEditing(); }
@@ -5668,8 +5787,23 @@ function _dbCloseEnergyPick() {
 }
 
 /* ── Adding things to a dot ── */
+// "To" toggles in the note box: address a note to bandmates
+function _dbRenderNoteTo() {
+  const box = $('db-note-to');
+  if (!box) return;
+  box.innerHTML = '<span>To</span>' + CONFIG.BAND_MEMBERS.map(m =>
+    `<button data-m="${m}" class="${DB._noteTo.includes(m) ? 'on' : ''}" style="--mc:${MEMBER_COLORS[m] || '#888'}">${m}</button>`).join('');
+  box.onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const m = b.dataset.m;
+    DB._noteTo = DB._noteTo.includes(m) ? DB._noteTo.filter(x => x !== m) : [...DB._noteTo, m];
+    _dbRenderNoteTo();
+  };
+}
+
 function dbAddNote(barIdx) {
   DB._noteEditPinId = null; DB._noteTargetBarIdx = barIdx;
+  DB._noteTo = []; _dbRenderNoteTo();
   $('db-note-hdr-title').textContent = 'Add Note';
   $('db-note-textarea').value = '';
   $('db-note-modal').classList.add('open');
@@ -5727,9 +5861,11 @@ function dbSubmitNote() {
   $('db-note-modal').classList.remove('open');
   if (DB._noteEditPinId) {
     const pin = DB.pins.find(p => p.id === DB._noteEditPinId);
-    if (pin) pin.text = text;
+    if (pin) { pin.text = text; if (DB._noteTo.length) pin.to = [...DB._noteTo]; else delete pin.to; }
   } else {
-    DB.pins.push({ id: 'pin_' + Date.now().toString(36), type: 'note', ..._dbAnchorAt(DB._noteTargetBarIdx), text });
+    const pin = { id: 'pin_' + Date.now().toString(36), type: 'note', ..._dbAnchorAt(DB._noteTargetBarIdx), text };
+    if (DB._noteTo.length) pin.to = [...DB._noteTo];
+    DB.pins.push(pin);
   }
   DB._noteEditPinId = null;
   dbRender();
@@ -5784,6 +5920,11 @@ function dbShowPinMenu(pin, el) {
   };
   if (pin.type === 'note') addBtn('Edit note', '', () => dbEditNote(pin.id));
   addBtn(_dbPinDot(pin) < 0 ? 'Attach to a dot' : 'Move to dot', '', () => dbStartAnchorMode(pin.id));
+  if (_dbPinDot(pin) >= 0) {
+    addBtn('Cover whole section', '', () => dbCoverSection(pin.id));
+    addBtn('Cover up to…', '', () => dbStartRangeMode(pin.id));
+    if (_dbPinEnd(pin) > _dbPinDot(pin)) addBtn('Just this bar', '', () => dbSetRange(pin.id, null));
+  }
   addBtn(pin.type === 'snip' ? 'Remove from board' : 'Delete', 'danger', () => dbDeletePin(pin.id));
   addBtn('Cancel', 'muted', () => {});
   const rect = el.getBoundingClientRect();
@@ -5805,6 +5946,7 @@ function dbEditNote(pinId) {
   if (!pin) return;
   DB._noteEditPinId = pinId;
   DB._noteTargetBarIdx = _dbPinDot(pin);
+  DB._noteTo = [...(pin.to || [])]; _dbRenderNoteTo();
   $('db-note-hdr-title').textContent = 'Edit Note';
   $('db-note-textarea').value = pin.text || '';
   $('db-note-modal').classList.add('open');
@@ -5818,15 +5960,59 @@ async function dbDeletePin(pinId) {
   showToast('Pin removed');
 }
 
+function _dbBanner(text) {
+  const b = $('db-anchor-banner');
+  if (!b) return;
+  if (text) b.querySelector('span').textContent = text;
+  b.classList.toggle('show', !!text);
+}
 function dbStartAnchorMode(pinId) {
   if (DB.editing) dbDoneEditing();
+  DB._rangePinId = null;
   DB._anchoringPinId = pinId;
-  $('db-anchor-banner')?.classList.add('show');
+  _dbBanner('Tap a dot to attach it to');
 }
 
 function dbCancelAnchorMode() {
+  DB._anchoringPinId = null; DB._rangePinId = null;
+  _dbBanner(null);
+}
+
+/* Ranges: a pin covers its dot through endBarId */
+function dbSetRange(pinId, endIdx) {
+  const pin = DB.pins.find(p => p.id === pinId);
+  if (!pin) return;
+  const s = _dbPinDot(pin);
+  if (endIdx == null || endIdx === s) delete pin.endBarId;
+  else if (endIdx > s) pin.endBarId = DB.barIds[endIdx];
+  else { pin.endBarId = DB.barIds[s]; Object.assign(pin, _dbAnchorAt(endIdx)); } // tapped above: that becomes the start
+  dbRender();
+  _dbPersist();
+}
+function _dbSectionBounds(i) {
+  const t = DB.bars[i].toUpperCase();
+  let a = i, b = i;
+  while (a > 0 && DB.bars[a - 1].toUpperCase() === t) a--;
+  while (b < DB.bars.length - 1 && DB.bars[b + 1].toUpperCase() === t) b++;
+  return [a, b];
+}
+function dbCoverSection(pinId) {
+  const pin = DB.pins.find(p => p.id === pinId);
+  const s = pin ? _dbPinDot(pin) : -1;
+  if (s < 0) return;
+  const [a, b] = _dbSectionBounds(s);
+  Object.assign(pin, _dbAnchorAt(a));
+  dbSetRange(pinId, b);
+}
+function dbStartRangeMode(pinId) {
   DB._anchoringPinId = null;
-  $('db-anchor-banner')?.classList.remove('show');
+  DB._rangePinId = pinId;
+  _dbBanner('Tap the last bar it covers');
+}
+function dbSetRangeEnd(i) {
+  const id = DB._rangePinId;
+  dbCancelAnchorMode();
+  dbSetRange(id, i);
 }
 
 function dbAnchorPinToDot(dotIdx) {

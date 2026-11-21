@@ -31,6 +31,32 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-21 (feedback after phone test of the strip; Patrick: "bars look great"):
+  - **Strip "in view" marker:** dimming wasn't clear. All blocks stay full colour, with a **thin
+    outlined window** around the part in view (he also floated a sideways "[" bracket).
+  - **Verse dot too close to the (light) background.** Either a paler cream background or tweaked
+    dot colours. I chose to tweak the dot colour (smaller change). Revisit if it's still not right.
+  - **Progress bar shows the take's date and version inside it**, scrolling back and forth if it
+    doesn't fit.
+  - **Strip labels centred** under their section.
+  - **Notes/comments can be addressed to bandmates.** A line runs from that member's lane to the
+    note. (Pulls part of step 4/5 forward.)
+  - **Pin a note or tab to a range** (start to end bar, e.g. a whole section). The callout shows
+    the range it covers.
+  - **Pins are minimised by default:** a single small dot. Tap to show the name. Applies to
+    everything. He's not sure whether to also have a broad per-type filter. Controls like that go
+    in the bottom bar (the Edit structure row), but it **must not take more space**. That area is
+    already too tall: there's too much and uneven space under the button.
+  - Built 2026-11-21: window marker, verse colour #A8501C, take label in the progress bar, centred
+    labels, notes addressed To members (lane line), ranges via pin menu (Cover whole section / Cover
+    up to… / Just this bar), minimised pins + "Aa" show-all-names toggle, tighter bottom bar.
+  - Then do step 3 (lyrics) and commit.
+- 2026-11-21: **Step 3 defaults** (asked 5 questions, no answers yet, went with my
+  recommendations; revisit if they feel wrong): lyrics take the callout column and pins collapse to
+  dots; a "Fit lyrics" button (only places unlinked lines, never undoes tweaks); paragraphs fill
+  vocal sections in order, skipping Intro/Outro/Solo/Misc; a chorus written once is echoed (faded)
+  on later choruses; move a line with ▲▼ in the expanded row; the Lyrics page shows section tags in
+  the margin, with broken links marked in edit mode.
 - 2026-11-21: **Mini structure strip** at the bottom of the Structure tab: one block per bar,
   **height = energy**, colour = section type, section labels (C1 etc.) underneath. My additions:
   half bars are half width, no energy = a low flat block, tap a block = scroll the board to that
