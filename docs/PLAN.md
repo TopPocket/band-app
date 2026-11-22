@@ -36,6 +36,8 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-22 (Patrick): **Move the 🕘 versions button to the right of the band names** in the
+  header (not under ✎). Built and pushed.
 - 2026-11-22 (Patrick): **A note for several members:** instead of a coloured line from each
   member's dot, use **one dark line that goes around the outside of each relevant dot and joins
   them up (never cutting through a dot)**, then runs on to the note. That colour is also the
