@@ -922,6 +922,8 @@ body.tab-view #tab-view-close { display:flex; }
 #tab-fretboard-wrap { flex-shrink:0; border-top:2px solid var(--c-teal); position:relative; }
 #fret-canvas { width:100%; height:100%; display:block; touch-action:none; }
 #tab-notenames-btn { position:absolute; bottom:6px; right:6px; background:var(--c-surface); border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:10px; padding:4px 9px; cursor:pointer; z-index:5; }
+#tab-help-btn { position:absolute; bottom:6px; right:56px; width:24px; height:24px; border-radius:50%; background:var(--c-surface); border:1px solid var(--c-border); color:var(--c-teal-pale); font-family:var(--f-mono); font-size:12px; font-weight:700; padding:0; cursor:pointer; z-index:5; }
+body.tab-view #tab-help-btn { display:none; }
 #tab-notenames-btn.active { border-color:var(--c-amber-lt); color:var(--c-amber-lt); }
 
 @keyframes se-blink { 0%,100%{opacity:1} 50%{opacity:0} }
@@ -1314,8 +1316,8 @@ body.tab-view #tab-view-close { display:flex; }
 .wn-r:has(.wn-hl) { overflow: visible; }
 .wn-tabs .wn-hl { flex: 1; }
 .wn-tabs .wn-hl span { flex: 1; }
-.wn-head { min-height: 20px; margin-bottom: 4px; }
-.wn-hd-names { display: flex; gap: 0; margin-left: 46px; }
+.wn-head { min-height: 12px; margin-bottom: 2px; }
+.wn-hd-names { display: flex; gap: 0; }
 .wn-hd-names b { width: 6px; font: 700 8px var(--f-mono); text-align: center; }
 .wn-open { background: var(--c-bg); border-radius: 8px; padding: 6px 4px 8px; }
 .wn-to { display: flex; gap: 6px; justify-content: center; margin-top: 10px; }
@@ -1333,7 +1335,42 @@ body.tab-view #tab-view-close { display:flex; }
 .wn-tabs span.on { color: var(--c-text); border: 1px solid var(--c-accent); border-bottom: none; border-radius: 4px 4px 0 0; background: var(--c-bg); }
 .wn-row { display: flex; align-items: center; gap: 6px; min-height: 28px; }
 .wn-solo { justify-content: center; }
-.wn-en { height: 22px; background: var(--c-amber); opacity: 0.6; flex: 0 0 auto; margin: 0 6px 0 4px; }
+.wn-ens { width: 22px; flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-start; }
+.wn-en { height: 22px; background: var(--c-amber); opacity: 0.6; flex: 0 0 auto; }
+.wn-dotc { width: 12px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
+.wn-lanes-c { width: 30px; flex: 0 0 auto; display: flex; justify-content: center; }
+.wn-nums { min-height: 24px; align-items: flex-start; }
+.wn-nums .wn-ens { justify-content: center; }
+.wn-nums .wn-r { overflow: visible; padding-left: 8px; }
+.wn-num { position: relative; flex: 0 0 auto; width: 16px; height: 16px; border-radius: 50%; background: var(--c-accent); color: #fff; font: 700 9px/16px var(--f-mono); text-align: center; }
+.wn-nums .wn-num::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -4px; border: 4px solid transparent; border-top: 5px solid var(--c-accent); }
+.wn-songhd { font-family: var(--f-display); font-size: 14px; font-weight: 700; color: var(--c-text); margin: 2px 0 8px 2px; }
+.wn-songhd .wn-hl { padding: 2px 8px; }
+.wn-flip { position: relative; }
+.wn-call { position: relative; height: 28px; }
+.wn-cl, .wn-cr { position: absolute; top: 0; display: flex; gap: 3px; }
+.wn-cl { left: 0; } .wn-cr { right: 0; }
+.wn-elb { position: absolute; top: 8px; height: 13px; border-top: 1.5px solid var(--c-accent); }
+.wn-elb.l { left: 38px; width: 47px; border-right: 1.5px solid var(--c-accent); }
+.wn-elb.r { left: 118px; right: 22px; border-left: 1.5px solid var(--c-accent); }
+.wn-elb::after { content: ''; position: absolute; bottom: -6px; border: 5px solid transparent; border-bottom: none; border-top: 6px solid var(--c-accent); }
+.wn-elb.l::after { right: -5.75px; } .wn-elb.r::after { left: -5.75px; }
+.wn-rows { position: relative; display: flex; flex-direction: column; gap: 2px; }
+.wn-rect { position: absolute; left: 65px; width: 40px; top: -3px; bottom: -3px; border: 2px solid var(--c-accent); border-radius: 7px; animation: wnTap 5s infinite; }
+.wn-flip .wn-r { position: relative; }
+.wn-ly { display: flex; align-items: center; gap: 5px; animation: wnLy 5s infinite; }
+.wn-nt { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); animation: wnNt 5s infinite; }
+@keyframes wnLy { 0%, 40% { opacity: 1; } 50%, 90% { opacity: 0.15; } 100% { opacity: 1; } }
+@keyframes wnNt { 0%, 40% { opacity: 0; } 50%, 90% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes wnTap { 0%, 38%, 52%, 88%, 100% { box-shadow: none; } 44%, 94% { box-shadow: 0 0 0 5px rgba(196,80,58,0.25); } }
+@media (prefers-reduced-motion: reduce) { .wn-ly, .wn-nt, .wn-rect { animation: none; } .wn-nt { opacity: 0; } }
+.wn-tabhelp { max-width: 640px; }
+.wn-vis[hidden] { display: none; }
+.wn-dotc .wn-hl::after { right: auto; left: -11px; }
+@media (orientation: landscape) and (max-height: 520px) {
+  .wn-tabhelp .wn-ol { display: block; columns: 2; column-gap: 22px; }
+  .wn-tabhelp .wn-ol li { break-inside: avoid; margin-bottom: 7px; font-size: 14px; }
+}
 .wn-dot { width: 12px; height: 12px; border-radius: 50%; flex: 0 0 auto; }
 .wn-lbl { width: 18px; font-family: var(--f-mono); font-size: 9px; color: var(--c-teal-pale); }
 .wn-lanes { display: flex; align-self: stretch; }
@@ -1744,6 +1781,7 @@ body.tab-view #tab-view-close { display:flex; }
       <div id="tab-fretboard-wrap">
         <canvas id="fret-canvas"></canvas>
         <button type="button" id="tab-notenames-btn" onclick="tabToggleNoteNames()">fret</button>
+        <button type="button" id="tab-help-btn" onclick="wnTabHelp(true)" title="How the tab editor works">?</button>
       </div>
       <div id="tab-sym-menu"></div>
     </div>
@@ -2678,39 +2716,60 @@ function buildNamePicker() {
    A short walkthrough shown once to each person after an update (per device, ng_whatsnew).
    Written to be skimmable: a mock-up with the bits to tap circled + numbered, then numbered
    steps that match. Bump WN_VERSION and rewrite WN_STEPS for the next one.
-   Home → "What's new" reopens it. */
+   Home → "What's new" reopens it. The same card shows the tab-editor how-to (TAB_HELP) the
+   first time someone starts a new tab (ng_tabhelp), and from the editor's ? button. */
 const WN_VERSION = '2026-11-board-2';
 // circle something in a mock-up, with a number badge
 const _wnHl = (n, html, round) => `<span class="wn-hl${round ? ' rd' : ''}" data-n="${n}">${html}</span>`;
+// a number badge with a little pointer under it (sits over a column)
+const _wnNum = n => `<b class="wn-num">${n}</b>`;
 function _wnLanes(bold = {}, rest = {}) {
   return `<span class="wn-lanes">${DB_LANES.map(m => `<i style="color:${MEMBER_COLORS[m] || '#888'}" class="${bold[m] ? 'b' : ''}${rest[m] ? ' r' : ''}"></i>`).join('')}</span>`;
 }
-function _wnRow(col, label, en, lanes, right) {
-  return `<div class="wn-row"><span class="wn-en" style="width:${en}px"></span><span class="wn-dot" style="background:${col}"></span><span class="wn-lbl">${label}</span>${lanes}<span class="wn-r">${right}</span></div>`;
+// one board row: fixed-width columns (energy | dot | label | lanes | lyrics) so rows line up
+function _wnRow(col, label, en, lanes, right, dotHl) {
+  const dot = `<span class="wn-dot" style="background:${col}"></span>`;
+  return `<div class="wn-row"><span class="wn-ens"><span class="wn-en" style="width:${en}px"></span></span><span class="wn-dotc">${dotHl ? _wnHl(dotHl, dot, 1) : dot}</span><span class="wn-lbl">${label}</span>${lanes}<span class="wn-r">${right}</span></div>`;
 }
 const _wnPill = (txt, col, clip) => `<span class="wn-pill${clip ? ' wn-clip' : ''}" style="border-color:${col}">${txt}${clip ? `<b style="background:${col}"></b>` : ''}</span>`;
+// lyric that fades to its note (the flip card)
+const _wnFlip = (lyric, note) => `<span class="wn-ly">${lyric}</span><span class="wn-nt">${note}</span>`;
+const TAB_HELP = [
+  '<b>Turn your phone sideways</b> (it only works in landscape)',
+  '<b>Tap a fret</b> on the fretboard at the bottom: the note goes in at the cursor',
+  '<b>‹ ›</b> move the cursor. Or tap the tab itself to jump there',
+  '<b>Hold the fretboard and slide</b> to go further up the neck',
+  '<b>/</b> button = slides etc. Tap it, then tap a string to cycle 5 → 5/ → /5. <b>Hold</b> it for more (hammer-on, pull-off, mute…)',
+  '<b>𓅮</b> clears the spot under the cursor. <b>fret</b> shows note names instead',
+  '<b>Save</b> and give it a name. Open it later to <b>Share</b> it to WhatsApp',
+];
 const WN_STEPS = [
   { t: 'New: the Structure tab',
-    v: () => `<div class="wn-tabs"><span>Recordings</span><span>Lyrics</span><span>Tabs</span>${_wnHl(1, '<span class="on">Structure</span>')}</div>`,
+    v: () => `<div class="wn-songhd">${_wnHl(1, '<span>‹ Rainy Street</span>')}</div><div class="wn-tabs"><span>Recordings</span><span>Lyrics</span><span>Tabs</span>${_wnHl(2, '<span class="on">Structure</span>')}</div>`,
     s: ['Open any <b>song</b>', 'Tap <b>STRUCTURE</b>', 'That’s the band’s map of the song: bars, who plays what, notes'] },
   { t: 'What you’re looking at',
-    v: () => `<div class="wn-row wn-head">${_wnHl(1, '<span class="wn-en" style="width:12px;height:16px"></span>')}<span class="wn-hd-names">${DB_LANES.map(m => `<b style="color:${MEMBER_COLORS[m]}">${m[0]}</b>`).join('')}</span></div>`
-           + _wnRow(STRUCT_COLORS.V, 'V1', 8, _wnHl(3, _wnLanes()), 'Rows of houses on the street')
+    v: () => `<div class="wn-row wn-nums"><span class="wn-ens">${_wnNum(1)}</span><span class="wn-dotc">${_wnNum(2)}</span><span class="wn-lbl"></span><span class="wn-lanes-c">${_wnNum(3)}</span><span class="wn-r">${_wnNum(4)}</span></div>`
+           + `<div class="wn-row wn-head"><span class="wn-ens"></span><span class="wn-dotc"></span><span class="wn-lbl"></span><span class="wn-hd-names">${DB_LANES.map(m => `<b style="color:${MEMBER_COLORS[m]}">${m[0]}</b>`).join('')}</span></div>`
+           + _wnRow(STRUCT_COLORS.V, 'V1', 8, _wnLanes(), 'Rows of houses on the street')
            + _wnRow(STRUCT_COLORS.V, '', 12, _wnLanes({}, { Rory: 1 }), 'Damp pavements and rain')
-           + `<div class="wn-row"><span class="wn-en" style="width:20px"></span>${_wnHl(2, `<span class="wn-dot" style="background:${STRUCT_COLORS.C}"></span>`, 1)}<span class="wn-lbl">C1</span>${_wnLanes()}<span class="wn-r">${_wnHl(4, 'And I’ll never…')}</span></div>`,
+           + _wnRow(STRUCT_COLORS.C, 'C1', 20, _wnLanes(), 'And I’ll never…'),
     s: ['<b>Energy:</b> how hard to go. Tap it to set 1–5', '<b>Dots = bars.</b> Blue verse, red chorus…', '<b>Your coloured line.</b> A gap = you rest', '<b>Lyrics</b> sit next to their bar'] },
   { t: 'Flip: lyrics ⇄ notes',
-    v: () => _wnRow(STRUCT_COLORS.C, 'C1', 18, _wnHl(1, _wnLanes()), `<span class="wn-ndot" style="background:${MEMBER_COLORS.Rory}"></span>And I’ll never…`)
-           + '<div class="wn-arrow">⇅</div>'
-           + _wnRow(STRUCT_COLORS.C, 'C1', 18, _wnLanes(), _wnPill('Rory: hold back', MEMBER_COLORS.Rory)),
-    s: ['<b>Tap the coloured lines</b>', 'Lyrics swap for the notes &amp; tabs', 'Tap again to go back'] },
+    v: () => `<div class="wn-flip"><div class="wn-call"><span class="wn-cl">${_wnNum(1)}${_wnNum(3)}</span><i class="wn-elb l"></i><i class="wn-elb r"></i><span class="wn-cr">${_wnNum(2)}</span></div>`
+           + `<div class="wn-rows"><i class="wn-rect"></i>`
+           + _wnRow(STRUCT_COLORS.V, 'V1', 8, _wnLanes(), _wnFlip('Rows of houses on the street', ''))
+           + _wnRow(STRUCT_COLORS.C, 'C1', 18, _wnLanes(), _wnFlip(`<span class="wn-ndot" style="background:${MEMBER_COLORS.Rory}"></span>And I’ll never…`, _wnPill('Rory: hold back', MEMBER_COLORS.Rory)))
+           + _wnRow(STRUCT_COLORS.C, '', 18, _wnLanes(), _wnFlip('Leave this town', `<span class="wn-tab" style="background:${MEMBER_COLORS.Pat}">TAB</span>`))
+           + `</div></div>`,
+    s: ['<b>Tap the coloured lines</b>', 'Lyrics swap for the notes &amp; tabs', 'Tap the lines again to go back'] },
   { t: 'Leave a note for someone',
-    v: () => `<div class="wn-open">${_wnRow(STRUCT_COLORS.V, 'V2', 10, _wnLanes(), 'Pink in the morning light')}<div class="wn-acts">${_wnHl(2, '<span>+ Note</span>')}<span>+ Tab</span><span>+ New tab</span><span>🎙 Record</span></div></div>`
+    v: () => `<div class="wn-open">${_wnRow(STRUCT_COLORS.V, 'V2', 10, _wnLanes(), 'Pink in the morning light', 1)}<div class="wn-acts">${_wnHl(2, '<span>+ Note</span>')}<span>+ Tab</span><span>+ New tab</span><span>🎙 Record</span></div></div>`
            + `<div class="wn-to">${_wnHl(3, `<span style="--mc:${MEMBER_COLORS.Rory}" class="on">Rory</span>`)}<span style="--mc:${MEMBER_COLORS.Pat}">Pat</span><span style="--mc:${MEMBER_COLORS.Neda}">Neda</span></div>`,
     s: ['<b>Tap a bar</b> (its row opens)', 'Tap <b>+ Note</b>', 'Type it, tap <b>who it’s for</b>', 'Tap <b>OK</b>. Their line now points at it'],
     tip: 'Hold a note to move it or stretch it over a whole section.' },
   { t: 'Attach a riff from a rehearsal',
-    v: () => `<div class="wn-acts">${_wnHl(2, '<span>Comment</span>')}${_wnHl(3, '<span>⇢ Structure</span>')}</div>`
+    v: () => `<div class="wn-tabs">${_wnHl(1, '<span class="on">Recordings</span>')}<span>Lyrics</span><span>Tabs</span><span>Structure</span></div>`
+           + `<div class="wn-acts">${_wnHl(2, '<span>Comment</span>')}${_wnHl(3, '<span>⇢ Structure</span>')}</div>`
            + `<div class="wn-row wn-solo">${_wnHl(4, _wnPill('Rory, play this riff here', MEMBER_COLORS.Rory, 1))}</div>`,
     s: ['<b>Recordings</b> tab: play the take', '<b>Hold Comment</b> when the riff starts, let go when it ends. Type “Rory, this riff”', 'Tap <b>⇢ Structure</b> on the comment, then tap the bar', 'Tap <b>▶</b> on the note to hear it'],
     tip: 'Or: + Note → ▶ Add a riff from a recording (you can listen to each one first).' },
@@ -2718,52 +2777,56 @@ const WN_STEPS = [
     v: () => `<div class="wn-tabs"><span>Recordings</span><span>Lyrics</span>${_wnHl(1, '<span class="on">Tabs</span>')}<span>Structure</span></div><div class="wn-acts">${_wnHl(2, '<span>+ Add Tab</span>')}</div>`,
     s: ['Song → <b>Tabs</b>', 'Tap <b>+ Add Tab</b>, pick Bass or Guitar'],
     tip: 'Made one? Put it on the structure: tap a bar → + Tab, and pick who it’s for.',
-    more: { btn: 'Show me how the tab editor works', s: [
-      '<b>Turn your phone sideways</b> (it only works in landscape)',
-      '<b>Tap a fret</b> on the fretboard at the bottom: the note goes in at the cursor',
-      '<b>‹ ›</b> move the cursor. Or tap the tab itself to jump there',
-      '<b>Hold the fretboard and slide</b> to go further up the neck',
-      '<b>/</b> button = slides etc. Tap it, then tap a string to cycle 5 → 5/ → /5. <b>Hold</b> it for more (hammer-on, pull-off, mute…)',
-      '<b>𓅮</b> clears the spot under the cursor. <b>fret</b> shows note names instead',
-      '<b>Save</b> and give it a name. Open it later to <b>Share</b> it to WhatsApp',
-    ] } },
+    more: { btn: 'Show me how the tab editor works', s: TAB_HELP } },
 ];
-let _wnI = 0;
+const _WN_TABHELP = [{ t: 'Writing a tab', s: TAB_HELP }];
+let _wnI = 0, _wnSet = { steps: WN_STEPS, key: 'ng_whatsnew', ver: WN_VERSION };
 function wnMaybeShow() {
   let seen = null; try { seen = localStorage.getItem('ng_whatsnew'); } catch (e) {}
   if (seen !== WN_VERSION) wnOpen();
 }
-function wnOpen() {
+// the tab how-to: the first time someone starts a tab (force = the editor's ? button)
+function wnTabHelp(force) {
+  let seen = null; try { seen = localStorage.getItem('ng_tabhelp'); } catch (e) {}
+  if (!force && seen) return;
+  wnOpen({ steps: _WN_TABHELP, key: 'ng_tabhelp', ver: '1', kicker: 'Tab editor', cls: 'wn-tabhelp' });
+}
+function wnOpen(set) {
+  _wnSet = set || { steps: WN_STEPS, key: 'ng_whatsnew', ver: WN_VERSION };
   _wnI = 0;
   let ov = $('wn-overlay');
   if (!ov) {
     ov = document.createElement('div');
     ov.id = 'wn-overlay';
-    ov.innerHTML = `<div class="wn-card"><div class="wn-top"><span class="wn-kicker">What’s new</span><button class="wn-skip" onclick="wnClose()">Skip</button></div>
+    ov.innerHTML = `<div class="wn-card" id="wn-card"><div class="wn-top"><span class="wn-kicker" id="wn-kicker"></span><button class="wn-skip" onclick="wnClose()">Skip</button></div>
       <div class="wn-t" id="wn-t"></div><div class="wn-vis" id="wn-vis"></div><div class="wn-body" id="wn-body"></div>
       <div class="wn-foot"><span class="wn-pips" id="wn-pips"></span><button class="wn-back" id="wn-back" onclick="wnStep(-1)">Back</button><button class="wn-next" id="wn-next" onclick="wnStep(1)">Next</button></div></div>`;
     ov.addEventListener('click', e => { if (e.target === ov) wnClose(); });
     document.body.appendChild(ov);
   }
+  $('wn-card').className = 'wn-card ' + (_wnSet.cls || '');
+  $('wn-kicker').textContent = _wnSet.kicker || 'What’s new';
   ov.classList.add('open');
   wnStep(0);
 }
 function wnStep(d) {
-  if (_wnI + d >= WN_STEPS.length) { wnClose(); return; }
+  const steps = _wnSet.steps;
+  if (_wnI + d >= steps.length) { wnClose(); return; }
   _wnI = Math.max(0, _wnI + d);
-  const st = WN_STEPS[_wnI];
+  const st = steps[_wnI];
   const ol = arr => `<ol class="wn-ol">${arr.map(x => `<li>${x}</li>`).join('')}</ol>`;
   $('wn-t').textContent = st.t;
-  $('wn-vis').innerHTML = st.v();
+  $('wn-vis').innerHTML = st.v ? st.v() : '';
+  $('wn-vis').hidden = !st.v;
   $('wn-body').innerHTML = ol(st.s) + (st.tip ? `<div class="wn-tip">💡 ${st.tip}</div>` : '')
     + (st.more ? `<button class="wn-more" onclick="this.nextElementSibling.hidden = !this.nextElementSibling.hidden; this.classList.toggle('on')">${st.more.btn}</button><div class="wn-more-body" hidden>${ol(st.more.s)}</div>` : '');
-  $('wn-pips').innerHTML = WN_STEPS.map((_, i) => `<i class="${i === _wnI ? 'on' : ''}"></i>`).join('');
+  $('wn-pips').innerHTML = steps.length > 1 ? steps.map((_, i) => `<i class="${i === _wnI ? 'on' : ''}"></i>`).join('') : '';
   $('wn-back').style.visibility = _wnI ? '' : 'hidden';
-  $('wn-next').textContent = _wnI === WN_STEPS.length - 1 ? 'Got it' : 'Next';
+  $('wn-next').textContent = _wnI === steps.length - 1 ? 'Got it' : 'Next';
 }
 function wnClose() {
   $('wn-overlay')?.classList.remove('open');
-  try { localStorage.setItem('ng_whatsnew', WN_VERSION); } catch (e) {}
+  try { localStorage.setItem(_wnSet.key, _wnSet.ver); } catch (e) {}
 }
 
 async function enterApp() {
@@ -7302,6 +7365,7 @@ function openTabEditor(tabId) {
       renderTabCanvas();
     });
   });
+  if (!tabId) setTimeout(() => wnTabHelp(), 350); // first new tab on this device: show the how-to
 }
 
 function _tabIsDirty() { return TE._saved !== undefined && JSON.stringify(TE.notes) !== TE._saved; }

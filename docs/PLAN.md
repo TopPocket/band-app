@@ -36,6 +36,16 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-22 (Patrick): **Guide tweaks.** "What you're looking at": columns aligned (they were
+  indented by the energy bar's width), and the 1 2 3 4 numbers sit over their columns, pointing
+  down, instead of jumping around. "Flip": one rectangle round the whole lanes column; 1 and 3 on
+  the left with a stepped arrow into it, 2 on the right with an arrow to the lyrics column.
+  "Leave a note": label 1 on the picture too. **The tab editor how-to also opens when someone
+  starts a new tab.**
+  - Built 2026-11-22 (pushed). Also labelled the missing step 1 on the Structure-tab and riff
+    cards, and the flip card animates lyrics ⇄ notes. The tab how-to shows the first time a new
+    tab is started on each device (`ng_tabhelp`); a **?** button beside "fret" in the editor
+    reopens it any time (my call, so it doesn't nag every time).
 - 2026-11-22 (Patrick): **Turn the guide back on, rewritten for someone with ADHD:** punchy,
   listified, "do this, then this". **A picture of an example with the features circled.** Key
   things: **toggling lyrics/notes, where to tap, how to add comments (notes) and attach snips
