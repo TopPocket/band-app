@@ -1298,6 +1298,47 @@ body.tab-view #tab-view-close { display:flex; }
 }
 #reconnect-bar.show { display: block; }
 .auth-other-btn { background: none; border: none; color: var(--c-teal-pale); font-family: var(--f-mono); font-size: 11px; cursor: pointer; text-decoration: underline; }
+.home-whatsnew { display: block; margin: 22px auto 8px; background: none; border: none; font-family: var(--f-mono); font-size: 11px; color: var(--c-teal-pale); text-decoration: underline; cursor: pointer; }
+#wn-overlay { position: fixed; inset: 0; z-index: 700; background: rgba(0,0,0,0.55); display: none; align-items: center; justify-content: center; padding: 16px; }
+#wn-overlay.open { display: flex; }
+.wn-card { width: 100%; max-width: 420px; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 14px; padding: 14px 16px 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.35); }
+.wn-top { display: flex; align-items: center; justify-content: space-between; }
+.wn-kicker { font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-teal-pale); }
+.wn-skip { background: none; border: none; font-family: var(--f-mono); font-size: 11px; color: var(--c-teal-pale); cursor: pointer; padding: 6px; }
+.wn-vis { margin: 10px 0 12px; padding: 12px 10px; min-height: 96px; border-radius: 10px; background: var(--c-surface); display: flex; flex-direction: column; justify-content: center; gap: 2px; overflow: hidden; }
+.wn-t { font-family: var(--f-display); font-size: 19px; font-weight: 700; color: var(--c-text); margin-bottom: 6px; }
+.wn-p { font-family: var(--f-sans); font-size: 14px; line-height: 1.5; color: var(--c-text); }
+.wn-p b { color: var(--c-teal); }
+.wn-foot { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.wn-pips { flex: 1; display: flex; gap: 5px; }
+.wn-pips i { width: 6px; height: 6px; border-radius: 50%; background: var(--c-border); }
+.wn-pips i.on { background: var(--c-teal); }
+.wn-back, .wn-next { font-family: var(--f-mono); font-size: 12px; padding: 9px 16px; border-radius: 8px; cursor: pointer; border: 1px solid var(--c-border); background: none; color: var(--c-text); }
+.wn-next { background: var(--c-teal); border-color: var(--c-teal); color: #fff; }
+.wn-tabs { display: flex; border-bottom: 1px solid var(--c-border); }
+.wn-tabs span { flex: 1; text-align: center; font-family: var(--f-mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-teal-pale); padding: 8px 0; }
+.wn-tabs span.on { color: var(--c-text); border: 1px solid var(--c-accent); border-bottom: none; border-radius: 4px 4px 0 0; background: var(--c-bg); }
+.wn-row { display: flex; align-items: center; gap: 6px; min-height: 28px; }
+.wn-solo { justify-content: center; }
+.wn-en { height: 22px; background: var(--c-amber); opacity: 0.6; flex: 0 0 auto; margin: 0 6px 0 4px; }
+.wn-dot { width: 12px; height: 12px; border-radius: 50%; flex: 0 0 auto; }
+.wn-lbl { width: 18px; font-family: var(--f-mono); font-size: 9px; color: var(--c-teal-pale); }
+.wn-lanes { display: flex; align-self: stretch; }
+.wn-lanes i { width: 6px; position: relative; }
+.wn-lanes i::before { content: ''; position: absolute; left: 2px; top: 0; bottom: 0; width: 2px; background: currentColor; opacity: 0.45; }
+.wn-lanes i.b::before { width: 4px; left: 1px; opacity: 1; }
+.wn-lanes i.r::before { opacity: 0; }
+.wn-r { flex: 1; min-width: 0; font-family: var(--f-sans); font-size: 12px; color: var(--c-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; padding-left: 6px; }
+.wn-ndot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; }
+.wn-pill { font-family: var(--f-mono); font-size: 10px; border: 1px solid; border-radius: 10px; padding: 2px 8px; background: var(--c-surface2); display: inline-flex; align-items: center; gap: 6px; }
+.wn-clip { padding-right: 0; font-size: 12px; }
+.wn-clip b { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+.wn-clip b::before { content: ''; margin-left: 2px; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 8px solid #fff; }
+.wn-tab { font-family: var(--f-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 8px; color: var(--c-text); }
+.wn-arrow { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); text-align: center; padding: 2px 0; }
+.wn-acts { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 8px; }
+.wn-acts span { font-family: var(--f-mono); font-size: 11px; padding: 5px 9px; border-radius: 6px; border: 1px solid var(--c-border); background: var(--c-bg); color: var(--c-teal-pale); }
+.wn-acts .wn-big { font-size: 15px; padding: 3px 12px; }
 </style>
 <script>
   const _st = localStorage.getItem('ng-theme');
@@ -1404,6 +1445,7 @@ body.tab-view #tab-view-close { display:flex; }
         <button class="home-tool" onclick="openPlucker()"><span>𓅃</span>Pluck songs</button>
         <button class="home-tool" onclick="openTuner()"><span>𝄢</span>Tuner</button>
       </div>
+      <button class="home-whatsnew" onclick="wnOpen()">What’s new in this update</button>
     </div>
     <button id="theme-toggle-btn" onclick="toggleTheme()" title="Switch to light mode">☀</button>
   </div>
@@ -2124,6 +2166,7 @@ function _closeTopOverlay() {
     ['comment-panel', 'visible', hideCommentPanel],
     ['db-note-modal', 'open', () => $('db-note-modal').classList.remove('open')],
     ['db-pick-sheet', 'open', () => $('db-pick-sheet').classList.remove('open')],
+    ['wn-overlay', 'open', () => wnClose()],
     ['db-pin-display', 'open', dbClosePinDisplay],
     ['lt-modal', 'open', ltClose],
     ['snip-panel', 'open', snipClose],
@@ -2623,6 +2666,75 @@ function buildNamePicker() {
   };
 }
 
+/* ── WHAT'S NEW ───────────────────────────────────────
+   A short walkthrough shown once to each person after an update (per device, ng_whatsnew).
+   Bump WN_VERSION and rewrite WN_STEPS for the next one. Home → "What's new" reopens it. */
+const WN_VERSION = '2026-11-board';
+function _wnLanes(bold = {}, rest = {}) {
+  return `<span class="wn-lanes">${DB_LANES.map(m => `<i style="color:${MEMBER_COLORS[m] || '#888'}" class="${bold[m] ? 'b' : ''}${rest[m] ? ' r' : ''}"></i>`).join('')}</span>`;
+}
+function _wnRow(col, label, en, lanes, right) {
+  return `<div class="wn-row"><span class="wn-en" style="width:${en}px"></span><span class="wn-dot" style="background:${col}"></span><span class="wn-lbl">${label}</span>${lanes}<span class="wn-r">${right}</span></div>`;
+}
+const WN_STEPS = [
+  { t: 'The song page has a new Structure tab',
+    p: 'Open any song: the tabs are now <b>Recordings · Lyrics · Tabs · Structure</b>. (The old Notes tab has gone.) Structure is the band’s shared map of the song: who plays what, where.',
+    v: () => `<div class="wn-tabs"><span>Recordings</span><span>Lyrics</span><span>Tabs</span><span class="on">Structure</span></div>` },
+  { t: 'Reading the board',
+    p: 'Each <b>dot is a bar</b>, coloured by section (blue verse, red chorus…). The brown strip on the left is the <b>energy</b>; tap it to set 1–5. Each bandmate has a <b>coloured line</b>, and a <b>gap</b> in your line means you rest there. Lyrics sit alongside.',
+    v: () => _wnRow(STRUCT_COLORS.V, 'V1', 8, _wnLanes(), 'Rows of houses on the street')
+           + _wnRow(STRUCT_COLORS.V, '', 12, _wnLanes({}, { Rory: 1 }), 'Damp pavements and rain')
+           + _wnRow(STRUCT_COLORS.C, 'C1', 20, _wnLanes(), 'And I’ll never take you…') },
+  { t: 'Tap the coloured lines to flip the view',
+    p: 'Tapping the lines swaps between the <b>lyrics view</b> and the <b>tabs &amp; notes view</b>. In the lyrics view, notes are small dots; in the other view they open up.',
+    v: () => _wnRow(STRUCT_COLORS.C, 'C1', 18, _wnLanes(), '<span class="wn-ndot" style="background:' + MEMBER_COLORS.Rory + '"></span>And I’ll never…')
+           + '<div class="wn-arrow">⇅ tap the lines</div>'
+           + _wnRow(STRUCT_COLORS.C, 'C1', 18, _wnLanes(), `<span class="wn-pill" style="border-color:${MEMBER_COLORS.Rory}">Hold back here</span>`) },
+  { t: 'Notes and tabs for a bandmate',
+    p: '<b>Tap a bar</b> to open it, then <b>+ Note</b> or <b>+ Tab</b>. A note or tab can be <b>for someone</b>: their line goes bold and points at it. A circled <b>T</b> on your line is a tab for you. <b>Hold</b> any note or tab to cover a whole section, move it, and more.',
+    v: () => _wnRow(STRUCT_COLORS.C, 'C1', 18, _wnLanes({ Pat: 1, Rory: 1 }), `<span class="wn-pill" style="border-color:${MEMBER_COLORS.Rory}">Quieter here</span> <span class="wn-tab" style="background:${MEMBER_COLORS.Pat}">TAB</span>`)
+           + `<div class="wn-acts"><span>+ Note</span><span>+ Tab</span><span>+ New tab</span><span>🎙 Record</span></div>` },
+  { t: '“Rory, play this riff here”',
+    p: 'A note can carry a bit of a rehearsal: its <b>▶</b> plays that riff right there on the board. To send one: on the <b>Recordings</b> tab, <b>hold the Comment button</b> while the riff plays and let go at the end, then tap <b>⇢ Structure</b> on that comment and tap a bar. Or, when adding a note, use <b>▶ Add a riff from a recording</b>.',
+    v: () => `<div class="wn-row wn-solo"><span class="wn-pill wn-clip" style="border-color:${MEMBER_COLORS.Rory}">Play this riff here<b style="background:${MEMBER_COLORS.Rory}"></b></span></div><div class="wn-acts"><span>✎ Edit</span><span>⇢ Structure</span></div>` },
+  { t: 'Building it',
+    p: 'The <b>✎</b> at the top of the board edits the bars. While editing, <b>drag down your line</b> to mark where you rest. On the <b>Lyrics</b> tab, <b>⇅ Place</b> lets you drag lyric lines onto bars. Anyone can edit, and it all saves for everyone.',
+    v: () => `<div class="wn-acts"><span class="wn-big">✎</span><span>⇅ Place</span></div>` },
+];
+let _wnI = 0;
+function wnMaybeShow() {
+  let seen = null; try { seen = localStorage.getItem('ng_whatsnew'); } catch (e) {}
+  if (seen !== WN_VERSION) wnOpen();
+}
+function wnOpen() {
+  _wnI = 0;
+  let ov = $('wn-overlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'wn-overlay';
+    ov.innerHTML = `<div class="wn-card"><div class="wn-top"><span class="wn-kicker">What’s new</span><button class="wn-skip" onclick="wnClose()">Skip</button></div>
+      <div class="wn-vis" id="wn-vis"></div><div class="wn-t" id="wn-t"></div><div class="wn-p" id="wn-p"></div>
+      <div class="wn-foot"><span class="wn-pips" id="wn-pips"></span><button class="wn-back" id="wn-back" onclick="wnStep(-1)">Back</button><button class="wn-next" id="wn-next" onclick="wnStep(1)">Next</button></div></div>`;
+    ov.addEventListener('click', e => { if (e.target === ov) wnClose(); });
+    document.body.appendChild(ov);
+  }
+  ov.classList.add('open');
+  wnStep(0);
+}
+function wnStep(d) {
+  if (_wnI + d >= WN_STEPS.length) { wnClose(); return; }
+  _wnI = Math.max(0, _wnI + d);
+  const s = WN_STEPS[_wnI];
+  $('wn-vis').innerHTML = s.v(); $('wn-t').textContent = s.t; $('wn-p').innerHTML = s.p;
+  $('wn-pips').innerHTML = WN_STEPS.map((_, i) => `<i class="${i === _wnI ? 'on' : ''}"></i>`).join('');
+  $('wn-back').style.visibility = _wnI ? '' : 'hidden';
+  $('wn-next').textContent = _wnI === WN_STEPS.length - 1 ? 'Got it' : 'Next';
+}
+function wnClose() {
+  $('wn-overlay')?.classList.remove('open');
+  try { localStorage.setItem('ng_whatsnew', WN_VERSION); } catch (e) {}
+}
+
 async function enterApp() {
   showLoading('Loading…');
   updateUserUI();
@@ -2642,6 +2754,7 @@ async function enterApp() {
   S._entered = true;
   showScreen('screen-home');
   hideLoading();
+  setTimeout(wnMaybeShow, 500);
 }
 
 function updateUserUI() {

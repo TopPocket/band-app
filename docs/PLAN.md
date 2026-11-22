@@ -50,6 +50,10 @@ before building anything. Newest entries at the top of each section. Feature spe
   - Built 2026-11-22 (pushed): everything except the walkthrough. The range bug: in the lyrics
     view, tapping a lane to pick the end bar flipped the view instead. Also, a ranged tab for
     nobody showed nothing. Now lane/Ⓣ taps pick the bar, and the pill says "TAB · N".
+  - Walkthrough built 2026-11-22 (pushed): 6 cards with mini mock-ups (new Structure tab, reading
+    the board, flipping views, notes/tabs for a bandmate, sending a riff, building it). Shown once
+    per device after sign-in; Home → "What’s new in this update" reopens it. It's a carousel, not
+    a click-along tour over the real screens (much less code). Ask Patrick if he wants that instead.
 - 2026-11-22 (Patrick, after the marker build), **direction given, details being asked:**
   - **Tabs get smaller:** the pill just says **"TAB"** (not the tab title), coloured in the band
     member's colour. **Adding a tab prompts who it's for.**
