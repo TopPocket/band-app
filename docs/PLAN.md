@@ -39,6 +39,23 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-22 (Patrick): **New comments inbox** on the avatar circle (top right), For you / All,
+  marks on tracks, mark read / all read, hold to pin or share. Full words in
+  [NOTIFICATIONS_SPEC.md](NOTIFICATIONS_SPEC.md). Found: recording comments already have
+  `createdAt`, `author`, `directedTo`, `replies`; the device already keeps a per-recording "seen"
+  time (`bandapp_cSeen_<fileId>`, the amber row dot). Board notes have **no author or time** yet,
+  so they need optional `by`/`at` (old notes count as read). The avatar tap is currently sign out.
+  Answers: hold to pin = **keep it in my inbox** (stays after it's read, just for you); read state
+  **follows you between devices** (Drive); For you = **addressed to me + replies to my comments**;
+  update pop-up = **a card in the guide, bumped when it ships**.
+  - Built 2026-11-22 (pushed), guide bumped to `2026-11-board-4`. My calls: anything from before
+    2026-11-22 counts as read (no flood on day one); your own comments never count; tapping the
+    avatar opens the inbox, so **Sign out moved to the bottom of the drop-down**; the count badge
+    is teal and the avatar gets a **red ring when something is for you**; "Mark all as read" marks
+    what's in the list you're looking at (For you or All). Comments become read when you open the
+    comments under that recording, play one on the Comments page, or open its replies. Board notes
+    become read when they're on show (notes view, or a dot tapped open) and glow for that visit.
+    Songs with something new get a dot on the Tracks page (red if for you). Needs a phone test.
 - 2026-11-22 (Patrick): **Download a track to your device.** "maybe a hold on a track can bring up
   a pop up menu where download is an option." Answers: **everywhere** (session tracks, song-page
   recordings, snippets); menu = **Download, Share, Pin/unpin, Hide**; update pop-up = **a card

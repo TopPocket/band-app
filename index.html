@@ -84,6 +84,48 @@ header[data-page="nav"] .hdr-t-nav { display: flex; }
   font-family: var(--f-mono); font-size: 12px; font-weight: 500;
 }
 
+
+/* ══ INBOX (new comments) ══ */
+.user-chip { position: relative; }
+.inbox-badge { position: absolute; left: 17px; top: -6px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--c-teal); color: #fff; font: 700 9px/16px var(--f-mono); text-align: center; display: none; box-shadow: 0 0 0 2px var(--c-bg); }
+.user-chip.ib-new .inbox-badge { display: block; }
+.user-chip.ib-new .user-avatar { box-shadow: 0 0 0 2px var(--c-bg), 0 0 0 4px var(--c-teal); }
+.user-chip.ib-you .user-avatar { box-shadow: 0 0 0 2px var(--c-bg), 0 0 0 4px var(--c-accent); }
+#inbox-pop { position: fixed; right: 8px; z-index: 260; width: min(380px, calc(100vw - 16px)); max-height: min(72vh, 560px); display: none; flex-direction: column; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 12px; box-shadow: 0 10px 34px rgba(0,0,0,0.28); overflow: hidden; }
+#inbox-pop.open { display: flex; }
+.ib-tabs { display: flex; gap: 6px; padding: 10px 10px 8px; border-bottom: 1px solid var(--c-border); }
+.ib-tabs button { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--c-border); background: none; font-family: var(--f-mono); font-size: 12px; color: var(--c-teal-pale); cursor: pointer; }
+.ib-tabs button.on { background: var(--c-teal); border-color: var(--c-teal); color: #fff; }
+.ib-tabs button b { font-weight: 700; margin-left: 4px; }
+.ib-tabs button[data-f="you"] b { color: var(--c-accent); }
+.ib-tabs button.on b { color: #fff; }
+.ib-list { flex: 1; overflow-y: auto; }
+.ib-empty { padding: 26px 16px; text-align: center; font-family: var(--f-mono); font-size: 12px; color: var(--c-teal-pale); }
+.ib-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-bottom: 1px solid var(--c-border); cursor: pointer; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; border-left: 3px solid transparent; }
+.ib-item:active { background: var(--c-surface); }
+.ib-item.you { border-left-color: var(--c-accent); }
+.ib-item.read { opacity: 0.6; }
+.ib-av { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; color: #fff; font: 700 11px/26px var(--f-mono); text-align: center; }
+.ib-main { flex: 1; min-width: 0; }
+.ib-top { display: flex; gap: 6px; align-items: baseline; font-family: var(--f-sans); font-size: 13px; color: var(--c-text); }
+.ib-top span { color: var(--c-teal-pale); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ib-text { font-family: var(--f-sans); font-size: 14px; line-height: 1.35; color: var(--c-text); margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ib-meta { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); margin-top: 4px; }
+.ib-meta em { font-style: normal; color: var(--c-accent); }
+.ib-read { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--c-border); background: none; color: var(--c-teal); font-size: 14px; cursor: pointer; }
+.ib-foot { display: flex; justify-content: space-between; gap: 8px; padding: 8px 10px; border-top: 1px solid var(--c-border); }
+.ib-foot button { background: none; border: none; font-family: var(--f-mono); font-size: 11px; color: var(--c-teal); padding: 6px; cursor: pointer; }
+.ib-foot button:disabled { color: var(--c-border); cursor: default; }
+.ib-foot .ib-out { color: var(--c-teal-pale); }
+.song-unread { display: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c-teal); margin-left: 8px; vertical-align: middle; }
+.song-unread.on { display: inline-block; }
+.song-unread.you { background: var(--c-accent); }
+.tp-comment-item.unread { box-shadow: inset 3px 0 0 var(--c-amber); }
+.db-pin.unread .db-mk { box-shadow: 0 0 0 2px var(--c-accent); border-radius: 50%; }
+.db-pin.unread .db-chip { box-shadow: 0 0 0 2px rgba(196,80,58,0.45); }
+.ib-flash { animation: ibFlash 2.2s ease-out; }
+@keyframes ibFlash { 0%, 40% { background: rgba(196,80,58,0.18); } 100% { background: transparent; } }
+
 /* ══ SCREENS ══ */
 #app { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 .screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
@@ -1389,6 +1431,20 @@ body.tab-view #tab-help-btn { display:none; }
 .wn-arrow { font-family: var(--f-mono); font-size: 14px; color: var(--c-teal-pale); text-align: center; padding: 2px 0; }
 .wn-acts { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 8px; }
 .wn-acts span { font-family: var(--f-mono); font-size: 11px; padding: 5px 9px; border-radius: 6px; border: 1px solid var(--c-border); background: var(--c-bg); color: var(--c-teal-pale); }
+.wn-ib-hd { display: flex; justify-content: flex-end; padding-right: 6px; }
+.wn-ib-hd .wn-hl::after { right: auto; left: -12px; }
+.wn-av { position: relative; width: 28px; height: 28px; border-radius: 50%; background: var(--c-teal); color: var(--c-text); display: inline-flex; align-items: center; justify-content: center; font: 500 12px var(--f-mono); box-shadow: 0 0 0 2px var(--c-surface), 0 0 0 4px var(--c-accent); }
+.wn-av b { position: absolute; top: -7px; right: -9px; min-width: 15px; height: 15px; border-radius: 8px; background: var(--c-teal); color: #fff; font: 700 9px/15px var(--f-mono); text-align: center; box-shadow: 0 0 0 2px var(--c-surface); }
+.wn-ib { margin: 10px 0 0 auto; width: 92%; background: var(--c-bg); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+.wn-ib-tabs { display: flex; gap: 6px; }
+.wn-ib-tabs > span, .wn-ib-tabs .wn-hl { flex: 1; }
+.wn-ib-tabs span span, .wn-ib-tabs > span { display: block; flex: 1; text-align: center; padding: 5px; border-radius: 6px; border: 1px solid var(--c-border); font: 11px var(--f-mono); color: var(--c-teal-pale); }
+.wn-ib-tabs span.on { background: var(--c-teal); border-color: var(--c-teal); color: #fff; }
+.wn-ib .wn-hl { display: flex; }
+.wn-ib-it { flex: 1; display: flex; gap: 8px; align-items: center; padding: 4px 4px 4px 6px; border-left: 3px solid var(--c-accent); font: 11px/1.35 var(--f-sans); color: var(--c-text); }
+.wn-ib-it i { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%; color: #fff; font: 700 9px/20px var(--f-mono); text-align: center; font-style: normal; }
+.wn-ib-it span { flex: 1; }
+.wn-ib-it em { font-style: normal; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--c-border); text-align: center; line-height: 20px; color: var(--c-teal); }
 .wn-rec { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 6px; background: var(--c-bg); font-family: var(--f-mono); font-size: 11px; color: var(--c-text); min-width: 210px; }
 .wn-rec b { font-weight: 500; } .wn-rec i { font-style: normal; color: var(--c-teal-pale); } .wn-rec em { font-style: normal; margin-left: auto; color: var(--c-teal-pale); }
 .wn-sheet { margin-top: 12px; }
@@ -1410,8 +1466,8 @@ body.tab-view #tab-help-btn { display:none; }
     <span class="tp-idea-badge hdr-t-track" id="tp-idea-badge" style="display:none">Idea</span>
     <span class="hdr-slot hdr-t-nav" id="hdr-slot"></span>
   </div>
-  <div class="user-chip" id="user-chip" style="display:none" onclick="showSignOutConfirm()">
-    <div class="user-avatar" id="user-avatar">?</div>
+  <div class="user-chip" id="user-chip" style="display:none" onclick="inboxToggle()" title="New comments">
+    <div class="user-avatar" id="user-avatar">?</div><b class="inbox-badge" id="inbox-badge"></b>
     <span id="user-name-display">—</span>
   </div>
 </header>
@@ -2225,6 +2281,7 @@ function _closeTopOverlay() {
     ['db-anchor-banner', 'show', dbCancelAnchorMode],
     ['plk-settings-overlay', 'open', plkCloseSettings],
     ['hdr-menu', 'open', closeTitleMenu],
+    ['inbox-pop', 'open', inboxClose],
     ['tuner-overlay', 'open', closeTuner],
   ];
   for (const [id, cls, close] of layers) {
@@ -2722,7 +2779,7 @@ function buildNamePicker() {
    steps that match. Bump WN_VERSION and rewrite WN_STEPS for the next one.
    Home → "What's new" reopens it. The same card shows the tab-editor how-to (TAB_HELP) the
    first time someone starts a new tab (ng_tabhelp), and from the editor's ? button. */
-const WN_VERSION = '2026-11-board-3';
+const WN_VERSION = '2026-11-board-4';
 // circle something in a mock-up, with a number badge
 const _wnHl = (n, html, round) => `<span class="wn-hl${round ? ' rd' : ''}" data-n="${n}">${html}</span>`;
 // a number badge with a little pointer under it (sits over a column)
@@ -2777,6 +2834,12 @@ const WN_STEPS = [
            + `<div class="wn-row wn-solo">${_wnHl(4, _wnPill('Rory, play this riff here', MEMBER_COLORS.Rory, 1))}</div>`,
     s: ['<b>Recordings</b> tab: play the take', '<b>Hold Comment</b> when the riff starts, let go when it ends. Type “Rory, this riff”', 'Tap <b>⇢ Structure</b> on the comment, then tap the bar', 'Tap <b>▶</b> on the note to hear it'],
     tip: 'Or: + Note → ▶ Add a riff from a recording (you can listen to each one first).' },
+  { t: 'New comments: tap your circle',
+    v: () => `<div class="wn-ib-hd">${_wnHl(1, '<span class="wn-av">P<b>3</b></span>', 1)}</div>`
+           + `<div class="wn-ib"><div class="wn-ib-tabs">${_wnHl(2, '<span class="on">For you <b>2</b></span>')}<span>All <b>3</b></span></div>`
+           + _wnHl(3, `<div class="wn-ib-it"><i style="background:${MEMBER_COLORS.Barn}">B</i><span><b>Barn</b> · Pink Pavements<br>Rory, double this bit?</span><em>✓</em></div>`) + `</div>`,
+    s: ['A number on <b>your circle</b> (top right) = new comments. <b>Red ring</b> = some are for you', '<b>For you</b> = aimed at you, or replies to you. <b>All</b> = everything new', '<b>Tap one</b> to jump to it. <b>✓</b> = mark as read'],
+    tip: 'Hold one to keep it in your list, or share it. Songs with something new get a dot.' },
   { t: 'Save a track to your phone',
     v: () => `<div class="wn-row wn-solo">${_wnHl(1, '<span class="wn-rec"><b>11 Mar 2026</b><i>V3</i><em>4:12</em></span>')}</div>`
            + `<div class="wn-acts wn-sheet">${_wnHl(2, '<span>⬇ Download</span>')}<span>↗ Share</span><span>Pin</span></div>`,
@@ -2858,6 +2921,7 @@ async function enterApp() {
   showScreen('screen-home');
   hideLoading();
   setTimeout(wnMaybeShow, 500);
+  inboxBoot();
 }
 
 function updateUserUI() {
@@ -3093,20 +3157,22 @@ const _recRowIgnore = e => !!e.target.closest('.rec-note,.rec-pin,.swipe-confirm
    Hold a recording or snippet row (or right-click it) → Download / Share / Pin / Hide.
    t = { fileId, name (file name to save as), title, pin?: true, hide?: { label, run } }.
    The file starts downloading as the menu opens, so Share can still run inside the tap. */
-function _recAttachHold(row, getT) {
+function _recAttachHold(row, getT) { _onHold(row, () => _recHoldMenu(getT()), _recRowIgnore); }
+// hold 0.5 s (or right-click) runs fn; the click that follows a hold is swallowed
+function _onHold(row, fn, ignore = () => false) {
   let timer = null, sx = 0, sy = 0, fired = false;
   const stop = () => { clearTimeout(timer); timer = null; };
-  const open = () => { stop(); fired = true; navigator.vibrate?.(15); _recHoldMenu(getT()); };
+  const open = () => { stop(); fired = true; navigator.vibrate?.(15); fn(); };
   row.addEventListener('pointerdown', e => {
     fired = false;
-    if (e.button > 0 || _recRowIgnore(e)) return;
+    if (e.button > 0 || ignore(e)) return;
     sx = e.clientX; sy = e.clientY; stop();
     timer = setTimeout(open, 500);
   });
   row.addEventListener('pointermove', e => { if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) stop(); });
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => row.addEventListener(ev, stop));
   row.addEventListener('click', e => { if (fired) { fired = false; e.stopPropagation(); e.preventDefault(); } }, true);
-  row.addEventListener('contextmenu', e => { e.preventDefault(); if (!fired && !_recRowIgnore(e)) open(); });
+  row.addEventListener('contextmenu', e => { e.preventDefault(); if (!fired && !ignore(e)) open(); });
 }
 let _recHold = null; // { fileId, p: Promise<Blob> } for the menu that's open
 function _recPrefetch(fileId) {
@@ -3165,13 +3231,13 @@ document.addEventListener('click', e => {
   if (pin) { e.stopPropagation(); Pins.toggle(pin.dataset.pinFid); }
 });
 
-// Comment dot on every recording row on screen: teal = has comments, amber = new since you last looked
+// Comment dot on every recording row on screen: teal = has comments, amber = unread (see INBOX)
 function _updateCommentDots() {
+  Inbox._items = null;
+  const un = new Set(Inbox.unread().map(it => it.key));
   document.querySelectorAll('[data-cdot-fid]').forEach(el => {
-    const fid = el.dataset.cdotFid;
-    const cs = _cdAllComments.filter(c => c.fileId === fid);
-    const seen = localStorage.getItem(`bandapp_cSeen_${fid}`) || '0';
-    el.className = 'rec-dot' + (!cs.length ? '' : cs.some(c => (c.createdAt || '0') > seen) ? ' unread' : ' has');
+    const cs = _cdAllComments.filter(c => c.fileId === el.dataset.cdotFid);
+    el.className = 'rec-dot' + (!cs.length ? '' : cs.some(c => un.has('c:' + c.id)) ? ' unread' : ' has');
   });
 }
 
@@ -3221,6 +3287,249 @@ function _refreshPinViews() {
     renderTrackList(SessPlayer.tracks);
   }
   if (active === 'screen-track') renderVersionsList();
+}
+
+/* ── INBOX: new comments ─────────────────────────────────
+   Everything new from bandmates: recording comments, replies, and notes/tabs on the structure
+   board (pins carry by/at since 2026-11-22; older ones count as read). "For you" = addressed to
+   you, or a reply under your comment. The avatar (top right) shows the count; tap it for the
+   drop-down (For you / All, mark read, mark all read, hold to keep or share).
+   reads.json = [{ id: <member>, since, read: [key], saved: [key] }], per person, merged like
+   pins.json, so reading on one device clears it on the others. Keys: c:<commentId>,
+   r:<replyId>, n:<pinId>. Anything at or before `since` (and before INBOX_START) is read. */
+const INBOX_START = '2026-11-22T00:00:00.000Z';
+const Inbox = {
+  list: (() => { try { return JSON.parse(localStorage.getItem('ng_reads') || '[]'); } catch (e) { return []; } })(),
+  _loading: null, _items: null,
+  _mine(create) {
+    const me = S.user?.name; if (!me) return null;
+    let e = this.list.find(p => p.id === me);
+    if (!e && create) { e = { id: me, since: INBOX_START, read: [], saved: [] }; this.list.push(e); }
+    return e;
+  },
+  _cache() { try { localStorage.setItem('ng_reads', JSON.stringify(this.list)); } catch (e) {} },
+  load() {
+    if (!this._loading) this._loading = Meta.load('reads.json').then(l => { this.list = l; this._cache(); inboxUI(); })
+      .catch(e => { this._loading = null; console.warn('Reads load failed', e); });
+    return this._loading;
+  },
+  // every item from someone else, newest first
+  items() {
+    if (this._items) return this._items;
+    const me = S.user?.name, out = [];
+    (_cdAllComments || []).forEach(c => {
+      const forC = (c.directedTo || []).includes(me);
+      if (c.author !== me && c.createdAt)
+        out.push({ key: 'c:' + c.id, kind: 'comment', at: c.createdAt, by: c.author, song: c.songName, text: c.text || '', forYou: forC, c });
+      (c.replies || []).forEach(r => {
+        if (r.author !== me && r.createdAt)
+          out.push({ key: 'r:' + r.id, kind: 'reply', at: r.createdAt, by: r.author, song: c.songName,
+                     text: r.text || r.caption || '📷 Image', forYou: c.author === me || forC, c, r });
+      });
+    });
+    (S.songs || []).forEach(s => (s.doodle?.pins || []).forEach(p => {
+      if (!p.at || p.by === me) return;
+      const text = p.type === 'tab' ? `Tab${p.tabTitle ? ': ' + p.tabTitle : ''}` : p.type === 'snip' ? `Snip${p.snippetTitle ? ': ' + p.snippetTitle : ''}` : (p.text || 'Note');
+      out.push({ key: 'n:' + p.id, kind: 'note', at: p.at, by: p.by, song: s.name, text, forYou: (p.to || []).includes(me), p });
+    }));
+    return this._items = out.sort((a, b) => (b.at > a.at ? 1 : -1));
+  },
+  changed() { this._items = null; inboxUI(); },
+  isRead(it) {
+    const m = this._mine(), since = m?.since > INBOX_START ? m.since : INBOX_START;
+    return it.at <= since || !!m?.read?.includes(it.key);
+  },
+  isSaved(key) { return !!this._mine()?.saved?.includes(key); },
+  unread() { return this.items().filter(it => !this.isRead(it)); },
+  unreadKey(key) { const it = this.items().find(x => x.key === key); return !!it && !this.isRead(it); },
+  async markRead(keys) {
+    keys = keys.filter(k => this.unreadKey(k));
+    if (!keys.length || !S.user?.name) return;
+    await this.load();
+    const m = this._mine(true); m.read = m.read || [];
+    keys.forEach(k => { if (!m.read.includes(k)) m.read.push(k); });
+    this._save();
+  },
+  async markUnread(key) {
+    await this.load();
+    const m = this._mine(true), it = this.items().find(x => x.key === key);
+    m.read = (m.read || []).filter(k => k !== key);
+    const old = m.since || INBOX_START;
+    if (it && it.at <= old && it.at > INBOX_START) { // move `since` back to just before it, keep the rest read
+      m.since = new Date(Date.parse(it.at) - 1).toISOString();
+      this.items().forEach(x => { if (x.key !== key && x.at > m.since && x.at <= old && !m.read.includes(x.key)) m.read.push(x.key); });
+    }
+    this._save();
+  },
+  async markAll(items) {
+    await this.load();
+    const m = this._mine(true); m.read = m.read || [];
+    if (items.length === this.unread().length) { m.since = new Date().toISOString(); m.read = []; }
+    else items.forEach(it => { if (!m.read.includes(it.key)) m.read.push(it.key); });
+    this._save();
+  },
+  async toggleSave(key) {
+    await this.load();
+    const m = this._mine(true); m.saved = m.saved || [];
+    const i = m.saved.indexOf(key);
+    if (i >= 0) m.saved.splice(i, 1); else m.saved.push(key);
+    this._save();
+  },
+  _save() {
+    const m = this._mine();
+    // drop read marks nobody needs any more (item gone, or covered by `since`)
+    if (m && _cdCommentsLoaded && S.songs?.length) {
+      const live = new Set(this.items().map(it => it.key));
+      m.read = (m.read || []).filter(k => live.has(k) && this.items().find(it => it.key === k).at > (m.since || INBOX_START));
+    }
+    this._cache(); this.changed();
+    clearTimeout(this._t); this._pending = true;
+    this._t = setTimeout(() => Meta.save('reads.json', () => this.list).then(() => this._cache()).catch(() => {}).finally(() => { this._pending = false; }), 800);
+  },
+};
+
+// badge on the avatar, marks on song cards and recording rows, and the drop-down if it's open
+function inboxUI() {
+  Inbox._items = null;
+  if (!S.user) return;
+  const un = Inbox.unread(), you = un.filter(it => it.forYou).length;
+  const chip = $('user-chip'), badge = $('inbox-badge');
+  if (chip) { chip.classList.toggle('ib-new', !!un.length); chip.classList.toggle('ib-you', !!you); }
+  if (badge) badge.textContent = un.length ? (un.length > 99 ? '99+' : un.length) : '';
+  document.querySelectorAll('[data-inbox-song]').forEach(el => {
+    const mine = un.filter(it => it.song === el.dataset.inboxSong);
+    el.className = 'song-unread' + (mine.length ? ' on' : '') + (mine.some(it => it.forYou) ? ' you' : '');
+  });
+  _updateCommentDots();
+  if ($('inbox-pop')?.classList.contains('open')) inboxRender();
+}
+
+let _ibFilter = 'you';
+function inboxToggle() { $('inbox-pop')?.classList.contains('open') ? inboxClose() : inboxOpen(); }
+function inboxOpen() {
+  let pop = $('inbox-pop');
+  if (!pop) {
+    pop = document.createElement('div');
+    pop.id = 'inbox-pop';
+    pop.innerHTML = `<div class="ib-tabs"><button data-f="you" onclick="inboxFilter('you')">For you <b id="ib-n-you"></b></button><button data-f="all" onclick="inboxFilter('all')">All <b id="ib-n-all"></b></button></div>
+      <div class="ib-list" id="ib-list"></div>
+      <div class="ib-foot"><button id="ib-all-read" onclick="inboxMarkAll()">✓ Mark all as read</button><button class="ib-out" onclick="inboxClose();showSignOutConfirm()">Sign out</button></div>`;
+    document.body.appendChild(pop);
+    document.addEventListener('pointerdown', e => {
+      if (pop.classList.contains('open') && !e.target.closest('#inbox-pop, #user-chip, #db-pick-sheet, .ng-modal-overlay')) inboxClose();
+    }, true);
+  }
+  pop.style.top = ($('main-header')?.getBoundingClientRect().bottom || 50) + 4 + 'px';
+  const un = Inbox.unread();
+  _ibFilter = un.some(it => it.forYou) || !un.length ? 'you' : 'all';
+  if (!un.length && !Inbox.items().some(it => it.forYou && Inbox.isSaved(it.key))) _ibFilter = 'all';
+  pop.classList.add('open');
+  inboxRender();
+  Inbox.load(); ensureCommentsLoaded(true).then(() => Inbox.changed()).catch(() => {});
+}
+function inboxClose() { $('inbox-pop')?.classList.remove('open'); }
+function inboxFilter(f) { _ibFilter = f; inboxRender(); }
+// what each list shows: unread first-class, plus anything you've kept
+function _ibShown(f) {
+  return Inbox.items().filter(it => (f === 'all' || it.forYou) && (!Inbox.isRead(it) || Inbox.isSaved(it.key)))
+    .sort((a, b) => (Inbox.isSaved(b.key) - Inbox.isSaved(a.key)) || (b.at > a.at ? 1 : -1));
+}
+function _ibAgo(at) {
+  const m = Math.round((Date.now() - Date.parse(at)) / 60000);
+  return m < 1 ? 'just now' : m < 60 ? `${m}m ago` : m < 1440 ? `${Math.round(m / 60)}h ago` : m < 10080 ? `${Math.round(m / 1440)}d ago` : fmtDate(at.slice(0, 10));
+}
+function _ibWhere(it) {
+  if (it.kind === 'note') return 'Structure';
+  if (it.kind === 'reply') return 'Reply';
+  const c = it.c, t = c.endTime ? `${fmt(c.startTime)}–${fmt(c.endTime)}` : fmt(c.startTime || 0);
+  return `${c.version ? 'V' + c.version + ' · ' : ''}${t}`;
+}
+function inboxRender() {
+  const list = $('ib-list'); if (!list) return;
+  const un = Inbox.unread();
+  $('ib-n-you').textContent = un.filter(it => it.forYou).length || '';
+  $('ib-n-all').textContent = un.length || '';
+  document.querySelectorAll('#inbox-pop .ib-tabs button').forEach(b => b.classList.toggle('on', b.dataset.f === _ibFilter));
+  const shown = _ibShown(_ibFilter);
+  $('ib-all-read').disabled = !shown.some(it => !Inbox.isRead(it));
+  list.innerHTML = shown.length ? '' : `<div class="ib-empty">All caught up 𓅦</div>`;
+  shown.forEach(it => {
+    const read = Inbox.isRead(it), saved = Inbox.isSaved(it.key);
+    const el = document.createElement('div');
+    el.className = 'ib-item' + (it.forYou ? ' you' : '') + (read ? ' read' : '') + (saved ? ' saved' : '');
+    el.innerHTML = `<span class="ib-av" style="background:${MEMBER_COLORS[it.by] || 'var(--c-teal)'}">${esc((it.by || '?')[0])}</span>
+      <div class="ib-main"><div class="ib-top"><b>${esc(it.by || '?')}</b><span>${esc(it.song || '')}</span></div>
+        <div class="ib-text">${esc(it.text)}</div>
+        <div class="ib-meta">${saved ? '📌 ' : ''}${esc(_ibWhere(it))} · ${_ibAgo(it.at)}${it.forYou && _ibFilter === 'all' ? ' · <em>for you</em>' : ''}</div></div>
+      ${read ? '' : '<button class="ib-read" title="Mark as read">✓</button>'}`;
+    el.querySelector('.ib-read')?.addEventListener('click', e => { e.stopPropagation(); Inbox.markRead([it.key]); });
+    el.addEventListener('click', e => { if (!e.target.closest('.ib-read')) inboxGo(it); });
+    _onHold(el, () => _ibHoldMenu(it));
+    list.appendChild(el);
+  });
+}
+function inboxMarkAll() { Inbox.markAll(_ibShown(_ibFilter).filter(it => !Inbox.isRead(it))); }
+function _ibHoldMenu(it) {
+  const saved = Inbox.isSaved(it.key), read = Inbox.isRead(it);
+  _dbPickSheet(`${it.by}: ${it.text}`.slice(0, 60), [
+    { name: saved ? 'Unpin' : '📌  Keep in my list', sub: saved ? '' : 'Stays here after it’s read', pick: () => Inbox.toggleSave(it.key) },
+    { name: '↗  Share', sub: 'WhatsApp etc.', pick: () => _ibShare(it) },
+    { name: read ? 'Mark as unread' : '✓  Mark as read', sub: '', pick: () => read ? Inbox.markUnread(it.key) : Inbox.markRead([it.key]) },
+  ]);
+}
+function _ibShare(it) {
+  const text = it.kind === 'comment'
+    ? `${it.song} · ${_ibWhere(it)}${(it.c.directedTo || []).length ? ' → ' + it.c.directedTo.join(', ') : ''}\n"${it.text}"\n— ${it.by}`
+    : it.kind === 'reply' ? `${it.song}: ${it.by} replied to "${it.c.text}"\n"${it.text}"`
+    : `${it.song} · Structure${(it.p.to || []).length ? ' → ' + it.p.to.join(', ') : ''}\n"${it.text}"\n— ${it.by}`;
+  if (navigator.share) navigator.share({ text }).catch(() => {});
+  else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+// tap an item: go to it (and it's read)
+async function inboxGo(it) {
+  inboxClose();
+  Inbox.markRead([it.key]);
+  const flash = el => { if (!el) return; el.scrollIntoView({ block: 'center' }); el.classList.add('ib-flash'); setTimeout(() => el.classList.remove('ib-flash'), 2200); };
+  if (it.kind === 'reply') {
+    await goComments();
+    const card = $('cdcard-' + it.c.id);
+    if (card) { if (!$(`cdreplies-${it.c.id}`)?.classList.contains('open')) cdToggleReplies(it.c.id); flash(card); }
+    return;
+  }
+  await openSong(it.song);
+  if (S.tp.songName !== it.song) return;
+  if (it.kind === 'note') {
+    tpSwitchTab('structure');
+    await renderSongStructure();
+    DB.openChips.add(it.p.id); dbRender();
+    const i = _dbPinDot(DB.pins.find(p => p.id === it.p.id) || it.p);
+    flash($('db-rows')?.querySelector(`.db-row[data-i="${i}"]`));
+    return;
+  }
+  const idx = S.tp.versions.findIndex(v => v.fileId === it.c.fileId);
+  if (idx < 0) { showToast('That recording isn’t on this song any more'); return; }
+  await selectVersion(idx, false);
+  S.tp.audio.currentTime = it.c.startTime || 0; drawWave();
+  if (!_plSideBySide('screen-track')) plSetOpen('screen-track', true);
+  setTimeout(() => flash($('tpcitem-' + it.c.id)), 50);
+}
+// after sign-in: show the cached count straight away, then load everything and keep it fresh
+let _ibBooted = false;
+async function inboxBoot() {
+  inboxUI();
+  if (!_ibBooted) {
+    _ibBooted = true;
+    setInterval(inboxRefresh, 180000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) inboxRefresh(); });
+  }
+  await Promise.all([Inbox.load(), ensureCommentsLoaded(true).catch(() => {}), S.songs?.length ? null : loadSongs(true)]);
+  inboxUI();
+}
+async function inboxRefresh() {
+  if (!S.user || !S._entered) return;
+  try { await ensureCommentsLoaded(true); } catch (e) {}
+  if (!Inbox._pending) { Inbox._loading = null; await Inbox.load(); } // pick up reads from your other devices
+  inboxUI();
 }
 
 // Space bar to play/pause anywhere
@@ -3315,8 +3624,7 @@ function plSetOpen(id, open) {
 function _plMarkSeen(id) {
   const fid = PL.cfg[id].fid();
   if (!fid) return;
-  localStorage.setItem(`bandapp_cSeen_${fid}`, new Date().toISOString());
-  _updateCommentDots();
+  Inbox.markRead(_cdAllComments.filter(c => c.fileId === fid).map(c => 'c:' + c.id));
 }
 
 // Scroll the list so the current recording sits at the top
@@ -3598,7 +3906,7 @@ function renderSongList() {
     const n = _versionsFor(song, song.name).length;
     card.innerHTML = `<div class="song-card-icon">𓅃</div>
       <div class="song-card-info" style="flex:1">
-        <div class="song-card-name">${esc(song.name)}</div>
+        <div class="song-card-name">${esc(song.name)}<span data-inbox-song="${esc(song.name)}"></span></div>
         <div class="song-card-sub">${n === 1 ? '1 recording' : `${n} recordings`}</div>
       </div>
       <div style="color:var(--c-border)">›</div>`;
@@ -3624,7 +3932,7 @@ function renderSongList() {
     card.style.gap = '10px';
     card.innerHTML = `<div class="song-card-icon" style="display:flex;align-items:center;"><div class="song-egg-icon"></div></div>
       <div class="song-card-info" style="flex:1">
-        <div class="song-card-name">${esc(idea.name)}</div>
+        <div class="song-card-name">${esc(idea.name)}<span data-inbox-song="${esc(idea.name)}"></span></div>
         <div class="song-card-sub">${esc(_ideaSummary(idea))}</div>
       </div>
       <div style="color:var(--c-border)">›</div>`;
@@ -3632,6 +3940,7 @@ function renderSongList() {
     _attachSwipeConfirm(card, { label: 'Delete idea?', yes: 'Delete', onYes: () => deleteIdea(idea.name) });
     list.appendChild(card);
   });
+  inboxUI();
 }
 
 function newTrackId() { return 'trk_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
@@ -4221,6 +4530,7 @@ async function selectVersion(idx, autoPlay = true) {
   _tpMiniLabel();
   renderComments(); // comments + BPM tags follow the selected version straight away
   renderBpmTags();
+  if (_plSideBySide('screen-track')) setTimeout(() => _plMarkSeen('screen-track'), 1500); // comments always on show
   await _tpLoadAudio(v.fileId, `tpver-${idx}`, { songName: S.tp.songName, autoPlay });
 }
 
@@ -4573,7 +4883,7 @@ function _renderCommentList(body, comments, audio, emptyMsg) {
   }
   comments.sort((a,b) => a.startTime - b.startTime).forEach(c => {
     const el = document.createElement('div');
-    el.className = 'tp-comment-item';
+    el.className = 'tp-comment-item' + (Inbox.unreadKey('c:' + c.id) ? ' unread' : '');
     el.id = `tpcitem-${c.id}`;
     el.dataset.start = c.startTime;
     el.dataset.end   = c.endTime || '';
@@ -5120,6 +5430,8 @@ function cdPreviewImage(cid,input){
 function cdToggleReplies(cid){
   const el=$(`cdreplies-${cid}`);
   el.classList.toggle('open');
+  const rc=_cdAllComments.find(x=>x.id===cid);
+  if(rc&&el.classList.contains('open')) Inbox.markRead((rc.replies||[]).map(r=>'r:'+r.id));
   // Lazy-load reply images
   el.querySelectorAll('img[data-fileid]').forEach(async img=>{
     if(!img.src||img.src===window.location.href){
@@ -5130,6 +5442,7 @@ function cdToggleReplies(cid){
 
 /* ── Comment playback ──────────────────────────────── */
 async function cdPlayComment(cid){
+  Inbox.markRead(['c:'+cid]);
   const c=_cdAllComments.find(c=>c.id===cid); if(!c) return;
   const btn=$(`cdplay-${cid}`);
   // Stop current
@@ -5686,7 +5999,7 @@ async function dbLoad() {
   const song = S.songs?.find(s => s.name === S.tp?.songName);
   if (!song) return false;
   dbFlush();
-  if (DB.songName !== song.name) { DB.editing = false; DB.openIdx = -1; DB.openChips.clear(); DB._headTucked = false; }
+  if (DB.songName !== song.name) { DB.editing = false; DB.openIdx = -1; DB.openChips.clear(); DB._headTucked = false; DB._glow = new Set(); }
   DB.songName = song.name;
   const d = song.doodle || {};
   DB.bars        = Array.isArray(d.bars)        ? [...d.bars]        : [];
@@ -6140,6 +6453,14 @@ function _dbChipEl(p, full) {
   const wrap = document.createElement('span');
   wrap.className = 'db-pin' + (named ? ' named' : '');
   wrap.dataset.pin = p.id;
+  if (p.at && Inbox.unreadKey('n:' + p.id)) (DB._glow = DB._glow || new Set()).add(p.id);
+  if (DB._glow?.has(p.id)) { // new to you: glows for this visit
+    wrap.classList.add('unread');
+    if (full || DB._showNotes || DB.openChips.has(p.id)) { // it's on show: read from now on
+      (DB._seenQ = DB._seenQ || []).push('n:' + p.id);
+      clearTimeout(DB._seenT); DB._seenT = setTimeout(() => { Inbox.markRead(DB._seenQ); DB._seenQ = []; }, 600);
+    }
+  }
   if (col) wrap.style.color = col;
   wrap.title = _dbPinLabel(p);
   if (!named) {
@@ -6591,7 +6912,7 @@ function _dbPickSheet(title, items) {
 
 function dbPickItem(type, itemId, label, barIdx) {
   $('db-pick-sheet').classList.remove('open');
-  const pin = { id: 'pin_' + Date.now().toString(36), type, ..._dbAnchorAt(barIdx) };
+  const pin = { id: 'pin_' + Date.now().toString(36), type, ..._dbAnchorAt(barIdx), by: S.user?.name, at: new Date().toISOString() };
   if (type === 'snip') { pin.snippetId = itemId; pin.snippetTitle = label; }
   else if (type === 'tab') { pin.tabId = itemId; pin.tabTitle = label; }
   DB.pins.push(pin);
@@ -6620,7 +6941,7 @@ function dbSubmitNote() {
       if (DB._noteClip) pin.commentId = DB._noteClip; else delete pin.commentId;
     }
   } else {
-    const pin = { id: 'pin_' + Date.now().toString(36), type: 'note', ..._dbAnchorAt(DB._noteTargetBarIdx), text };
+    const pin = { id: 'pin_' + Date.now().toString(36), type: 'note', ..._dbAnchorAt(DB._noteTargetBarIdx), text, by: S.user?.name, at: new Date().toISOString() };
     if (DB._noteTo.length) pin.to = [...DB._noteTo];
     if (DB._noteClip) pin.commentId = DB._noteClip;
     DB.pins.push(pin);
@@ -6785,7 +7106,7 @@ async function dbPinComment(cid) {
   tpSwitchTab('structure');
   await renderSongStructure();
   if (!DB.bars.length) { showToast('Build a structure first (tap ✎)'); return; }
-  const pin = { id: 'pin_' + Date.now().toString(36), type: 'note', text: c.text || 'Riff', commentId: c.id };
+  const pin = { id: 'pin_' + Date.now().toString(36), type: 'note', text: c.text || 'Riff', commentId: c.id, by: S.user?.name, at: new Date().toISOString() };
   const to = (c.directedTo || []).filter(m => MEMBER_COLORS[m]);
   if (to.length) pin.to = to;
   DB._rangePinId = null;
