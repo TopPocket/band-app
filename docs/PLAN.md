@@ -36,6 +36,20 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-22 (Patrick, after the riff build):
+  - **Lane order: Pat, Barn, Christy, Neda, Rory** ("Neda and Barney are less likely to have
+    tabs").
+  - **Colours: Pat yellow, Neda purple, Rory green** (Barn stays cyan, Christy pink).
+  - **Lyrics shouldn't get pushed right by note dots.** The dot moves into the gap before the
+    lyrics. The structure column gets a little narrower (smaller gap between the dots and the
+    lanes) to make room.
+  - **Bug:** covering several bars or a whole section with a tab "doesn't work".
+  - **Riff picker:** each comment in "Pick the riff" gets a ▶ so you can listen before choosing.
+  - **"App has been updated" walkthrough** for bandmates the next time they log on: what to click
+    and how to use it. Do it last.
+  - Built 2026-11-22 (pushed): everything except the walkthrough. The range bug: in the lyrics
+    view, tapping a lane to pick the end bar flipped the view instead. Also, a ranged tab for
+    nobody showed nothing. Now lane/Ⓣ taps pick the bar, and the pill says "TAB · N".
 - 2026-11-22 (Patrick, after the marker build), **direction given, details being asked:**
   - **Tabs get smaller:** the pill just says **"TAB"** (not the tab title), coloured in the band
     member's colour. **Adding a tab prompts who it's for.**
