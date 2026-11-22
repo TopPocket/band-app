@@ -36,6 +36,14 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-22 (Patrick, after the walkthrough):
+  - **Take the walkthrough down until the rest is done.** Keep the code; stop auto-showing it and
+    hide the Home link. Re-enable (and update the cards) at the end of the sprint.
+  - Roadmap trimmed: lane chunk labels → covered by notes for a bandmate. Moments → covered by
+    notes. Whole-song "print preview" → covered by the mini strip at the bottom. Horizontal toggle
+    → not needed for now. **Versions are next** ("pretty important").
+  - Asked for: "make a lane go off for bars the band members need to rest". That already exists
+    (✎ → drag down your lane), so it may not be discoverable or visible enough. Asking him.
 - 2026-11-22 (Patrick, after the riff build):
   - **Lane order: Pat, Barn, Christy, Neda, Rory** ("Neda and Barney are less likely to have
     tabs").

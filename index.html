@@ -1445,7 +1445,7 @@ body.tab-view #tab-view-close { display:flex; }
         <button class="home-tool" onclick="openPlucker()"><span>𓅃</span>Pluck songs</button>
         <button class="home-tool" onclick="openTuner()"><span>𝄢</span>Tuner</button>
       </div>
-      <button class="home-whatsnew" onclick="wnOpen()">What’s new in this update</button>
+      <button class="home-whatsnew" onclick="wnOpen()" hidden>What’s new in this update</button>
     </div>
     <button id="theme-toggle-btn" onclick="toggleTheme()" title="Switch to light mode">☀</button>
   </div>
@@ -2754,7 +2754,7 @@ async function enterApp() {
   S._entered = true;
   showScreen('screen-home');
   hideLoading();
-  setTimeout(wnMaybeShow, 500);
+  // setTimeout(wnMaybeShow, 500); // off until the board sprint is finished (Patrick 2026-11-22)
 }
 
 function updateUserUI() {
