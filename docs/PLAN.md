@@ -27,6 +27,9 @@ before building anything. Newest entries at the top of each section. Feature spe
   `bars` without `barIds`, and pins may then land on the wrong dot.
 
 ## Working agreement
+- 2026-11-22: **Every change: ask whether it needs an update pop-up for the band, and at which
+  stage it goes in** (with the change, or held for a batch). Rules and how-to:
+  [WHATS_NEW_SPEC.md](WHATS_NEW_SPEC.md).
 - 2026-11-21: During the doodle-board sprint, **commit and push each finished, tested change
   without asking**, so Patrick can test on his phone. (Commit messages as usual.)
 
@@ -36,6 +39,15 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-22 (Patrick): **Download a track to your device.** "maybe a hold on a track can bring up
+  a pop up menu where download is an option." Answers: **everywhere** (session tracks, song-page
+  recordings, snippets); menu = **Download, Share, Pin/unpin, Hide**; update pop-up = **a card
+  added to the current board guide** (bandmates haven't seen it yet), shipped together.
+  - Built 2026-11-22 (pushed). Hold 0.5 s (or right-click) → bottom sheet. Hide is only on song-page
+    recordings (that's where hiding exists); snippets get "Delete snippet" (asks first) instead,
+    and no Pin (pins are for recordings). The file starts fetching as the menu opens; if Share
+    loses the tap because the file was slow, a "Ready to share" box asks for one more tap. Not on
+    the Feathers snippet list yet. Needs a phone test (iPhone saves to Files → Downloads).
 - 2026-11-22 (Patrick): **Guide tweaks.** "What you're looking at": columns aligned (they were
   indented by the energy bar's width), and the 1 2 3 4 numbers sit over their columns, pointing
   down, instead of jumping around. "Flip": one rectangle round the whole lanes column; 1 and 3 on
