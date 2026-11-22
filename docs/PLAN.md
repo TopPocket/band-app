@@ -36,6 +36,23 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-22 (Patrick, from a phone screenshot: "ok not quite"):
+  - **No `[` brackets at all**, not even for ranged pins addressed to nobody. My call: such a pin
+    just says "N bars" on its chip in the notes view.
+  - **The end ticks on the lanes are too much.** Instead, the bold run just stops a little short (a
+    small gap) at its end.
+  - **Pin markers by type** (his drawing): a **note** = a small dot on the member's lane with a
+    horizontal line out to the note (in the lyrics view the line ends in a small dot). A **tab** =
+    a plain line from the lane ending in a **T stub**. A **snip** = a line ending in a **little
+    triangle**. Keep it uncluttered. My calls: in the notes view the stub/triangle sits just
+    before the tab/snip chip. Pins addressed to nobody show the same end marker (dot/T/triangle)
+    in a neutral colour, with no line.
+  - **Header reveal fix:** "a swipe down to scroll to the top shouldn't reveal it, but if you are
+    already at the top then swiping down will reveal it." The clamp version didn't work on his
+    phone at all (momentum scrolling). New approach: once the header has scrolled out of view and
+    the scroll comes to rest, it's tucked away (removed from the flow, scroll position
+    compensated). A pull down that *starts* at the top brings it back.
+  - Built 2026-11-22 (pushed): all of the above.
 - 2026-11-22 (Patrick: "this is nice"):
   - **Column headers** at the top of the board: "Energy" written vertically over the energy
     strip, a ✎ button over the dots (edit structure; the bottom Edit button goes), and the **band

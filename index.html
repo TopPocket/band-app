@@ -983,9 +983,7 @@ body.tab-view #tab-view-close { display:flex; }
 .db-lanes i::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; transform: translateX(-50%); background: currentColor; opacity: 0.45; }
 .db-lanes i.rest::before { opacity: 0; }
 .db-lanes i.bold::before { width: 4px; opacity: 1; }
-.db-lanes i.bstart::before { top: 3px; }
-.db-lanes i.end::before { bottom: 3px; }
-.db-lanes i.end::after { content: ''; position: absolute; bottom: 3px; left: 50%; width: 7px; height: 2px; background: currentColor; }
+.db-lanes i.end::before { bottom: 4px; }
 .db-lanes { cursor: pointer; }
 #tp-tabcontent-structure.db-editing .db-row, #tp-tabcontent-structure.db-editing .db-head { grid-template-columns: 22px 46px 90px minmax(0, 1fr); }
 #tp-tabcontent-structure.db-editing .db-lanes { gap: 4px; padding: 0 4px; touch-action: none; }
@@ -1007,7 +1005,7 @@ body.tab-view #tab-view-close { display:flex; }
 .db-head-row b { font-family: var(--f-mono); font-size: 10px; font-weight: 700; }
 .db-head-fan { width: 100%; height: 26px; display: block; }
 .db-head-hint { font-family: var(--f-mono); font-size: 9px; color: var(--c-teal-pale); text-align: right; padding: 0 6px 2px; }
-.v-notes .db-chip:not(.min) { animation: db-pop 0.18s ease-out; }
+.v-notes .db-chip { animation: db-pop 0.18s ease-out; transform-origin: left center; }
 @keyframes db-pop { from { transform: scale(0.3); opacity: 0.2; } to { transform: scale(1); opacity: 1; } }
 #db-rows.v-notes .db-row:not(.open) .db-lyrs { position: absolute; inset: 0; padding-left: 8px; opacity: 0.14; pointer-events: none; }
 .db-chip { position: relative; z-index: 1; }
@@ -1018,10 +1016,21 @@ body.tab-view #tab-view-close { display:flex; }
 #db-mem-pop button.ok { margin-left: auto; border-color: var(--c-teal); color: var(--c-teal); }
 .db-conn { position: absolute; height: 1.5px; pointer-events: none; opacity: 0.9; }
 .db-call { position: relative; }
-.db-rng { position: absolute; top: 0; bottom: 0; border-left: 2px solid; pointer-events: none; }
-.db-rng.top { top: 7px; border-top: 2px solid; width: 4px; }
-.db-rng.bot { bottom: 7px; border-bottom: 2px solid; width: 4px; }
-.db-rng.top.bot { top: 7px; bottom: 7px; }
+.db-conn.note::before { content: ''; position: absolute; left: -4px; top: -3.25px; width: 8px; height: 8px; border-radius: 50%; background: inherit; }
+.db-pin { display: inline-flex; align-items: center; flex: 0 1 auto; min-width: 0; max-width: 100%; gap: 0; color: var(--c-teal-pale); }
+.db-pin .db-chip { flex: 0 1 auto; }
+.db-mk { position: relative; z-index: 1; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 12px; height: 22px; cursor: pointer; }
+.db-mk::before { content: ''; display: block; }
+.db-mk.note::before { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.db-mk.tab::before { width: 2px; height: 11px; background: currentColor; }
+.db-mk.snip::before { width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 7px solid currentColor; }
+.db-mk.tab { width: 4px; justify-content: flex-start; }
+.db-pin.named .db-mk.note { display: none; }
+.db-pin.named .db-mk.snip { width: 9px; justify-content: flex-start; }
+.db-row.open .db-pin { align-self: stretch; }
+.db-head.tuck { display: none; }
+.db-head.reveal { animation: db-head-in 0.22s ease-out; overflow: hidden; }
+@keyframes db-head-in { from { max-height: 0; opacity: 0; } to { max-height: 140px; opacity: 1; } }
 .db-lyrs { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--f-sans); font-size: 13px; color: var(--c-text); align-self: stretch; display: flex; align-items: center; gap: 10px; }
 .db-lyrs:empty { flex: 0 0 0; }
 .db-lyr-ln { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; border-radius: 5px; padding: 1px 3px; cursor: grab; white-space: nowrap; overflow: hidden; text-overflow: clip; min-width: 0; }
@@ -1054,8 +1063,6 @@ body.tab-view #tab-view-close { display:flex; }
 .lyr-tx { flex: 1; min-width: 0; white-space: pre-wrap; }
 .tp-lyr-warn { font-family: var(--f-mono); font-size: 11px; color: var(--c-accent); padding: 8px 14px 0; }
 .tp-lyr-warn.hidden { display: none; }
-.db-chip.min { flex: 0 0 auto; width: 20px; height: 20px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
-.db-chip.min b { margin: 0; font-size: 10px; }
 .db-chip em { font-style: normal; color: var(--c-teal-pale); font-size: 10px; margin-left: 6px; }
 #db-note-to { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
 #db-note-to span { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); margin-right: 2px; }
@@ -5369,7 +5376,7 @@ async function dbLoad() {
   const song = S.songs?.find(s => s.name === S.tp?.songName);
   if (!song) return false;
   dbFlush();
-  if (DB.songName !== song.name) { DB.editing = false; DB.openIdx = -1; DB.openChips.clear(); }
+  if (DB.songName !== song.name) { DB.editing = false; DB.openIdx = -1; DB.openChips.clear(); DB._headTucked = false; }
   DB.songName = song.name;
   const d = song.doodle || {};
   DB.bars        = Array.isArray(d.bars)        ? [...d.bars]        : [];
@@ -5441,7 +5448,6 @@ function dbRender() {
   const prof     = _dbEnergyProfile(DB.barIds, DB.energy, DB.bars.map(b => _dbIsHalf(b) ? 0.5 : 1));
   const byDot    = {};
   DB.pins.forEach(p => { const i = _dbPinDot(p); if (i >= 0) (byDot[i] = byDot[i] || []).push(p); });
-  const ranges   = _dbRangeSegments();
   const lyr      = _dbLyricsByDot(_dbLyrState(), sections);
   // lyrics view or tabs/notes view (tap the lanes to flip); no placed lyrics = notes
   DB._hasLyr = Object.values(lyr).some(a => a.some(x => !x.echo));
@@ -5455,35 +5461,20 @@ function dbRender() {
   sections.forEach((sec, si) => {
     for (let b = 0; b < sec.bars; b++, gi++) {
       if (DB.editing && gi === DB.cursor) frag.appendChild(_dbCursorEl());
-      frag.appendChild(_dbRowEl(gi, b === 0 ? labels[si] : '', si > 0 && b === 0, prof[gi], byDot[gi] || [], ranges[gi] || [], lyr[gi] || [], cover));
+      frag.appendChild(_dbRowEl(gi, b === 0 ? labels[si] : '', si > 0 && b === 0, prof[gi], byDot[gi] || [], lyr[gi] || [], cover));
     }
   });
   if (DB.editing && DB.cursor >= DB.bars.length) frag.appendChild(_dbCursorEl());
   root.appendChild(frag);
-  requestAnimationFrame(() => { _dbTrimLyrics(); _dbDrawHeadFan(); });
+  requestAnimationFrame(() => { _dbTrimLyrics(); _dbDrawHeadFan(); _dbPlaceConns(); });
   dbRenderMini(sections, labels, prof);
   dbRenderBar();
 }
 
-/* Ranged pins (barId → endBarId) draw a bracket down the callout column. Overlapping ranges
-   get their own column (k). A missing end dot shrinks the pin back to its start dot. */
+// A ranged pin's last dot (barId → endBarId); a missing end dot shrinks it back to its start
 function _dbPinEnd(p) {
   const s = _dbPinDot(p), e = p.endBarId ? DB.barIds.indexOf(p.endBarId) : -1;
   return s >= 0 && e > s ? e : s;
-}
-function _dbRangeSegments() {
-  const out = {}, cols = []; // cols[k] = last row used by column k
-  DB.pins.map(p => ({ p, s: _dbPinDot(p), e: _dbPinEnd(p) }))
-    .filter(r => r.s >= 0 && r.e > r.s && !_dbPinTo(r.p).length)
-    .sort((a, b) => a.s - b.s)
-    .forEach(({ p, s, e }) => {
-      let k = cols.findIndex(last => last < s);
-      if (k < 0) k = cols.length;
-      cols[k] = e;
-      const color = 'var(--c-teal-pale)';
-      for (let i = s; i <= e; i++) (out[i] = out[i] || []).push({ k, top: i === s, bot: i === e, color });
-    });
-  return out;
 }
 
 /* Mini strip under the board: one block per bar, height = energy, colour = section,
@@ -5527,14 +5518,39 @@ function _dbMiniVisible() {
 (() => {
   let raf = 0;
   $('db-scroll')?.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; _dbMiniVisible(); }); }, { passive: true });
-  // Scrolling back up stops just below the header; the next swipe reveals it
+  /* The header tucks away once it's scrolled out of sight and the scroll has come to rest (taken
+     out of the flow, scroll position compensated, so nothing visibly moves). Scrolling back up then
+     stops at the first bar, however hard the flick. A pull down that STARTS at the top brings it
+     back. Clamping scrollTop mid-fling didn't work on phones (momentum scrolling fights it). */
   const sc = $('db-scroll');
-  let startTop = 0, lastWheel = 0;
-  const headH = () => $('db-rows')?.querySelector('.db-head')?.offsetHeight || 0;
-  sc?.addEventListener('touchstart', () => { startTop = sc.scrollTop; }, { passive: true });
-  sc?.addEventListener('wheel', () => { if (Date.now() - lastWheel > 350) startTop = sc.scrollTop; lastWheel = Date.now(); }, { passive: true });
-  sc?.addEventListener('mousedown', () => { startTop = sc.scrollTop; });
-  sc?.addEventListener('scroll', () => { const h = headH(); if (h && startTop >= h - 1 && sc.scrollTop < h - 1) sc.scrollTop = h; }, { passive: true });
+  const head = () => $('db-rows')?.querySelector('.db-head');
+  let touching = false, idle = 0, startY = 0, pullFromTop = false, lastWheel = 0;
+  const tuck = () => {
+    const h = head();
+    if (!h || DB._headTucked || touching || sc.scrollTop < h.offsetHeight) return;
+    const hh = h.offsetHeight;
+    DB._headTucked = true; h.classList.add('tuck'); h.classList.remove('reveal');
+    sc.scrollTop -= hh;
+  };
+  const reveal = () => {
+    const h = head();
+    if (!h || !DB._headTucked) return;
+    DB._headTucked = false; sc.scrollTop = 0;
+    h.classList.remove('tuck'); h.classList.add('reveal');
+    requestAnimationFrame(_dbDrawHeadFan);
+  };
+  DB._headReveal = reveal;
+  sc?.addEventListener('scroll', () => { clearTimeout(idle); idle = setTimeout(tuck, 220); }, { passive: true });
+  sc?.addEventListener('touchstart', e => { touching = true; startY = e.touches[0].clientY; pullFromTop = DB._headTucked && sc.scrollTop <= 0; }, { passive: true });
+  sc?.addEventListener('touchmove', e => { if (pullFromTop && e.touches[0].clientY - startY > 12) { pullFromTop = false; reveal(); } }, { passive: true });
+  const endTouch = () => { touching = false; clearTimeout(idle); idle = setTimeout(tuck, 220); };
+  sc?.addEventListener('touchend', endTouch, { passive: true });
+  sc?.addEventListener('touchcancel', endTouch, { passive: true });
+  sc?.addEventListener('wheel', e => {
+    const fresh = Date.now() - lastWheel > 350; lastWheel = Date.now();
+    if (fresh && e.deltaY < 0 && sc.scrollTop <= 0) reveal();
+  }, { passive: true });
+  window.addEventListener('resize', () => { if ($('db-rows')?.offsetParent) { _dbDrawHeadFan(); _dbPlaceConns(); } });
   const box = $('db-mini');
   const jump = e => {
     const blocks = [...box.querySelectorAll('.dbm-b')];
@@ -5555,7 +5571,8 @@ function _dbHeadEl() {
   const st = DB._lyr || _dbLyrState();
   const adrift = DB.pins.filter(p => _dbPinDot(p) < 0).length + st.floating.length + st.lost.length;
   const head = document.createElement('div');
-  head.className = 'db-head';
+  if (!DB.bars.length) DB._headTucked = false; // the ✎ must stay reachable
+  head.className = 'db-head' + (DB._headTucked ? ' tuck' : '');
   head.innerHTML = `<div class="db-head-en"><span>Energy</span></div>
     <div class="db-head-ed"><button class="db-head-btn${DB.editing ? ' on' : ''}" title="${DB.editing ? 'Done' : 'Edit structure'}">${DB.editing ? '✓' : '✎'}</button>${adrift && !DB.editing ? '<button class="db-head-btn fix" title="Some things aren\'t attached to a bar"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6.5 9.5l-1.8 1.8a2.1 2.1 0 0 1-3-3l1.8-1.8"/><path d="M9.5 6.5l1.8-1.8a2.1 2.1 0 0 1 3 3l-1.8 1.8"/><path d="M5 1.5v2M1.5 5h2M11 14.5v-2M14.5 11h-2"/></svg></button>' : ''}</div>
     <div class="db-head-names"><div class="db-head-row">${CONFIG.BAND_MEMBERS.map(m => `<b style="color:${MEMBER_COLORS[m] || '#888'}">${esc(m)}</b>`).join('')}</div><svg class="db-head-fan"></svg>${DB.editing ? '<div class="db-head-hint">drag down a lane to mark rests</div>' : ''}</div>`;
@@ -5687,10 +5704,8 @@ function _dbPinLabel(p) {
 }
 const _dbPinTo = p => (p.to || []).filter(m => MEMBER_COLORS[m]);
 
-// Lane centres inside the row (energy 22 + dot 46, then 7px per lane)
-const _DB_LANE_X = j => 22 + 46 + 0.5 + j * 7 + 3.5;
 
-function _dbRowEl(i, label, secStart, energy, pins, ranges, lyrics, cover) {
+function _dbRowEl(i, label, secStart, energy, pins, lyrics, cover) {
   const type = DB.bars[i], half = _dbIsHalf(type), open = !DB.editing && DB.openIdx === i;
   const row = document.createElement('div');
   row.className = 'db-row' + (half ? ' half' : '') + (secStart ? ' sec-start' : '') + (open ? ' open' : '');
@@ -5716,14 +5731,12 @@ function _dbRowEl(i, label, secStart, energy, pins, ranges, lyrics, cover) {
   dc.appendChild(dot);
   if (label) { const l = document.createElement('span'); l.className = 'db-sec'; l.textContent = label; dc.appendChild(l); }
 
-  // member lanes; a lane lights up where a note is addressed to that member
-  // member lanes: a gap where they rest; bold where a note/tab is for them, with a stub at its end
-  const to = new Set(pins.flatMap(_dbPinTo));
+  // member lanes: a gap where they rest; bold where a note/tab is for them, stopping a little short at its end
   const lanes = document.createElement('div');
   lanes.className = 'db-lanes';
   lanes.innerHTML = CONFIG.BAND_MEMBERS.map(m => {
     const rest = DB.lanes[m]?.rest?.includes(DB.barIds[i]), c = cover[m]?.[i];
-    const cls = [rest && !c ? 'rest' : '', c ? 'bold' : '', c?.end ? 'end' : '', c?.start ? 'bstart' : ''].filter(Boolean).join(' ');
+    const cls = [rest && !c ? 'rest' : '', c ? 'bold' : '', c?.end ? 'end' : ''].filter(Boolean).join(' ');
     return `<i class="${cls}" style="color:${MEMBER_COLORS[m] || '#888'}"></i>`;
   }).join('');
   lanes.addEventListener('click', e => { e.stopPropagation(); if (!DB.editing) dbToggleView(); });
@@ -5731,15 +5744,6 @@ function _dbRowEl(i, label, secStart, energy, pins, ranges, lyrics, cover) {
 
   const call = document.createElement('div');
   call.className = 'db-call';
-  const kMax = ranges.reduce((m, r) => Math.max(m, r.k + 1), 0);
-  if (kMax) call.style.paddingLeft = (10 + kMax * 4) + 'px';
-  ranges.forEach(r => {
-    const seg = document.createElement('i');
-    seg.className = 'db-rng' + (r.top ? ' top' : '') + (r.bot ? ' bot' : '');
-    seg.style.left = (3 + r.k * 4) + 'px';
-    seg.style.borderColor = r.color;
-    call.appendChild(seg);
-  });
   // lyrics take the column (hold a line and drag it to another dot); pins sit after them as dots
   const lh = document.createElement('span');
   lh.className = 'db-lyrs';
@@ -5766,37 +5770,65 @@ function _dbRowEl(i, label, secStart, energy, pins, ranges, lyrics, cover) {
   if (open) call.appendChild(_dbActionsEl(i));
 
   row.append(en, dc, lanes, call);
-  // lines from each addressed member's lane across to the callouts
-  [...to].forEach((m, n) => {
-    const j = CONFIG.BAND_MEMBERS.indexOf(m), ln = document.createElement('i');
-    ln.className = 'db-conn';
-    ln.style.left = _DB_LANE_X(j) + 'px';
-    ln.style.width = (22 + 46 + 36 + 8 - _DB_LANE_X(j) + (kMax ? kMax * 4 + 2 : 0)) + 'px';
-    ln.style.top = `calc(${open ? '15px' : '50%'} + ${n * 3}px)`;
+  // a line from each addressee's lane across to its pin (placed by _dbPlaceConns after layout);
+  // notes start with a dot on the lane
+  pins.forEach(p => _dbPinTo(p).forEach(m => {
+    const ln = document.createElement('i');
+    ln.className = 'db-conn' + (p.type === 'note' ? ' note' : '');
+    ln.dataset.pin = p.id; ln.dataset.j = CONFIG.BAND_MEMBERS.indexOf(m);
     ln.style.background = MEMBER_COLORS[m];
     row.appendChild(ln);
-  });
+  }));
   row.addEventListener('click', e => dbRowTap(i, e, row));
   return row;
 }
 
-// A pin is a small dot until tapped (or "Aa" shows all names); a second tap opens it
-
+/* A pin = an end marker by type (note: dot, tab: T stub, snip: triangle), in the addressee's colour.
+   In the lyrics view that's all you see until it's tapped; in the notes view (or tapped, or the row
+   open) the note/tab itself follows it. A tap on the shown note/tab opens it. */
 function _dbChipEl(p, full) {
   const named = full || DB._showNotes || DB.openChips.has(p.id);
   const to = _dbPinTo(p), end = _dbPinEnd(p), s = _dbPinDot(p);
-  const chip = document.createElement('span');
-  chip.className = 'db-chip db-chip-' + p.type + (named ? '' : ' min');
-  if (to.length) chip.style.borderColor = MEMBER_COLORS[to[0]];
-  const span = end > s ? `<em>${end - s + 1} bars</em>` : '';
-  const who  = to.length ? `<em>→ ${esc(to.join(', '))}</em>` : '';
-  chip.innerHTML = `<b>${_DB_PIN_ICON[p.type] || '•'}</b>` + (named ? `<span>${esc(_dbPinLabel(p))}</span>${who}${span}` : '');
-  chip.title = _dbPinLabel(p);
-  _dbTapHold(chip, () => {
+  const wrap = document.createElement('span');
+  wrap.className = 'db-pin' + (named ? ' named' : '');
+  wrap.dataset.pin = p.id;
+  if (to.length) wrap.style.color = MEMBER_COLORS[to[0]];
+  wrap.title = _dbPinLabel(p);
+  const mk = document.createElement('i');
+  mk.className = 'db-mk ' + p.type;
+  wrap.appendChild(mk);
+  if (named) {
+    const chip = document.createElement('span');
+    chip.className = 'db-chip db-chip-' + p.type;
+    if (to.length) chip.style.borderColor = MEMBER_COLORS[to[0]];
+    const span = end > s ? `<em>${end - s + 1} bars</em>` : '';
+    const who  = to.length ? `<em>→ ${esc(to.join(', '))}</em>` : '';
+    chip.innerHTML = `<b>${_DB_PIN_ICON[p.type] || '•'}</b><span>${esc(_dbPinLabel(p))}</span>${who}${span}`;
+    wrap.appendChild(chip);
+  }
+  _dbTapHold(wrap, () => {
     if (named) dbTapPin(p);
     else { DB.openChips.add(p.id); dbRender(); }
-  }, () => dbShowPinMenu(p, chip));
-  return chip;
+  }, () => dbShowPinMenu(p, wrap));
+  return wrap;
+}
+
+// Lay each lane→pin line from the lane's centre to its pin's marker (needs layout, so after render)
+function _dbPlaceConns() {
+  $('db-rows')?.querySelectorAll('.db-row').forEach(row => {
+    const conns = row.querySelectorAll('.db-conn');
+    if (!conns.length) return;
+    const rr = row.getBoundingClientRect(), lanes = row.querySelector('.db-lanes').children;
+    conns.forEach(ln => {
+      const lane = lanes[+ln.dataset.j], pin = row.querySelector(`.db-pin[data-pin="${ln.dataset.pin}"]`);
+      if (!lane || !pin) { ln.style.display = 'none'; return; }
+      const lr = lane.getBoundingClientRect(), pr = pin.getBoundingClientRect();
+      const x0 = lr.left + lr.width / 2 - rr.left, x1 = pr.left + (pin.classList.contains('named') ? 0 : 2) - rr.left;
+      ln.style.left = x0 + 'px';
+      ln.style.width = Math.max(0, x1 - x0) + 'px';
+      ln.style.top = (pr.top + pr.height / 2 - rr.top - 0.75) + 'px';
+    });
+  });
 }
 
 function _dbActionsEl(i) {
