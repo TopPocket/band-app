@@ -2528,7 +2528,7 @@ const _clone = x => x === undefined ? undefined : JSON.parse(JSON.stringify(x));
 const _same  = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 function _merge3(base, local, remote, key) {
-  if (key === 'doodle') local = _dbAdoptIds(base, local, remote);
+  if (key === 'doodle') [base, local, remote] = _dbAdoptIds(base, local, remote);
   if (_same(local, base))  return _clone(remote); // we didn't touch it
   if (_same(remote, base)) return _clone(local);  // they didn't touch it
   if (_ATOMIC_KEYS.has(key)) return _clone(local);
@@ -2616,6 +2616,9 @@ const Meta = {
     return (await this._list())[name] || (await this._list(true))[name] || null;
   },
   async load(name) {
+    // let a save that's running finish first: a load landing mid-save would swap the base under it,
+    // and the merge would then take other people's new items for ones we deleted
+    await this._st[name]?.chain.catch(() => {});
     const id = await this.fileId(name);
     let data = id ? await Drive.readJson(id) : [];
     if (!Array.isArray(data)) data = [];
@@ -2633,11 +2636,11 @@ const Meta = {
     return run;
   },
   async _write(name, arr) {
-    const snapshot = _clone(arr);
+    const snapshot = _clone(arr), base = this._base[name] || []; // the base that goes with this snapshot
     const id = await this.fileId(name);
     let remote = id ? await Drive.readJson(id) : [];
     if (!Array.isArray(remote)) remote = [];
-    const merged = _merge3(this._base[name] || [], snapshot, remote);
+    const merged = _merge3(base, snapshot, remote);
     if (!id || !_same(merged, remote)) {
       const newId = await Drive.writeJson(id, merged, name, S.folders._meta);
       if (!id) this._ids[name] = newId;
@@ -3185,7 +3188,9 @@ function _recPrefetch(fileId) {
 }
 function _recHoldMenu(t) {
   if (!t?.fileId) return;
-  _recPrefetch(t.fileId);
+  // only warm up a file that's already on the device: a hold just to pin shouldn't download 40 MB.
+  // A file that has to come from Drive is fetched on Download/Share (Share may then ask for one more tap)
+  BlobCache.get(t.fileId).then(hit => { if (hit) _recPrefetch(t.fileId); }).catch(() => {});
   const items = [{ name: '⬇  Download', sub: 'Save it to this device', pick: () => _recDownload(t) }];
   if (navigator.canShare) items.push({ name: '↗  Share', sub: 'Send it to WhatsApp etc.', pick: () => _recShare(t) });
   if (t.pin) items.push({ name: Pins.has(t.fileId) ? 'Unpin' : 'Pin to the top', sub: 'Just for you', pick: () => Pins.toggle(t.fileId) });
@@ -3238,7 +3243,7 @@ function _updateCommentDots() {
   const un = new Set(Inbox.unread().map(it => it.key));
   document.querySelectorAll('[data-cdot-fid]').forEach(el => {
     const cs = _cdAllComments.filter(c => c.fileId === el.dataset.cdotFid);
-    el.className = 'rec-dot' + (!cs.length ? '' : cs.some(c => un.has('c:' + c.id)) ? ' unread' : ' has');
+    el.className = 'rec-dot' + (!cs.length ? '' : cs.some(c => _cdInboxKeys(c).some(k => un.has(k))) ? ' unread' : ' has');
   });
 }
 
@@ -3365,7 +3370,10 @@ const Inbox = {
   async markAll(items) {
     await this.load();
     const m = this._mine(true); m.read = m.read || [];
-    if (items.length === this.unread().length) { m.since = new Date().toISOString(); m.read = []; }
+    // `since` moves only to the newest thing actually shown, not "now": something posted after this
+    // device last refreshed (or a phone clock running fast) mustn't count as read unseen
+    const newest = items.reduce((a, it) => (it.at > a ? it.at : a), '');
+    if (items.length && items.length === this.unread().length && newest > (m.since || INBOX_START)) m.since = newest;
     else items.forEach(it => { if (!m.read.includes(it.key)) m.read.push(it.key); });
     this._save();
   },
@@ -3378,10 +3386,11 @@ const Inbox = {
   },
   _save() {
     const m = this._mine();
-    // drop read marks nobody needs any more (item gone, or covered by `since`)
-    if (m && _cdCommentsLoaded && S.songs?.length) {
-      const live = new Set(this.items().map(it => it.key));
-      m.read = (m.read || []).filter(k => live.has(k) && this.items().find(it => it.key === k).at > (m.since || INBOX_START));
+    // drop read marks covered by `since`. Keys for things this device hasn't loaded are kept: another
+    // device may know them, and dropping one here would delete it on Drive too
+    if (m) {
+      const at = new Map(this.items().map(it => [it.key, it.at]));
+      m.read = (m.read || []).filter(k => !at.has(k) || at.get(k) > (m.since || INBOX_START));
     }
     this._cache(); this.changed();
     clearTimeout(this._t); this._pending = true;
@@ -3501,7 +3510,7 @@ async function inboxGo(it) {
   if (S.tp.songName !== it.song) return;
   if (it.kind === 'note') {
     tpSwitchTab('structure');
-    await renderSongStructure();
+    await S.tp._structP; // the render tpSwitchTab started; a second one would race it
     DB.openChips.add(it.p.id); dbRender();
     const i = _dbPinDot(DB.pins.find(p => p.id === it.p.id) || it.p);
     flash($('db-rows')?.querySelector(`.db-row[data-i="${i}"]`));
@@ -3625,8 +3634,10 @@ function plSetOpen(id, open) {
 function _plMarkSeen(id) {
   const fid = PL.cfg[id].fid();
   if (!fid) return;
-  Inbox.markRead(_cdAllComments.filter(c => c.fileId === fid).map(c => 'c:' + c.id));
+  Inbox.markRead(_cdAllComments.filter(c => c.fileId === fid).flatMap(_cdInboxKeys));
 }
+// inbox keys for a recording comment and its replies
+function _cdInboxKeys(c) { return ['c:' + c.id, ...(c.replies || []).map(r => 'r:' + r.id)]; }
 
 // Scroll the list so the current recording sits at the top
 function _plScrollCurToTop(id) {
@@ -4295,8 +4306,14 @@ function _ensureTrackIds() {
 // fresh = re-read from Drive to pick up other people's comments
 async function ensureCommentsLoaded(fresh = false) {
   if (_cdCommentsLoaded && !fresh) return;
-  _cdAllComments = await Meta.load('comments.json');
-  _cdCommentsLoaded = true;
+  if (!_cdCommentsLoaded) { _cdAllComments = await Meta.load('comments.json'); _cdCommentsLoaded = true; return; }
+  // A refresh (the inbox does one every few minutes) merges into the list we have, in place:
+  // a reply being written holds a comment object from this list, and anything added here since
+  // the last load or save must survive until it's saved.
+  await Meta._st['comments.json']?.chain.catch(() => {});
+  const base = _clone(Meta._base['comments.json'] || []);
+  const drive = await Meta.load('comments.json');
+  _reconcileInPlace(_cdAllComments, _merge3(base, _clone(_cdAllComments), drive));
 }
 
 async function saveCommentsJson() {
@@ -4557,7 +4574,7 @@ function tpSwitchTab(tab) {
   if (tab === 'structure') { _tpMiniProgress(); _tpMiniLabel(); }
   document.querySelectorAll('.tp-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tp-tabcontent').forEach(d => d.classList.toggle('active', d.id === `tp-tabcontent-${tab}`));
-  if (tab === 'structure') { flushPendingEdits(); renderSongStructure(); }
+  if (tab === 'structure') { flushPendingEdits(); S.tp._structP = renderSongStructure(); }
   if (tab === 'tabs') renderSongTabsData();
   if (tab === 'lyrics') { _lyricsCtx.songName = S.tp.songName; const _lyrEntry = S.songs.find(s => s.name === S.tp.songName); $('tp-lyrics-text').value = _lyrEntry?.notes || ''; _lyrRender('tp'); _lyrSetMode('tp', 'view'); }
 }
@@ -5942,8 +5959,10 @@ function _dbFitIds(bars, ids) {
   // A board with no ids saved yet gets the same ids on every device. Random ones meant two phones
   // (or one phone and a stale reload) each invented their own, and whichever saved last cut every
   // energy level and lyric link loose from its dot.
-  if (!Array.isArray(ids) || !ids.length) return _dbSeedIds(bars.length);
-  const out = ids.slice(0, bars.length);
+  // Only a board that never had ids: an empty saved list (every dot deleted) gets random ones, so
+  // notes left floating then don't jump back onto whatever dot reuses d0, d1…
+  if (ids == null) return _dbSeedIds(bars.length);
+  const out = Array.isArray(ids) ? ids.slice(0, bars.length) : [];
   const seen = new Set();
   for (let i = 0; i < bars.length; i++) {
     if (!out[i] || seen.has(out[i])) out[i] = _dbNewBarId();
@@ -5956,24 +5975,32 @@ function _dbSeedIds(n) { return Array.from({ length: n }, (_, i) => 'd' + i); }
 function _dbRemapIds(d, map) {
   const m = id => (id != null && map[id] != null) ? map[id] : id;
   if (Array.isArray(d.barIds)) d.barIds = d.barIds.map(m);
-  if (_isObj(d.energy)) { const e = {}; Object.entries(d.energy).forEach(([k, v]) => { e[m(k)] = v; }); d.energy = e; }
-  if (_isObj(d.lanes)) Object.values(d.lanes).forEach(l => { if (Array.isArray(l?.rest)) l.rest = l.rest.map(m); });
+  if (_isObj(d.energy)) { // a value already on the new id wins over one being moved onto it
+    const e = {}; Object.entries(d.energy).forEach(([k, v]) => { if (map[k] == null) e[k] = v; });
+    Object.entries(d.energy).forEach(([k, v]) => { if (map[k] != null && !(map[k] in e)) e[map[k]] = v; });
+    d.energy = e;
+  }
+  if (_isObj(d.lanes)) Object.values(d.lanes).forEach(l => { if (Array.isArray(l?.rest)) l.rest = [...new Set(l.rest.map(m))]; });
   (d.pins || []).forEach(p => { if ('barId' in p) p.barId = m(p.barId); if ('endBarId' in p) p.endBarId = m(p.endBarId); });
   (d.lyricLinks || []).forEach(l => { if (l) l.barId = m(l.barId); });
+  if (Array.isArray(d.versions)) d.versions.forEach(v => { if (_isObj(v)) _dbRemapIds(v, map); }); // so a restore still lines up
   return d;
 }
 /* Saving a board when Drive already has a *different set* of ids for the same bars (another copy
    invented its own): take Drive's ids and move ours across by position, instead of overwriting
    theirs. Only when no id is shared, so a real edit (a dot deleted and another added) isn't
-   mistaken for this and attachments still float as they should. Used by _merge3. */
+   mistaken for this and attachments still float as they should. Used by _merge3, which gets
+   [base, local, remote] back: base is remapped too, so only what we really changed counts as our
+   edit, and so is remote, so anything on Drive still on our old (now dead) ids comes back. */
 function _dbAdoptIds(base, local, remote) {
-  if (!_isObj(local) || !_isObj(remote)) return local;
+  const keep = [base, local, remote];
+  if (!_isObj(local) || !_isObj(remote) || _same(local, base)) return keep; // untouched: Drive's copy wins anyway
   const l = local.barIds, r = remote.barIds, b = base?.barIds;
-  if (!Array.isArray(l) || !Array.isArray(r) || !r.length || l.length !== r.length || _same(l, r)) return local;
+  if (!Array.isArray(l) || !Array.isArray(r) || !r.length || l.length !== r.length || _same(l, r)) return keep;
   const ours = !Array.isArray(b) || !b.length || _same(l, b); // ids we never saw saved, or didn't change
-  if (!ours || !_same(local.bars, remote.bars) || r.some(id => l.includes(id))) return local;
+  if (!ours || !_same(local.bars, remote.bars) || r.some(id => l.includes(id))) return keep;
   const map = {}; l.forEach((id, i) => { map[id] = r[i]; });
-  return _dbRemapIds(_clone(local), map);
+  return [_isObj(base) ? _dbRemapIds(_clone(base), map) : base, _dbRemapIds(_clone(local), map), _dbRemapIds(_clone(remote), map)];
 }
 // Old pins only have barIdx: give them the id of the dot at that position
 function _dbMigratePins(pins, barIds) {
