@@ -105,6 +105,10 @@ header[data-page="nav"] .hdr-t-nav { display: flex; }
 .ib-item:active { background: var(--c-surface); }
 .ib-item.you { border-left-color: var(--c-accent); }
 .ib-item.read { opacity: 0.6; }
+.tab-pic-view { flex: 1; overflow: auto; background: #fff; border-radius: 8px; padding: 6px; -webkit-overflow-scrolling: touch; }
+.tab-pic-view canvas { display: block; width: 100%; height: auto; cursor: zoom-in; }
+.tab-pic-view canvas.zoom { max-width: none; cursor: zoom-out; }
+.ib-sec { padding: 10px 14px 4px; font-family: var(--f-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--c-teal-pale); border-top: 1px solid var(--c-border); margin-top: 4px; }
 .ib-av { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; color: #fff; font: 700 11px/26px var(--f-mono); text-align: center; }
 .ib-main { flex: 1; min-width: 0; }
 .ib-top { display: flex; gap: 6px; align-items: baseline; font-family: var(--f-sans); font-size: 13px; color: var(--c-text); }
@@ -121,6 +125,26 @@ header[data-page="nav"] .hdr-t-nav { display: flex; }
 .song-unread.on { display: inline-block; }
 .song-unread.you { background: var(--c-accent); }
 .tp-comment-item.unread { box-shadow: inset 3px 0 0 var(--c-amber); }
+/* chat (replies) under a comment or a note */
+.chat { margin: 2px 0 10px 14px; border-left: 2px solid var(--c-border); padding: 4px 0 2px 10px; }
+.chat-list { max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.chat-empty { font-family: var(--f-mono); font-size: 11px; color: var(--c-teal-pale); padding: 2px 0 4px; }
+.chat-msg { display: flex; gap: 7px; align-items: flex-start; }
+.chat-msg.mine { flex-direction: row-reverse; }
+.chat-av { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+.chat-b { background: var(--c-surface2); border-radius: 10px; padding: 5px 9px; max-width: 82%; }
+.chat-msg.mine .chat-b { background: rgba(232,169,106,0.16); }
+.chat-msg.unread .chat-b { box-shadow: inset 2px 0 0 var(--c-amber); }
+.chat-meta { font-family: var(--f-mono); font-size: 9px; color: var(--c-teal-pale); margin-bottom: 1px; }
+.chat-t { font-size: 13px; color: var(--c-text); white-space: pre-wrap; word-break: break-word; }
+.chat-in { display: flex; gap: 6px; margin-top: 8px; align-items: flex-end; }
+.chat-in textarea { flex: 1; min-width: 0; resize: none; font: inherit; font-size: 14px; line-height: 1.35; padding: 7px 10px; border-radius: 16px; border: 1px solid var(--c-border); background: var(--c-bg); color: var(--c-text); max-height: 120px; }
+.chat-in button { flex: 0 0 auto; border: none; border-radius: 16px; background: var(--c-teal); color: #fff; font-family: var(--f-mono); font-size: 11px; padding: 8px 13px; cursor: pointer; }
+.chat-in button:disabled { opacity: 0.6; }
+.chat-btn.unread { border-color: var(--c-amber); color: var(--c-amber); }
+#db-pin-display .chat { margin-left: 0; margin-top: 12px; }
+.db-chip-n { flex: 0 0 auto; font-size: 9px; margin-left: 4px; opacity: 0.8; }
+.db-chip-n.unread { opacity: 1; color: var(--c-amber); font-weight: 700; }
 .db-pin.unread .db-mk { box-shadow: 0 0 0 2px var(--c-accent); border-radius: 50%; }
 .db-pin.unread .db-chip { box-shadow: 0 0 0 2px rgba(196,80,58,0.45); }
 .ib-flash { animation: ibFlash 2.2s ease-out; }
@@ -1213,7 +1237,7 @@ body.tab-view #tab-help-btn { display:none; }
   position: fixed; top: 0; left: 0; right: 0; z-index: 265;
   background: var(--c-surface); border-bottom: 1px solid var(--c-border);
   border-radius: 0 0 12px 12px; padding: 18px 16px 16px;
-  max-height: 44vh; overflow-y: auto;
+  max-height: 70vh; overflow-y: auto;
   transform: translateY(-110%); transition: transform 0.25s ease;
   box-shadow: 0 4px 20px rgba(0,0,0,0.35);
 }
@@ -2924,8 +2948,62 @@ async function enterApp() {
   S._entered = true;
   showScreen('screen-home');
   hideLoading();
-  setTimeout(wnMaybeShow, 500);
+  const go = _deepLink(true);
+  if (go) setTimeout(() => deepGo(go), 300); else setTimeout(wnMaybeShow, 500);
   inboxBoot();
+}
+
+/* ── APP LINKS ──────────────────────────────────────────
+   …/?go=c:<commentId> | n:<pinId> | s:<snippetId> | t:<tabId>. For bandmates: it opens the app
+   (signing in if needed) and jumps there. The param is taken off the address straight away and kept
+   in sessionStorage, so a sign-in in between doesn't lose it. */
+(() => {
+  try {
+    const v = new URLSearchParams(location.search).get('go');
+    if (v) { sessionStorage.setItem('ng_go', v); history.replaceState(null, '', location.pathname + location.hash); }
+  } catch (e) {}
+})();
+function _deepLink(take) {
+  let v = null; try { v = sessionStorage.getItem('ng_go'); if (take) sessionStorage.removeItem('ng_go'); } catch (e) {}
+  return v;
+}
+function _appLink(go) { return location.origin + location.pathname + '?go=' + encodeURIComponent(go); }
+async function _shareLink(title, text, go) {
+  const link = _appLink(go), body = (text ? text + '\n' : '') + link;
+  if (navigator.share) { try { await navigator.share({ title, text: body }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  try { await navigator.clipboard.writeText(body); showToast('Link copied'); }
+  catch (e) { window.open(`https://wa.me/?text=${encodeURIComponent(body)}`, '_blank'); }
+}
+async function deepGo(go) {
+  const i = go.indexOf(':'), kind = go.slice(0, i), id = go.slice(i + 1);
+  try {
+    if (!S.songs?.length) await loadSongs(true);
+    if (kind === 'c') {
+      await ensureCommentsLoaded();
+      const c = _cdAllComments.find(x => x.id === id);
+      if (!c) { showToast('That comment isn’t there any more'); return; }
+      if (c.songName && S.songs.some(s => s.name === c.songName)) await inboxGo({ kind: 'comment', key: 'c:' + c.id, c, song: c.songName });
+      else { await goComments(); $('cdcard-' + c.id)?.scrollIntoView({ block: 'center' }); }
+    } else if (kind === 'n') {
+      const s = S.songs.find(x => (x.doodle?.pins || []).some(p => p.id === id));
+      if (!s) { showToast('That note isn’t there any more'); return; }
+      await inboxGo({ kind: 'note', key: 'n:' + id, p: s.doodle.pins.find(p => p.id === id), song: s.name });
+    } else if (kind === 's') {
+      await loadSnippets();
+      const sn = (S.snippets || []).find(x => x.id === id);
+      if (!sn) { showToast('That snippet isn’t there any more'); return; }
+      if (sn.songName && S.songs.some(s => s.name === sn.songName)) {
+        await openSong(sn.songName);
+        await selectSnippet(sn.id);
+        const row = $('tpsnip-' + sn.id); row?.scrollIntoView({ block: 'center' });
+        row?.classList.add('ib-flash'); setTimeout(() => row?.classList.remove('ib-flash'), 2200);
+        showToast('Tap ▶ to play');
+      } else anPlaySnippet(sn.id);
+    } else if (kind === 't') {
+      await loadTabs();
+      if (S.tabs.some(t => t.id === id)) tabViewTab(id); else showToast('That tab isn’t there any more');
+    }
+  } catch (e) { showToast('Couldn’t open the link: ' + _errMsg(e)); }
 }
 
 function updateUserUI() {
@@ -3193,6 +3271,7 @@ function _recHoldMenu(t) {
   BlobCache.get(t.fileId).then(hit => { if (hit) _recPrefetch(t.fileId); }).catch(() => {});
   const items = [{ name: '⬇  Download', sub: 'Save it to this device', pick: () => _recDownload(t) }];
   if (navigator.canShare) items.push({ name: '↗  Share', sub: 'Send it to WhatsApp etc.', pick: () => _recShare(t) });
+  if (t.link) items.push({ name: '🔗  Share a link', sub: 'Opens it in the app (for the band)', pick: () => _shareLink(t.title || t.name, t.title || '', t.link) });
   if (t.pin) items.push({ name: Pins.has(t.fileId) ? 'Unpin' : 'Pin to the top', sub: 'Just for you', pick: () => Pins.toggle(t.fileId) });
   if (t.hide) items.push({ name: t.hide.label, sub: '', pick: t.hide.run });
   _dbPickSheet(t.title || t.name, items);
@@ -3327,16 +3406,23 @@ const Inbox = {
       const forC = (c.directedTo || []).includes(me);
       if (c.author !== me && c.createdAt)
         out.push({ key: 'c:' + c.id, kind: 'comment', at: c.createdAt, by: c.author, song: c.songName, text: c.text || '', forYou: forC, c });
+      // a reply is for you if the thread is yours, it's addressed to you, or you've joined the chat
+    const inC = (c.replies || []).some(r => r.author === me);
       (c.replies || []).forEach(r => {
         if (r.author !== me && r.createdAt)
           out.push({ key: 'r:' + r.id, kind: 'reply', at: r.createdAt, by: r.author, song: c.songName,
-                     text: r.text || r.caption || '📷 Image', forYou: c.author === me || forC, c, r });
+                     text: r.text || r.caption || '📷 Image', forYou: c.author === me || forC || inC, c, r });
       });
     });
     (S.songs || []).forEach(s => (s.doodle?.pins || []).forEach(p => {
-      if (!p.at || p.by === me) return;
       const text = p.type === 'tab' ? `Tab${p.tabTitle ? ': ' + p.tabTitle : ''}` : p.type === 'snip' ? `Snip${p.snippetTitle ? ': ' + p.snippetTitle : ''}` : (p.text || 'Note');
-      out.push({ key: 'n:' + p.id, kind: 'note', at: p.at, by: p.by, song: s.name, text, forYou: (p.to || []).includes(me), p });
+      const forP = (p.to || []).includes(me);
+      if (p.at && p.by !== me) out.push({ key: 'n:' + p.id, kind: 'note', at: p.at, by: p.by, song: s.name, text, forYou: forP, p });
+      const inP = (p.replies || []).some(r => r.author === me);
+      (p.replies || []).forEach(r => {
+        if (r.author !== me && r.createdAt)
+          out.push({ key: 'r:' + r.id, kind: 'nreply', at: r.createdAt, by: r.author, song: s.name, text: r.text || '', forYou: p.by === me || forP || inP, p, r });
+      });
     }));
     return this._items = out.sort((a, b) => (b.at > a.at ? 1 : -1));
   },
@@ -3444,13 +3530,20 @@ function _ibShown(f) {
   return Inbox.items().filter(it => (f === 'all' || it.forYou) && (!Inbox.isRead(it) || Inbox.isSaved(it.key)))
     .sort((a, b) => (Inbox.isSaved(b.key) - Inbox.isSaved(a.key)) || (b.at > a.at ? 1 : -1));
 }
+// …and under them, what you've already read (the last 3 weeks, newest first), so nothing gets lost
+const IB_READ_DAYS = 21, IB_READ_MAX = 60;
+function _ibReadList(f) {
+  const from = new Date(Date.now() - IB_READ_DAYS * 864e5).toISOString();
+  return Inbox.items().filter(it => (f === 'all' || it.forYou) && it.at >= from && Inbox.isRead(it) && !Inbox.isSaved(it.key)).slice(0, IB_READ_MAX);
+}
 function _ibAgo(at) {
   const m = Math.round((Date.now() - Date.parse(at)) / 60000);
   return m < 1 ? 'just now' : m < 60 ? `${m}m ago` : m < 1440 ? `${Math.round(m / 60)}h ago` : m < 10080 ? `${Math.round(m / 1440)}d ago` : fmtDate(at.slice(0, 10));
 }
 function _ibWhere(it) {
   if (it.kind === 'note') return 'Structure';
-  if (it.kind === 'reply') return 'Reply';
+  if (it.kind === 'nreply') return `Chat on “${(it.p.text || _dbPinLabel(it.p)).slice(0, 24)}”`;
+  if (it.kind === 'reply') return `Chat on “${(it.c.text || '').slice(0, 24)}”`;
   const c = it.c, t = c.endTime ? `${fmt(c.startTime)}–${fmt(c.endTime)}` : fmt(c.startTime || 0);
   return `${c.version ? 'V' + c.version + ' · ' : ''}${t}`;
 }
@@ -3460,10 +3553,11 @@ function inboxRender() {
   $('ib-n-you').textContent = un.filter(it => it.forYou).length || '';
   $('ib-n-all').textContent = un.length || '';
   document.querySelectorAll('#inbox-pop .ib-tabs button').forEach(b => b.classList.toggle('on', b.dataset.f === _ibFilter));
-  const shown = _ibShown(_ibFilter);
+  const shown = _ibShown(_ibFilter), readOnes = _ibReadList(_ibFilter);
   $('ib-all-read').disabled = !shown.some(it => !Inbox.isRead(it));
   list.innerHTML = shown.length ? '' : `<div class="ib-empty">All caught up 𓅦</div>`;
-  shown.forEach(it => {
+  [...shown, ...(readOnes.length ? [null, ...readOnes] : [])].forEach(it => {
+    if (!it) { const h = document.createElement('div'); h.className = 'ib-sec'; h.textContent = 'Read'; list.appendChild(h); return; }
     const read = Inbox.isRead(it), saved = Inbox.isSaved(it.key);
     const el = document.createElement('div');
     el.className = 'ib-item' + (it.forYou ? ' you' : '') + (read ? ' read' : '') + (saved ? ' saved' : '');
@@ -3491,15 +3585,20 @@ function _ibShare(it) {
   const text = it.kind === 'comment'
     ? `${it.song} · ${_ibWhere(it)}${(it.c.directedTo || []).length ? ' → ' + it.c.directedTo.join(', ') : ''}\n"${it.text}"\n— ${it.by}`
     : it.kind === 'reply' ? `${it.song}: ${it.by} replied to "${it.c.text}"\n"${it.text}"`
+    : it.kind === 'nreply' ? `${it.song}: ${it.by} replied to "${it.p.text || _dbPinLabel(it.p)}"\n"${it.text}"`
     : `${it.song} · Structure${(it.p.to || []).length ? ' → ' + it.p.to.join(', ') : ''}\n"${it.text}"\n— ${it.by}`;
-  if (navigator.share) navigator.share({ text }).catch(() => {});
-  else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  _shareLink(it.song || 'Nesting Ground', text, it.c ? 'c:' + it.c.id : 'n:' + it.p.id);
 }
 // tap an item: go to it (and it's read)
 async function inboxGo(it) {
   inboxClose();
   Inbox.markRead([it.key]);
   const flash = el => { if (!el) return; el.scrollIntoView({ block: 'center' }); el.classList.add('ib-flash'); setTimeout(() => el.classList.remove('ib-flash'), 2200); };
+  // a reply opens its comment on the song page with the chat open under it
+  if (it.kind === 'reply' && it.c.songName && S.songs?.some(s => s.name === it.c.songName)) {
+    _chatOpen.add(it.c.id);
+    return inboxGo({ ...it, kind: 'comment', key: 'c:' + it.c.id, song: it.c.songName });
+  }
   if (it.kind === 'reply') {
     await goComments();
     const card = $('cdcard-' + it.c.id);
@@ -3508,12 +3607,13 @@ async function inboxGo(it) {
   }
   await openSong(it.song);
   if (S.tp.songName !== it.song) return;
-  if (it.kind === 'note') {
+  if (it.kind === 'note' || it.kind === 'nreply') {
     tpSwitchTab('structure');
     await S.tp._structP; // the render tpSwitchTab started; a second one would race it
     DB.openChips.add(it.p.id); dbRender();
-    const i = _dbPinDot(DB.pins.find(p => p.id === it.p.id) || it.p);
+    const p = DB.pins.find(x => x.id === it.p.id) || it.p, i = _dbPinDot(p);
     flash($('db-rows')?.querySelector(`.db-row[data-i="${i}"]`));
+    if (it.kind === 'nreply') dbOpenPinChat(p);
     return;
   }
   const idx = S.tp.versions.findIndex(v => v.fileId === it.c.fileId);
@@ -3535,9 +3635,81 @@ async function inboxBoot() {
   await Promise.all([Inbox.load(), ensureCommentsLoaded(true).catch(() => {}), S.songs?.length ? null : loadSongs(true)]);
   inboxUI();
 }
+/* ── CHAT: replies under a recording comment or a board note ──
+   A small thread anyone can add to. A comment keeps it in c.replies (the same replies the Comments
+   page shows), a note in pin.replies. list() returns the live array; send(reply) adds and saves.
+   Opening one marks its replies read. */
+const _chatId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+function _chatEl(list, send) {
+  const box = document.createElement('div');
+  box.className = 'chat';
+  const draw = () => {
+    const rs = list() || [];
+    box.innerHTML = '';
+    const ul = document.createElement('div'); ul.className = 'chat-list';
+    if (!rs.length) ul.innerHTML = '<div class="chat-empty">No replies yet. Start the chat…</div>';
+    rs.forEach(r => {
+      const m = document.createElement('div');
+      m.className = 'chat-msg' + (r.author === S.user?.name ? ' mine' : '') + (Inbox.unreadKey('r:' + r.id) ? ' unread' : '');
+      const body = r.type === 'image' ? '📷 Photo' + (r.caption ? ': ' + r.caption : '') + ' (see Comments)' : r.type === 'snippet' ? '🎙 Snippet (see Comments)' : (r.text || '');
+      m.innerHTML = `<span class="chat-av" style="background:${MEMBER_COLORS[r.author] || 'var(--c-teal)'}">${esc((r.author || '?')[0])}</span>
+        <div class="chat-b"><div class="chat-meta">${esc(r.author || '?')} · ${r.createdAt ? _ibAgo(r.createdAt) : ''}</div><div class="chat-t">${esc(body)}</div></div>`;
+      ul.appendChild(m);
+    });
+    box.appendChild(ul);
+    const row = document.createElement('div'); row.className = 'chat-in';
+    row.innerHTML = '<textarea rows="1" placeholder="Reply…"></textarea><button type="button">Send</button>';
+    const ta = row.querySelector('textarea'), btn = row.querySelector('button');
+    ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; });
+    btn.addEventListener('click', async () => {
+      const text = ta.value.trim();
+      if (!text || btn.disabled) return;
+      btn.disabled = true; btn.textContent = '…';
+      const r = { id: _chatId(), author: S.user?.name || '?', createdAt: new Date().toISOString(), type: 'text', text };
+      try { await send(r); draw(); box.querySelector('.chat-list').scrollTop = 1e6; }
+      catch (e) { showToast('Not sent: ' + _errMsg(e)); btn.disabled = false; btn.textContent = 'Send'; }
+    });
+    box.appendChild(row);
+    Inbox.markRead(rs.map(r => 'r:' + r.id));
+  };
+  // taps and swipes in here aren't "play this comment" / "change tab"
+  ['click', 'pointerdown', 'touchstart', 'touchmove'].forEach(ev => box.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
+  box.redraw = draw;
+  draw();
+  return box;
+}
+function _commentChatEl(cid) {
+  return _chatEl(() => _cdAllComments.find(x => x.id === cid)?.replies, async r => {
+    const c = _cdAllComments.find(x => x.id === cid);
+    if (!c) throw new Error('the comment has been deleted');
+    (c.replies = c.replies || []).push(r);
+    await saveCommentsJson();
+    Inbox.changed();
+    const btn = document.querySelector(`#tpcitem-${CSS.escape(cid)} .chat-btn`);
+    if (btn) btn.textContent = `💬 ${c.replies.length}`;
+  });
+}
+function _pinChatEl(pinId) {
+  return _chatEl(() => DB.pins.find(x => x.id === pinId)?.replies, async r => {
+    const p = DB.pins.find(x => x.id === pinId);
+    if (!p) throw new Error('the note has been deleted');
+    (p.replies = p.replies || []).push(r);
+    await _dbPersist();
+    Inbox.changed();
+  });
+}
+
 async function inboxRefresh() {
   if (!S.user || !S._entered) return;
   try { await ensureCommentsLoaded(true); } catch (e) {}
+  // board notes and their chats live in songs.json: refresh it too, unless something's being edited
+  const busy = () => DB._saveTimer || DB.editing || S.tp?.notesSaveTimer || document.querySelector('.lyr-dragging, #db-pin-display.open, #db-note-modal.open');
+  if (S.songs?.length && !busy()) {
+    try {
+      await loadSongs(true);
+      if (!busy() && document.querySelector('#screen-track.active') && S.tp?.activeTab === 'structure' && await dbLoad()) dbRender();
+    } catch (e) {}
+  }
   if (!Inbox._pending) { Inbox._loading = null; await Inbox.load(); } // pick up reads from your other devices
   inboxUI();
 }
@@ -4440,7 +4612,7 @@ function renderVersionsList() {
     _attachSwipeConfirm(row, { label: 'Delete snippet?', onYes: () => confirmDeleteSnippet(sn.id, 'tp') });
     _recAttachHold(row, () => {
       const name = `${sn.songName} - ${sn.title || 'snippet'} - ${(sn.createdAt || '').slice(0, 10)}`;
-      return { fileId: sn.driveFileId, name, title: sn.title || 'Snippet',
+      return { fileId: sn.driveFileId, name, title: sn.title || 'Snippet', link: 's:' + sn.id,
                hide: { label: 'Delete snippet', run: async () => { if (await _confirmModal('Delete snippet?', sn.title || '', { yes: 'Delete' })) confirmDeleteSnippet(sn.id, 'tp'); } } };
     });
     body.appendChild(row);
@@ -4940,11 +5112,35 @@ function _renderCommentList(body, comments, audio, emptyMsg) {
       pinBtn.addEventListener('click', e => { e.stopPropagation(); dbPinComment(c.id); });
       actions.appendChild(pinBtn);
     }
+    // the chat under this comment, and a link to it
+    const rs = c.replies || [];
+    const chatBtn = document.createElement('button');
+    chatBtn.className = 'tp-comment-act-btn chat-btn' + (rs.some(r => Inbox.unreadKey('r:' + r.id)) ? ' unread' : '');
+    chatBtn.textContent = `💬 ${rs.length || 'Reply'}`;
+    chatBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (_chatOpen.has(c.id)) _chatOpen.delete(c.id); else _chatOpen.add(c.id);
+      _refreshCommentViews();
+    });
+    actions.appendChild(chatBtn);
+    const linkBtn = document.createElement('button');
+    linkBtn.className = 'tp-comment-act-btn';
+    linkBtn.textContent = '↗ Link';
+    linkBtn.title = 'Share a link that opens this comment in the app';
+    linkBtn.addEventListener('click', e => { e.stopPropagation(); _shareComment(c); });
+    actions.appendChild(linkBtn);
     inner.appendChild(actions);
     el.appendChild(inner);
     _attachSwipeConfirm(el, { label: 'Delete comment?', content: inner, onYes: () => confirmCommentDelete(c.id) });
     body.appendChild(el);
+    if (_chatOpen.has(c.id)) { const ch = _commentChatEl(c.id); ch.classList.add('chat-under'); body.appendChild(ch); }
   });
+}
+const _chatOpen = new Set(); // comments whose chat is open under them
+function _shareComment(c) {
+  const t = c.endTime ? `${fmt(c.startTime)}–${fmt(c.endTime)}` : fmt(c.startTime || 0);
+  const to = (c.directedTo || []).length ? ' → ' + c.directedTo.join(', ') : '';
+  _shareLink(c.songName || 'Comment', `${c.songName || ''}${c.version ? ' · V' + c.version : ''} · ${t}${to}\n"${c.text}"\n— ${c.author}`, 'c:' + c.id);
 }
 async function confirmCommentDelete(cid) {
   await ensureCommentsLoaded();
@@ -5366,11 +5562,7 @@ function cdEditComment(commentId) {
 
 function cdShareWA(cid) {
   const c = _cdAllComments.find(x => x.id === cid);
-  if (!c) return;
-  const timeStr = c.endTime ? `${fmt(c.startTime)}–${fmt(c.endTime)}` : fmt(c.startTime);
-  const to = (c.directedTo||[]).length ? ` → ${c.directedTo.join(', ')}` : '';
-  const text = `${c.songName} · V${c.version} · ${timeStr}${to}\n"${c.text}"\n— ${c.author}`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  if (c) _shareComment(c); // the text plus a link that opens it in the app
 }
 
 function buildCommentCard(c){
@@ -6541,6 +6733,12 @@ function _dbChipEl(p, full) {
       const t = document.createElement('span'); t.className = 'db-chip-t';
       t.textContent = _dbPinLabel(p) + (!to.length && end > s ? `  · ${end - s + 1} bars` : '');
       chip.appendChild(t);
+      if ((p.replies || []).length) {
+        const n = document.createElement('span');
+        n.className = 'db-chip-n' + (p.replies.some(r => Inbox.unreadKey('r:' + r.id)) ? ' unread' : '');
+        n.textContent = '💬' + p.replies.length;
+        chip.appendChild(n);
+      }
       if (_dbHasClip(p)) {
         const pb = document.createElement('button');
         const key = p.commentId || ('snip:' + p.snippetId);
@@ -7033,9 +7231,7 @@ function dbRecordSnip(barIdx) {
 async function dbTapPin(pin) {
   if (DB._anchoringPinId) return;
   if (pin.type === 'note') {
-    $('db-pin-display-type').textContent = 'Note';
-    $('db-pin-display-body').textContent = pin.text || '(empty)';
-    $('db-pin-display').classList.add('open');
+    dbOpenPinChat(pin);
   } else if (pin.type === 'tab') {
     if (!S.tabsLoaded) { showLoading('…'); await loadTabs(); hideLoading(); }
     if (!S.tabs?.find(t => t.id === pin.tabId)) { showToast('Tab not found'); return; }
@@ -7047,6 +7243,15 @@ async function dbTapPin(pin) {
 }
 
 function dbClosePinDisplay() { $('db-pin-display')?.classList.remove('open'); }
+// The note (or tab/snip) at the top of the screen with its chat underneath
+function dbOpenPinChat(pin) {
+  $('db-pin-display-type').textContent = (pin.type === 'tab' ? 'Tab' : pin.type === 'snip' ? 'Snippet' : 'Note') + (pin.by ? ' · ' + pin.by : '');
+  $('db-pin-display-body').textContent = pin.type === 'note' ? (pin.text || '(empty)') : _dbPinLabel(pin);
+  const old = $('db-pin-display-chat'); if (old) old.remove();
+  const ch = _pinChatEl(pin.id); ch.id = 'db-pin-display-chat';
+  $('db-pin-display').appendChild(ch);
+  $('db-pin-display').classList.add('open');
+}
 
 function dbShowPinMenu(pin, el) {
   dbClosePinMenu();
@@ -7063,6 +7268,8 @@ function dbShowPinMenu(pin, el) {
     body.appendChild(btn);
   };
   if (pin.type === 'note') addBtn('Edit note', '', () => dbEditNote(pin.id));
+  addBtn(`💬 Chat${(pin.replies || []).length ? ' (' + pin.replies.length + ')' : ''}`, '', () => dbOpenPinChat(pin));
+  addBtn('↗ Share a link', '', () => _shareLink(S.tp?.songName || 'Note', `${S.tp?.songName || ''} · Structure\n"${_dbPinLabel(pin)}"`, 'n:' + pin.id));
   addBtn((pin.to || []).length ? `For: ${pin.to.join(', ')}…` : 'For a bandmate…', '', () => pin.type === 'tab' ? _dbAskTabFor(pin) : _dbMemberPop(pin, el));
   if (pin.type === 'note' && pin.commentId) addBtn('▶ Play the riff', '', () => dbPlayClip(pin));
   addBtn(_dbPinDot(pin) < 0 ? 'Attach to a dot' : 'Move to dot', '', () => dbStartAnchorMode(pin.id));
@@ -7750,6 +7957,15 @@ function _tabAsciiLines(tab, maxW = 0) {
       });
       out.push(tuning[s] + '|' + chars.join('') + '|');
     }
+    // the editor's beat count (every 4 slots) under the row: no dashes or bars, so it isn't a string
+    const cnt = Array(3 + row.reduce((a, sl) => a + widths[sl], 0)).fill(' ');
+    let x = 3, free = 0;
+    row.forEach(slot => {
+      const lbl = String(slot);
+      if (slot % 4 === 0 && x >= free) { [...lbl].forEach((c, i) => { cnt[x + i] = c; }); free = x + lbl.length + 1; }
+      x += widths[slot];
+    });
+    out.push(cnt.join('').trimEnd());
   });
   return out;
 }
@@ -7759,15 +7975,107 @@ function _tabAsciiText(tab, maxW = 0) {
   return [...head, '', ..._tabAsciiLines(tab, maxW), ...(tab.extraNotes ? ['', tab.extraNotes] : [])].join('\n');
 }
 
-// Share via the phone's share sheet (WhatsApp etc.); triple backticks = monospace in WhatsApp
+/* The tab as a picture (for WhatsApp, where pasted text wraps into a mess). The editor counts every
+   4 slots, so 4 slots = a beat and 16 = a bar. A line holds TAB_PIC_BARS bars and only ever breaks
+   at a bar line. Under each line, the same count the editor shows (0, 4, 8…) in small amber italics
+   below a gap, so it can't be read as another string. Returns a canvas. */
+const TAB_BAR_SLOTS = 16, TAB_PIC_BARS = 2;
+function _tabPicture(tab) {
+  const strings = tab.instrument === 'guitar' ? 6 : 4;
+  const tuning  = tab.instrument === 'guitar' ? ['E','A','D','G','B','e'] : ['E','A','D','G'];
+  const notes = tab.notes || [];
+  const last = notes.reduce((m, n) => Math.max(m, n.slot), 0);
+  const total = Math.max(1, Math.ceil((last + 1) / TAB_BAR_SLOTS)) * TAB_BAR_SLOTS;
+  const perRow = Math.min(total, TAB_BAR_SLOTS * TAB_PIC_BARS), rows = Math.ceil(total / perRow);
+  const PAD = 18, LBL = 18, SW = 22, SH = 20, CNT = 16, GAP = 22, SC = 2;
+  const W = PAD * 2 + LBL + perRow * SW + 2;
+  const head = [tab.songName ? tab.songName : '', tab.author ? 'by ' + tab.author : '', tab.instrument === 'guitar' ? 'Guitar' : 'Bass'].filter(Boolean).join(' · ');
+  const C = _themeColors();
+  const mctx = document.createElement('canvas').getContext('2d');
+  mctx.font = '12px sans-serif';
+  const wrapText = (t, w) => (t || '').split('\n').flatMap(par => {
+    const out = []; let line = '';
+    par.split(/\s+/).forEach(word => { const tr = line ? line + ' ' + word : word; if (mctx.measureText(tr).width > w && line) { out.push(line); line = word; } else line = tr; });
+    out.push(line); return out;
+  });
+  const extra = tab.extraNotes ? wrapText(tab.extraNotes, W - PAD * 2) : [];
+  const HEAD_H = 50, rowH = (strings - 1) * SH + CNT + GAP + 12;
+  const H = HEAD_H + rows * rowH + (extra.length ? extra.length * 17 + 10 : 0) + 26;
+  const cv = document.createElement('canvas');
+  cv.width = W * SC; cv.height = H * SC;
+  const ctx = cv.getContext('2d');
+  ctx.scale(SC, SC);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = C.text; ctx.font = 'bold 17px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText(tab.title || 'Untitled tab', PAD, 26);
+  ctx.fillStyle = C.pale; ctx.font = '12px sans-serif';
+  ctx.fillText(head, PAD, 42);
+  const x0 = PAD + LBL, xAt = s => x0 + s * SW + SW / 2;
+  for (let r = 0; r < rows; r++) {
+    const top = HEAD_H + 8 + r * rowH, from = r * perRow, to = Math.min(total, from + perRow);
+    const yOf = s => top + (strings - 1 - s) * SH;
+    const xEnd = x0 + (to - from) * SW;
+    for (let s = 0; s < strings; s++) {
+      const y = yOf(s);
+      ctx.fillStyle = C.pale; ctx.font = '11px monospace'; ctx.textAlign = 'right';
+      ctx.fillText(tuning[s], x0 - 6, y + 4);
+      ctx.strokeStyle = '#9aa7a5'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x0, y + 0.5); ctx.lineTo(xEnd, y + 0.5); ctx.stroke();
+    }
+    // bar lines
+    ctx.strokeStyle = C.text; ctx.lineWidth = 1.2;
+    for (let b = from; b <= to; b += TAB_BAR_SLOTS) {
+      const x = Math.round(x0 + (b - from) * SW) + 0.5;
+      ctx.beginPath(); ctx.moveTo(x, yOf(strings - 1)); ctx.lineTo(x, yOf(0) + 1); ctx.stroke();
+    }
+    // notes
+    ctx.font = 'bold 13px monospace';
+    notes.filter(n => n.slot >= from && n.slot < to).forEach(n => {
+      const x = xAt(n.slot - from), y = yOf(n.string);
+      const { pre, num, post } = _tabNoteParts(n);
+      const nw = ctx.measureText(num).width;
+      const left = x - nw / 2 - ctx.measureText(pre).width, right = x + nw / 2 + ctx.measureText(post).width;
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(left - 2, y - 8, right - left + 4, 15);
+      ctx.textAlign = 'center'; ctx.fillStyle = n.fret == null ? C.amber : C.text;
+      ctx.fillText(num, x, y + 5);
+      ctx.fillStyle = C.amber;
+      if (pre)  { ctx.textAlign = 'right'; ctx.fillText(pre,  x - nw / 2, y + 5); }
+      if (post) { ctx.textAlign = 'left';  ctx.fillText(post, x + nw / 2, y + 5); }
+    });
+    // the beat count, as in the editor: clearly not a string (no line, amber, italic, smaller)
+    const cy = yOf(0) + CNT + 4;
+    ctx.font = 'italic 10px sans-serif'; ctx.fillStyle = C.amber; ctx.textAlign = 'center';
+    for (let s = from; s < to; s += 4) {
+      ctx.fillText(String(s), xAt(s - from), cy);
+      ctx.fillRect(xAt(s - from) - 0.5, yOf(0) + 5, 1, 4);
+    }
+  }
+  let y = HEAD_H + rows * rowH + 8;
+  if (extra.length) { ctx.font = '12px sans-serif'; ctx.fillStyle = C.text; ctx.textAlign = 'left'; extra.forEach(l => { ctx.fillText(l, PAD, y + 10); y += 17; }); y += 10; }
+  ctx.font = '10px sans-serif'; ctx.fillStyle = C.pale; ctx.textAlign = 'right';
+  ctx.fillText('Nesting Ground', W - PAD, H - 10);
+  return cv;
+}
+const _canvasBlob = cv => new Promise(r => cv.toBlob(r, 'image/png'));
+
+// Share: the picture plus a link that opens the tab in the app
 async function shareTab(tabId) {
   const tab = S.tabs?.find(t => t.id === tabId);
   if (!tab) return;
-  const text = '```\n' + _tabAsciiText(tab, 34) + '\n```';
-  if (navigator.share) {
-    try { await navigator.share({ title: tab.title || 'Tab', text }); return; }
-    catch(e) { if (e.name === 'AbortError') return; }
+  const link = _appLink('t:' + tab.id);
+  const text = `${tab.title || 'Tab'}${tab.songName ? ' (' + tab.songName + ')' : ''}\n${link}`;
+  const blob = await _canvasBlob(_tabPicture(tab));
+  const file = new File([blob], (tab.title || 'tab').replace(/[\\/:*?"<>|]+/g, ' ').trim() + '.png', { type: 'image/png' });
+  if (navigator.canShare?.({ files: [file] })) {
+    try { await navigator.share({ files: [file], text }); return; }
+    catch (e) { if (e.name === 'AbortError') return; }
   }
+  // no file sharing here (most laptops): save the picture, then send the link
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  showToast('Picture saved, attach it to the message');
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 
@@ -7779,9 +8087,13 @@ function tabViewTab(tabId) {
   const overlay = document.createElement('div');
   overlay.className = 'ng-view-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;display:flex;flex-direction:column;padding:20px;box-sizing:border-box';
-  const pre = document.createElement('pre');
-  pre.style.cssText = 'flex:1;overflow:auto;background:#111;color:#e0e0e0;font-family:monospace;font-size:13px;padding:16px;border-radius:8px;margin:0;white-space:pre;line-height:1.6';
-  pre.textContent = text;
+  // the same picture that gets shared (bars, beat count); scroll/pinch to read
+  const pre = document.createElement('div');
+  pre.className = 'tab-pic-view';
+  const cv = _tabPicture(tab);
+  cv.title = 'Tap to zoom';
+  cv.onclick = () => { const z = cv.classList.toggle('zoom'); cv.style.width = z ? cv.width / 2 + 'px' : ''; };
+  pre.appendChild(cv);
   const close = document.createElement('button');
   close.textContent = '✕ Close';
   close.className = 'ng-view-close';

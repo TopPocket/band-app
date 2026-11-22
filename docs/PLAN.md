@@ -38,6 +38,45 @@ before building anything. Newest entries at the top of each section. Feature spe
   print preview, so you can see the whole song at a glance without scrolling. Not started. Ask about
   details (what's shown, can you tap into it) before building.
 
+- 2026-11-22: **Five requests in one go** (Patrick's words, verbatim):
+  > "tabs - when i share to whatsapp it just dumps the text in the chat and it's unreadable. instead
+  > when i share a tab i want a link to the app and a document with the tab in.
+  > second, i want to be able to look at recent comments, if I looks at one of the notified comments
+  > and click away it's lost. also i suspect it's actually removing the comment from the track as
+  > well. if i've read it it must stay where it is and just be "moved" from unread to read in my
+  > notifcations. so i can find it easily still.
+  > thirds - replys, I want to be able to reply to a note or comment in a mini little chat that
+  > everyone can add to, this can be where we discuss certain bits.
+  > fourth - sharing, I want to be able to share a link to a comment or even a link to a audio file
+  > of a snip.
+  > fifth - I want the beats of the tracks to be included under the tabs - make sure it's distinct
+  > enough to not be confused with the tab."
+  - Found in the code: marking read **never touches the comment itself** (only `reads.json`), but
+    the drop-down shows unread + kept items only (`_ibShown`), so a read item vanishes from the list.
+  - Tabs have no timing at all today (`TE.notes` are just slots), so "beats" needs defining.
+  - The app has no deep links yet; links to a comment/tab need a `?…` route that opens after sign-in.
+  - Answers (2026-11-22):
+    - Tab share = **a picture** + a link to the app. "make sure it starts new lines in sync with
+      bars (not every bar just not inbetween a bar)". My call: the editor marks every 4 slots, so
+      4 slots = a beat and **16 slots = a bar**; a picture line holds 2 bars and only breaks there.
+    - Chat = **under the item** (comment or board note), same thread everywhere; anyone can add.
+    - Links = **bandmates, open the app** at that comment (playing from its time) / snippet / tab.
+    - Beats: "there's already a count of the beats under the tabs in the creator - i just want that
+      on the tab" → the same count (0, 4, 8…) under the shared picture and the view, styled
+      differently (small, amber, under a gap) so it can't be read as a string.
+    - Inbox (not asked, his words were clear): read items stay in the drop-down under a **Read**
+      heading below the unread ones (recent ones, newest first). Marking read never removed the
+      comment from the track; it only looked that way because the item left the list.
+  - **Built (2026-11-22, pushed):** tab picture + link (`_tabPicture`, `shareTab`; the in-app view
+    shows the same picture, tap to zoom; the .txt/ASCII export also gets the count line). Inbox
+    "Read" section (last 3 weeks). Chat (`_chatEl`): 💬 under each recording comment (same replies
+    as the Comments page), and in the note box on the board (tap a note, or hold → 💬 Chat); note
+    pills show 💬N; replies to your thread/addressed to you/chats you've joined are "for you". App
+    links `?go=c:|n:|s:|t:` (`deepGo`): ↗ Link on comments, WhatsApp on the Comments page, Share in
+    the inbox, hold a snippet → Share a link, hold a note → Share a link, tab Share. The inbox
+    refresh now also reloads songs.json (so bandmates' note replies show), skipped while editing.
+    My calls: picture = 2 bars a line; chat is text only (photos/snippets still on the Comments page).
+
 ## Decisions
 - 2026-11-22 (Patrick): **New comments inbox** on the avatar circle (top right), For you / All,
   marks on tracks, mark read / all read, hold to pin or share. Full words in
