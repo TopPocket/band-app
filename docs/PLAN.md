@@ -36,6 +36,25 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-22 (Patrick: "this is nice"):
+  - **Column headers** at the top of the board: "Energy" written vertically over the energy
+    strip, a ✎ button over the dots (edit structure; the bottom Edit button goes), and the **band
+    members' names spread across the whole row with lines fanning down into their lanes**.
+  - **Scrolling:** the header scrolls with the board. Scrolling back up stops just below the
+    header, and a second swipe reveals it. (My reading: one stop on the way up; noted in case
+    he meant something else.)
+  - **The bottom Edit-structure section goes.** My calls: it only appears in edit mode (Done,
+    Clear, key tiles). The fix-links icon moves into the header. "Aa" and "Fit lyrics" are dropped:
+    the notes view always shows names, and lyrics are placed from the Lyrics page (Place
+    auto-fits).
+  - **In the lyrics view, notes/tabs still show on the member lanes:** a thick line with a
+    callout line ending in a small dot. Toggling to tabs & notes inflates the dot into the
+    note/tab.
+  - Built 2026-11-22 (pushed): all of the above.
+  - **The range bracket goes.** A note/tab covering several bars makes the addressed members'
+    lanes **bold over those bars, with a little stub at the end** so adjacent ones are
+    distinguishable. My call: a ranged pin addressed to nobody keeps a faint bracket, since it has
+    no lane.
 - 2026-11-22 (Patrick: "nice one" on the drag):
   - **Tabs can be addressed to band members too** (like notes): line from their lane.
   - **Edit the member lanes, mostly so people can see when to stop playing.** My design: in Edit
