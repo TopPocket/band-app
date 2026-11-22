@@ -1022,12 +1022,15 @@ body.tab-view #tab-view-close { display:flex; }
 .db-mk { position: relative; z-index: 1; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 12px; height: 22px; cursor: pointer; }
 .db-mk::before { content: ''; display: block; }
 .db-mk.note::before { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-.db-mk.tab::before { width: 2px; height: 11px; background: currentColor; }
-.db-mk.snip::before { width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 7px solid currentColor; }
-.db-mk.tab { width: 4px; justify-content: flex-start; }
-.db-pin.named .db-mk.note { display: none; }
-.db-pin.named .db-mk.snip { width: 9px; justify-content: flex-start; }
-.db-row.open .db-pin { align-self: stretch; }
+.db-tmk { position: absolute; z-index: 2; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 12px; height: 12px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 1.5px var(--c-bg); font: 700 8px/12px var(--f-mono); -webkit-text-fill-color: var(--c-bg); text-align: center; cursor: pointer; box-sizing: border-box; }
+.db-tmk::after { content: ''; position: absolute; inset: -6px; }
+.db-chip { display: inline-flex; align-items: center; height: 20px; box-sizing: border-box; }
+.db-chip-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.db-chip-tab { flex: 0 0 auto; color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 0.08em; padding: 0 6px; height: 16px; border-radius: 8px; }
+.db-chip:has(.db-clip) { padding-right: 0; }
+.db-clip { flex: 0 0 auto; width: 18px; height: 18px; margin-left: 6px; border-radius: 50%; border: none; padding: 0; background: var(--c-teal); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.db-clip::before { content: ''; width: 0; height: 0; margin-left: 2px; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; border-left: 7px solid #fff; }
+.db-clip.playing::before { width: 7px; height: 8px; margin: 0; border: none; border-left: 2.5px solid #fff; border-right: 2.5px solid #fff; box-sizing: border-box; }
 .db-head.tuck { display: none; }
 .db-head.reveal { animation: db-head-in 0.22s ease-out; overflow: hidden; }
 @keyframes db-head-in { from { max-height: 0; opacity: 0; } to { max-height: 140px; opacity: 1; } }
@@ -1064,6 +1067,9 @@ body.tab-view #tab-view-close { display:flex; }
 .tp-lyr-warn { font-family: var(--f-mono); font-size: 11px; color: var(--c-accent); padding: 8px 14px 0; }
 .tp-lyr-warn.hidden { display: none; }
 .db-chip em { font-style: normal; color: var(--c-teal-pale); font-size: 10px; margin-left: 6px; }
+#db-note-clip { display: flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 11px; color: var(--c-text); min-width: 0; }
+#db-note-clip button { font-family: var(--f-mono); font-size: 11px; padding: 6px 10px; border-radius: 12px; border: 1px dashed var(--c-border); background: none; color: var(--c-teal-pale); cursor: pointer; flex: 0 0 auto; }
+#db-note-clip span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #db-note-to { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
 #db-note-to span { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); margin-right: 2px; }
 #db-note-to button { font-family: var(--f-mono); font-size: 11px; padding: 5px 9px; border-radius: 12px; border: 1.5px solid var(--mc); background: none; color: var(--c-text); cursor: pointer; }
@@ -1078,7 +1084,9 @@ body.tab-view #tab-view-close { display:flex; }
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
 .db-chip b { color: var(--c-accent); margin-right: 5px; }
-.db-row.open .db-chip { white-space: pre-wrap; border-radius: 6px; padding: 6px 8px; }
+.db-row.open .db-chip:not(.db-chip-tab) { white-space: pre-wrap; border-radius: 10px; height: auto; min-height: 20px; padding-top: 3px; padding-bottom: 3px; }
+.db-row.open .db-chip-t { white-space: pre-wrap; }
+.db-row.open .db-pin { align-self: flex-start; }
 .db-acts { display: flex; flex-wrap: wrap; gap: 5px; }
 .db-acts button {
   font-family: var(--f-mono); font-size: 11px; padding: 6px 9px; border-radius: 6px;
@@ -1215,7 +1223,7 @@ body.tab-view #tab-view-close { display:flex; }
 .db-note-btns { display: flex; gap: 8px; }
 /* Snip / tab pick sheet */
 #db-pick-sheet {
-  position: fixed; inset: 0; z-index: 270;
+  position: fixed; inset: 0; z-index: 280;
   background: rgba(26,46,44,0.72);
   display: none; align-items: flex-end;
 }
@@ -2003,6 +2011,7 @@ body.tab-view #tab-view-close { display:flex; }
     </div>
     <textarea id="db-note-textarea" placeholder="Type your note…"></textarea>
     <div id="db-note-to"></div>
+    <div id="db-note-clip"></div>
     <div class="db-note-btns">
       <button class="db-act-btn" style="background:var(--c-surface2);color:var(--c-teal-pale);border:1px solid var(--c-border)" onclick="$('db-note-modal').classList.remove('open')">Cancel</button>
       <button class="db-act-btn" style="background:var(--c-teal);color:var(--c-text)" onclick="dbSubmitNote()">OK</button>
@@ -4290,6 +4299,14 @@ function _renderCommentList(body, comments, audio, emptyMsg) {
       ltBtn.addEventListener('click', e => { e.stopPropagation(); openLoopTrim(c.id); });
       actions.appendChild(ltBtn);
     }
+    if (body.closest('#screen-track') && c.songName === S.tp?.songName) {
+      const pinBtn = document.createElement('button');
+      pinBtn.className = 'tp-comment-act-btn';
+      pinBtn.textContent = '⇢ Structure';
+      pinBtn.title = 'Pin this to a bar on the structure, with a ▶ that plays this bit';
+      pinBtn.addEventListener('click', e => { e.stopPropagation(); dbPinComment(c.id); });
+      actions.appendChild(pinBtn);
+    }
     inner.appendChild(actions);
     el.appendChild(inner);
     _attachSwipeConfirm(el, { label: 'Delete comment?', content: inner, onYes: () => confirmCommentDelete(c.id) });
@@ -5734,12 +5751,16 @@ function _dbRowEl(i, label, secStart, energy, pins, lyrics, cover) {
   // member lanes: a gap where they rest; bold where a note/tab is for them, stopping a little short at its end
   const lanes = document.createElement('div');
   lanes.className = 'db-lanes';
+  const tabFor = {};
+  pins.forEach(p => { const m = p.type === 'tab' && _dbPinTo(p)[0]; if (m && !tabFor[m]) tabFor[m] = p; });
   lanes.innerHTML = CONFIG.BAND_MEMBERS.map(m => {
     const rest = DB.lanes[m]?.rest?.includes(DB.barIds[i]), c = cover[m]?.[i];
     const cls = [rest && !c ? 'rest' : '', c ? 'bold' : '', c?.end ? 'end' : ''].filter(Boolean).join(' ');
-    return `<i class="${cls}" style="color:${MEMBER_COLORS[m] || '#888'}"></i>`;
+    return `<i class="${cls}" style="color:${MEMBER_COLORS[m] || '#888'}">${tabFor[m] ? `<b class="db-tmk" data-pin="${tabFor[m].id}">T</b>` : ''}</i>`;
   }).join('');
-  lanes.addEventListener('click', e => { e.stopPropagation(); if (!DB.editing) dbToggleView(); });
+  lanes.querySelectorAll('.db-tmk').forEach(t => _dbTapHold(t, () => { if (!DB.editing) dbTapPin(DB.pins.find(p => p.id === t.dataset.pin)); },
+    () => { const p = DB.pins.find(p => p.id === t.dataset.pin); if (p && !DB.editing) dbShowPinMenu(p, t); }));
+  lanes.addEventListener('click', e => { e.stopPropagation(); if (!DB.editing && !e.target.closest('.db-tmk')) dbToggleView(); });
   lanes.addEventListener('pointerdown', e => { if (DB.editing) { e.stopPropagation(); e.preventDefault(); _dbLanePaint(lanes, i, e); } });
 
   const call = document.createElement('div');
@@ -5763,18 +5784,21 @@ function _dbRowEl(i, label, secStart, energy, pins, lyrics, cover) {
     }
     lh.appendChild(sp);
   });
-  // pins first (addressed ones leading, so their lines reach them): a dot in the lyrics view,
-  // the full note/tab in the tabs & notes view
-  [...pins].sort((a, b) => _dbPinTo(b).length - _dbPinTo(a).length).forEach(p => call.appendChild(_dbChipEl(p, open)));
+  // pins first: notes (addressed ones leading, so their lines reach them) as a dot in the lyrics
+  // view and the note itself in the tabs & notes view; then TAB pills, which only show in the
+  // tabs & notes view (in the lyrics view a tab is just the circled T on its member's lane)
+  const isTab = p => p.type === 'tab';
+  [...pins].filter(p => !isTab(p)).sort((a, b) => _dbPinTo(b).length - _dbPinTo(a).length).forEach(p => call.appendChild(_dbChipEl(p, open)));
+  if (open || DB._showNotes) pins.filter(isTab).forEach(p => call.appendChild(_dbChipEl(p, open)));
   call.appendChild(lh);
   if (open) call.appendChild(_dbActionsEl(i));
 
   row.append(en, dc, lanes, call);
   // a line from each addressee's lane across to its pin (placed by _dbPlaceConns after layout);
   // notes start with a dot on the lane
-  pins.forEach(p => _dbPinTo(p).forEach(m => {
+  pins.filter(p => p.type !== 'tab').forEach(p => _dbPinTo(p).forEach(m => {
     const ln = document.createElement('i');
-    ln.className = 'db-conn' + (p.type === 'note' ? ' note' : '');
+    ln.className = 'db-conn note';
     ln.dataset.pin = p.id; ln.dataset.j = CONFIG.BAND_MEMBERS.indexOf(m);
     ln.style.background = MEMBER_COLORS[m];
     row.appendChild(ln);
@@ -5783,27 +5807,43 @@ function _dbRowEl(i, label, secStart, energy, pins, lyrics, cover) {
   return row;
 }
 
-/* A pin = an end marker by type (note: dot, tab: T stub, snip: triangle), in the addressee's colour.
-   In the lyrics view that's all you see until it's tapped; in the notes view (or tapped, or the row
-   open) the note/tab itself follows it. A tap on the shown note/tab opens it. */
+/* A pin on the board. A note (or an old snippet pin) = a dot in the lyrics view, the note itself in
+   the tabs & notes view (or once tapped, or the row open), with a ▶ circle on its end when it has a
+   clip (a recording comment's range, or a recorded snippet). A tab = a small "TAB" pill in its
+   member's colour. A tap on the shown pill opens it; hold for the menu. */
+const _dbHasClip = p => !!(p.commentId || (p.type === 'snip' && p.snippetId));
 function _dbChipEl(p, full) {
-  const named = full || DB._showNotes || DB.openChips.has(p.id);
-  const to = _dbPinTo(p), end = _dbPinEnd(p), s = _dbPinDot(p);
+  const tab = p.type === 'tab';
+  const named = tab || full || DB._showNotes || DB.openChips.has(p.id);
+  const to = _dbPinTo(p), end = _dbPinEnd(p), s = _dbPinDot(p), col = MEMBER_COLORS[to[0]];
   const wrap = document.createElement('span');
   wrap.className = 'db-pin' + (named ? ' named' : '');
   wrap.dataset.pin = p.id;
-  if (to.length) wrap.style.color = MEMBER_COLORS[to[0]];
+  if (col) wrap.style.color = col;
   wrap.title = _dbPinLabel(p);
-  const mk = document.createElement('i');
-  mk.className = 'db-mk ' + p.type;
-  wrap.appendChild(mk);
-  if (named) {
+  if (!named) {
+    const mk = document.createElement('i'); mk.className = 'db-mk note'; wrap.appendChild(mk);
+  } else {
     const chip = document.createElement('span');
     chip.className = 'db-chip db-chip-' + p.type;
-    if (to.length) chip.style.borderColor = MEMBER_COLORS[to[0]];
-    const span = end > s ? `<em>${end - s + 1} bars</em>` : '';
-    const who  = to.length ? `<em>→ ${esc(to.join(', '))}</em>` : '';
-    chip.innerHTML = `<b>${_DB_PIN_ICON[p.type] || '•'}</b><span>${esc(_dbPinLabel(p))}</span>${who}${span}`;
+    if (tab) {
+      chip.textContent = 'TAB';
+      if (col) { chip.style.background = col; chip.style.borderColor = col; }
+    } else {
+      if (col) chip.style.borderColor = col;
+      const t = document.createElement('span'); t.className = 'db-chip-t';
+      t.textContent = _dbPinLabel(p) + (!to.length && end > s ? `  · ${end - s + 1} bars` : '');
+      chip.appendChild(t);
+      if (_dbHasClip(p)) {
+        const pb = document.createElement('button');
+        pb.className = 'db-clip' + (DB._clipPinId === p.id ? ' playing' : '');
+        pb.title = 'Play the riff';
+        if (col) pb.style.background = col;
+        pb.addEventListener('pointerdown', e => e.stopPropagation());
+        pb.addEventListener('click', e => { e.stopPropagation(); dbPlayClip(p); });
+        chip.appendChild(pb);
+      }
+    }
     wrap.appendChild(chip);
   }
   _dbTapHold(wrap, () => {
@@ -5812,6 +5852,35 @@ function _dbChipEl(p, full) {
   }, () => dbShowPinMenu(p, wrap));
   return wrap;
 }
+
+/* ▶ on a note: play its riff. A recording comment plays its range (a point comment: 2 s before to
+   10 s after) through the comments player; a recorded snippet plays as before. */
+async function dbPlayClip(p) {
+  if (!p.commentId) { if (!S.snippetsLoaded) { showLoading('…'); await loadSnippets(); hideLoading(); } anPlaySnippet(p.snippetId); return; }
+  if (DB._clipPinId === p.id && !_cdAudio.paused) { _cdAudio.pause(); return; }
+  try { await ensureCommentsLoaded(); } catch (e) {}
+  const c = _cdAllComments.find(x => x.id === p.commentId);
+  if (!c) { showToast('That recording comment has been deleted'); return; }
+  S.tp?.audio?.pause();
+  DB._clipPinId = p.id; _dbClipBtns();
+  try {
+    const blob = await Drive.fetchBlob(c.fileId);
+    if (DB._clipPinId !== p.id) return;
+    if (_cdAudio.src) { try { URL.revokeObjectURL(_cdAudio.src); } catch (e) {} }
+    _cdAudio.src = URL.createObjectURL(blob);
+    _cdAudio.currentTime = c.endTime > c.startTime ? c.startTime : Math.max(0, c.startTime - 2);
+    _cdPlayingId = c.id; // its timeupdate stops at the end (or start + 10 s)
+    await _cdAudio.play();
+  } catch (e) {
+    if (e?.name !== 'NotAllowedError') showToast('Could not play: ' + (e?.message || e));
+    else showToast('Tap ▶ again to play');
+    DB._clipPinId = null; _dbClipBtns();
+  }
+}
+function _dbClipBtns() {
+  $('db-rows')?.querySelectorAll('.db-pin').forEach(w => w.querySelector('.db-clip')?.classList.toggle('playing', w.dataset.pin === DB._clipPinId));
+}
+_cdAudio.addEventListener('pause', () => { if (DB._clipPinId) { DB._clipPinId = null; _dbClipBtns(); } });
 
 // Lay each lane→pin line from the lane's centre to its pin's marker (needs layout, so after render)
 function _dbPlaceConns() {
@@ -6078,9 +6147,36 @@ function _dbRenderNoteTo() {
   };
 }
 
+/* "▶ Add a riff from a recording" in the note box: pick one of this song's recording comments.
+   The note then points at it (commentId) and its ▶ plays that bit of the rehearsal. */
+const _dbCommentLabel = c => `${fmtDate(c.sessionDate)} · V${c.version} · ${c.endTime ? fmt(c.startTime) + '–' + fmt(c.endTime) : fmt(c.startTime)}`;
+function _dbRenderNoteClip() {
+  const box = $('db-note-clip');
+  if (!box) return;
+  const c = DB._noteClip && _cdAllComments.find(x => x.id === DB._noteClip);
+  box.innerHTML = DB._noteClip
+    ? `<span>▶ ${c ? esc(_dbCommentLabel(c)) + ' · ' + esc(c.text) : '(comment deleted)'}</span><button data-x="1">✕</button>`
+    : '<button>▶ Add a riff from a recording</button>';
+  box.onclick = async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.x) { DB._noteClip = null; _dbRenderNoteClip(); return; }
+    try { await ensureCommentsLoaded(); } catch (err) {}
+    const cs = _cdAllComments.filter(x => x.songName === DB.songName).sort((a, b) => (b.sessionDate || '').localeCompare(a.sessionDate || '') || a.startTime - b.startTime);
+    if (!cs.length) { showToast('No comments on this song’s recordings yet. Mark the riff with a comment on the Recordings tab'); return; }
+    _dbPickSheet('Pick the riff', cs.map(x => ({ name: x.text || '(no text)', sub: _dbCommentLabel(x), pick: () => {
+      DB._noteClip = x.id;
+      const ta = $('db-note-textarea');
+      if (!ta.value.trim()) ta.value = x.text || '';
+      if (!DB._noteTo.length) { DB._noteTo = (x.directedTo || []).filter(m => MEMBER_COLORS[m]); _dbRenderNoteTo(); }
+      _dbRenderNoteClip();
+    } })));
+  };
+}
+
 function dbAddNote(barIdx) {
   DB._noteEditPinId = null; DB._noteTargetBarIdx = barIdx;
   DB._noteTo = []; _dbRenderNoteTo();
+  DB._noteClip = null; _dbRenderNoteClip();
   $('db-note-hdr-title').textContent = 'Add Note';
   $('db-note-textarea').value = '';
   $('db-note-modal').classList.add('open');
@@ -6130,6 +6226,15 @@ function dbPickItem(type, itemId, label, barIdx) {
   DB.pins.push(pin);
   dbRender();
   _dbPersist();
+  if (type === 'tab') _dbAskTabFor(pin);
+}
+// A tab is for one bandmate (a circled T on their lane), or nobody
+async function _dbAskTabFor(pin) {
+  const nobody = 'Nobody in particular';
+  const m = await _simplePickerModal('Who is this tab for?', [...CONFIG.BAND_MEMBERS, nobody], _dbPinTo(pin)[0] || null);
+  if (m === null) return;
+  if (MEMBER_COLORS[m]) pin.to = [m]; else delete pin.to;
+  dbRender(); _dbPersist();
 }
 
 function dbSubmitNote() {
@@ -6138,10 +6243,15 @@ function dbSubmitNote() {
   $('db-note-modal').classList.remove('open');
   if (DB._noteEditPinId) {
     const pin = DB.pins.find(p => p.id === DB._noteEditPinId);
-    if (pin) { pin.text = text; if (DB._noteTo.length) pin.to = [...DB._noteTo]; else delete pin.to; }
+    if (pin) {
+      pin.text = text;
+      if (DB._noteTo.length) pin.to = [...DB._noteTo]; else delete pin.to;
+      if (DB._noteClip) pin.commentId = DB._noteClip; else delete pin.commentId;
+    }
   } else {
     const pin = { id: 'pin_' + Date.now().toString(36), type: 'note', ..._dbAnchorAt(DB._noteTargetBarIdx), text };
     if (DB._noteTo.length) pin.to = [...DB._noteTo];
+    if (DB._noteClip) pin.commentId = DB._noteClip;
     DB.pins.push(pin);
   }
   DB._noteEditPinId = null;
@@ -6196,7 +6306,8 @@ function dbShowPinMenu(pin, el) {
     body.appendChild(btn);
   };
   if (pin.type === 'note') addBtn('Edit note', '', () => dbEditNote(pin.id));
-  addBtn((pin.to || []).length ? `For: ${pin.to.join(', ')}…` : 'For a bandmate…', '', () => _dbMemberPop(pin, el));
+  addBtn((pin.to || []).length ? `For: ${pin.to.join(', ')}…` : 'For a bandmate…', '', () => pin.type === 'tab' ? _dbAskTabFor(pin) : _dbMemberPop(pin, el));
+  if (pin.type === 'note' && pin.commentId) addBtn('▶ Play the riff', '', () => dbPlayClip(pin));
   addBtn(_dbPinDot(pin) < 0 ? 'Attach to a dot' : 'Move to dot', '', () => dbStartAnchorMode(pin.id));
   if (_dbPinDot(pin) >= 0) {
     addBtn('Cover whole section', '', () => dbCoverSection(pin.id));
@@ -6225,6 +6336,7 @@ function dbEditNote(pinId) {
   DB._noteEditPinId = pinId;
   DB._noteTargetBarIdx = _dbPinDot(pin);
   DB._noteTo = [...(pin.to || [])]; _dbRenderNoteTo();
+  DB._noteClip = pin.commentId || null; _dbRenderNoteClip();
   $('db-note-hdr-title').textContent = 'Edit Note';
   $('db-note-textarea').value = pin.text || '';
   $('db-note-modal').classList.add('open');
@@ -6252,6 +6364,7 @@ function dbStartAnchorMode(pinId) {
 }
 
 function dbCancelAnchorMode() {
+  DB._pendingPin = null;
   DB._anchoringPinId = null; DB._rangePinId = null; DB._anchoringLyricId = null;
   _dbBanner(null);
 }
@@ -6293,10 +6406,29 @@ function dbSetRangeEnd(i) {
   dbSetRange(id, i);
 }
 
+/* From a recording comment on the song page: "Pin to structure" makes a note that points at the
+   comment (its ▶ plays that bit), addressed to whoever the comment is for. Tap a bar to place it. */
+async function dbPinComment(cid) {
+  const c = _cdAllComments.find(x => x.id === cid);
+  if (!c) return;
+  tpSwitchTab('structure');
+  await renderSongStructure();
+  if (!DB.bars.length) { showToast('Build a structure first (tap ✎)'); return; }
+  const pin = { id: 'pin_' + Date.now().toString(36), type: 'note', text: c.text || 'Riff', commentId: c.id };
+  const to = (c.directedTo || []).filter(m => MEMBER_COLORS[m]);
+  if (to.length) pin.to = to;
+  DB._rangePinId = null;
+  DB._anchoringPinId = pin.id;
+  DB._pendingPin = pin;
+  _dbBanner('Tap the bar where this riff goes');
+}
+
 function dbAnchorPinToDot(dotIdx) {
-  const pin = DB.pins.find(p => p.id === DB._anchoringPinId);
+  const pend = DB._pendingPin && DB._pendingPin.id === DB._anchoringPinId ? DB._pendingPin : null;
+  const pin = pend || DB.pins.find(p => p.id === DB._anchoringPinId);
   dbCancelAnchorMode();
   if (!pin) return;
+  if (pend) DB.pins.push(pin);
   Object.assign(pin, _dbAnchorAt(dotIdx));
   dbRender();
   _dbPersist();

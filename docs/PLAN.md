@@ -36,6 +36,31 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-22 (Patrick, after the marker build), **direction given, details being asked:**
+  - **Tabs get smaller:** the pill just says **"TAB"** (not the tab title), coloured in the band
+    member's colour. **Adding a tab prompts who it's for.**
+  - **Tab marker:** lose the line/T stub. Just a **tiny T in a circle on the member's lane** it's
+    for, and the (TAB) pill sits **to the right of any notes** in that row.
+  - **Snips are always tied to a note**, so no snip symbol (clutter). A note with a clip gets a
+    **little play button in a circle at the right end of its pill**, the same diameter as the pill.
+  - Adding a note should offer to **also add a snip**, which can be a **piece of a rehearsal
+    recording** (from the Recordings page). The principle to embed: **"Rory, play this riff here"
+    plus a button that plays that riff from a rehearsal, as easy as possible.** Don't bloat the
+    code. Open: start from the structure and pick the recording bit, start from the recording and
+    send it to the structure, or both?
+  - **Answers:** riff clips are made **both ways, sharing one link**: a recording comment gets
+    "Pin to structure", and the board's note dialog can pick one of this song's range comments.
+    The note just points at the comment (`commentId`), and its ▶ plays that range. **Tabs:** Ⓣ on
+    the lane only in the lyrics view; the TAB pill shows in the notes view only, with no line to
+    it. A ranged tab puts its Ⓣ at the start of the bold run. **A tab is for one person or
+    nobody** (nobody = no Ⓣ on any lane, just a neutral pill).
+  - My calls: old `snip` pins (recorded snippets) now draw as a note pill with the ▶ end, using the
+    snippet title as the text. + Snip / 🎙 Record stay in the open row.
+  - Built 2026-11-22 (pushed): all of the above. "⇢ Structure" is on the song page's recording
+    comments only (not the session page). Making a new riff still means adding a comment with a
+    range on the Recordings tab first.
+  - Useful fact: track comments already store `fileId`, `startTime`, `endTime`, `directedTo`,
+    and the comments list can already play a range (`cdPlayComment`).
 - 2026-11-22 (Patrick, from a phone screenshot: "ok not quite"):
   - **No `[` brackets at all**, not even for ranged pins addressed to nobody. My call: such a pin
     just says "N bars" on its chip in the notes view.
