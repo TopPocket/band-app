@@ -36,6 +36,18 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-22 (Patrick): **Turn the guide back on, rewritten for someone with ADHD:** punchy,
+  listified, "do this, then this". **A picture of an example with the features circled.** Key
+  things: **toggling lyrics/notes, where to tap, how to add comments (notes) and attach snips
+  (riffs)**. **Call out the tab tool** ("I don't think anyone knows about that"): on the guide just
+  say "you can write tabs here"; the full tab how-to only shows when you tap for it.
+  - **Disable dark mode for the whole app: light only.** The tab editor is currently locked to dark;
+    make it follow the (light) colour scheme.
+  - Built 2026-11-22 (pushed). Guide v2: 6 cards (Structure tab, what you're looking at, flip
+    lyrics/notes, leave a note, attach a riff, write tabs with "Show me how" for the editor steps).
+    Auto-shows once again for everyone. Light only: the toggle is gone and the tab editor's
+    canvases use the theme colours. The plucker's dark waveform is left alone (it mirrors the
+    standalone).
 - 2026-11-22 (Patrick): **Move the 🕘 versions button to the right of the band names** in the
   header (not under ✎). Built and pushed.
 - 2026-11-22 (Patrick): **A note for several members:** instead of a coloured line from each

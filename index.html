@@ -11,28 +11,8 @@ if (!matchMedia('(hover:none) and (pointer:coarse)').matches) document.querySele
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-/* ══ DESIGN TOKENS — matches Rehearsal Plucker ══ */
+/* ══ DESIGN TOKENS: light only (dark mode was removed 2026-11-22) ══ */
 :root {
-  --c-bg:        #1A2E2C;
-  --c-surface:   #21383A;
-  --c-surface2:  #283D3B;
-  --c-teal:      #197278;
-  --c-teal-lt:   #21585A;
-  --c-teal-pale: #83A8A6;
-  --c-text:      #EDDDD4;
-  --c-text-dim:  #D4925A;
-  --c-amber:     #C07840;
-  --c-amber-lt:  #E8A96A;
-  --c-accent:    #C4503A;
-  --c-accent-dk: #7D3220;
-  --c-border:    #32403E;
-  --c-player-h:  64px;
-  --f-display:   'Playfair Display', serif;
-  --f-mono:      'DM Mono', monospace;
-  --f-sans:      'DM Sans', sans-serif;
-}
-
-html[data-theme="light"] {
   --c-bg:        #EDDDD4;
   --c-surface:   #E2CFC3;
   --c-surface2:  #D6C1B2;
@@ -46,15 +26,11 @@ html[data-theme="light"] {
   --c-accent:    #C4503A;
   --c-accent-dk: #7D3220;
   --c-border:    #C8B5A5;
+  --c-player-h:  64px;
+  --f-display:   'Playfair Display', serif;
+  --f-mono:      'DM Mono', monospace;
+  --f-sans:      'DM Sans', sans-serif;
 }
-#theme-toggle-btn {
-  position: absolute; bottom: 20px; right: 20px;
-  background: none; border: 1px solid var(--c-border); border-radius: 50%;
-  width: 36px; height: 36px; font-size: 17px; cursor: pointer;
-  color: var(--c-teal-pale); display: flex; align-items: center; justify-content: center;
-  transition: border-color 0.15s, color 0.15s; flex-shrink: 0;
-}
-#theme-toggle-btn:hover { border-color: var(--c-teal-pale); color: var(--c-text); }
 #screen-home { position: relative; }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -923,14 +899,14 @@ body.tab-fs #main-header { display:none; }
 .tab-nav-col:active { background:var(--c-teal-lt); }
 .tab-mid-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:space-around; padding:6px 2px; }
 #tab-sym-btn { min-width:34px; height:30px; border:1px solid var(--c-border); border-radius:6px; background:none; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:15px; font-weight:700; cursor:pointer; padding:0 6px; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; touch-action:none; }
-#tab-sym-btn.on { border-color:var(--c-amber-lt); color:var(--c-bg); background:var(--c-amber-lt); }
+#tab-sym-btn.on { border-color:var(--c-amber-lt); color:#fff; background:var(--c-amber-lt); }
 #tab-sym-menu { position:fixed; z-index:700; display:none; flex-direction:column; background:var(--c-surface); border:1px solid var(--c-border); border-radius:8px; padding:4px; box-shadow:0 6px 20px rgba(0,0,0,0.4); max-height:80vh; overflow-y:auto; }
 #tab-sym-menu.open { display:flex; }
 #tab-sym-menu button { display:flex; gap:10px; align-items:center; background:none; border:none; border-radius:5px; color:var(--c-text); font-family:var(--f-mono); font-size:12px; padding:6px 10px; cursor:pointer; text-align:left; white-space:nowrap; }
 #tab-sym-menu button b { display:inline-block; width:14px; text-align:center; color:var(--c-amber-lt); font-size:14px; }
 #tab-sym-menu button.sel { background:rgba(232,169,106,0.15); }
 #tab-clear-btn { background:none; border:none; color:var(--c-accent); font-size:20px; cursor:pointer; padding:0; line-height:1; }
-#tab-save-btn { background:var(--c-accent); border:none; border-radius:5px; color:var(--c-text); font-family:var(--f-mono); font-size:11px; padding:5px 8px; cursor:pointer; width:100%; }
+#tab-save-btn { background:var(--c-accent); border:none; border-radius:5px; color:#fff; font-family:var(--f-mono); font-size:11px; padding:5px 8px; cursor:pointer; width:100%; }
 #tab-save-btn:active { opacity:0.85; }
 /* View-only mode */
 body.tab-view #tab-controls-panel { display:none; }
@@ -938,14 +914,14 @@ body.tab-view #tab-fretboard-wrap { display:none; }
 body.tab-view #tab-canvas-wrap { cursor:default; }
 body.tab-view #tab-view-close { display:flex; }
 #tab-view-close { display:none; position:absolute; top:8px; right:8px; z-index:10;
-  background:rgba(17,26,26,0.85); border:1px solid var(--c-border); border-radius:6px;
+  background:var(--c-surface); border:1px solid var(--c-border); border-radius:6px;
   color:var(--c-teal-pale); font-family:var(--f-mono); font-size:11px;
   padding:5px 10px; cursor:pointer; align-items:center; gap:5px; }
 #tab-view-close:hover { color:var(--c-text); }
 /* Fretboard */
 #tab-fretboard-wrap { flex-shrink:0; border-top:2px solid var(--c-teal); position:relative; }
 #fret-canvas { width:100%; height:100%; display:block; touch-action:none; }
-#tab-notenames-btn { position:absolute; bottom:6px; right:6px; background:rgba(17,26,26,0.88); border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:10px; padding:4px 9px; cursor:pointer; z-index:5; }
+#tab-notenames-btn { position:absolute; bottom:6px; right:6px; background:var(--c-surface); border:1px solid var(--c-border); border-radius:4px; color:var(--c-teal-pale); font-family:var(--f-mono); font-size:10px; padding:4px 9px; cursor:pointer; z-index:5; }
 #tab-notenames-btn.active { border-color:var(--c-amber-lt); color:var(--c-amber-lt); }
 
 @keyframes se-blink { 0%,100%{opacity:1} 50%{opacity:0} }
@@ -1318,10 +1294,34 @@ body.tab-view #tab-view-close { display:flex; }
 .wn-top { display: flex; align-items: center; justify-content: space-between; }
 .wn-kicker { font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-teal-pale); }
 .wn-skip { background: none; border: none; font-family: var(--f-mono); font-size: 11px; color: var(--c-teal-pale); cursor: pointer; padding: 6px; }
-.wn-vis { margin: 10px 0 12px; padding: 12px 10px; min-height: 96px; border-radius: 10px; background: var(--c-surface); display: flex; flex-direction: column; justify-content: center; gap: 2px; overflow: hidden; }
-.wn-t { font-family: var(--f-display); font-size: 19px; font-weight: 700; color: var(--c-text); margin-bottom: 6px; }
-.wn-p { font-family: var(--f-sans); font-size: 14px; line-height: 1.5; color: var(--c-text); }
-.wn-p b { color: var(--c-teal); }
+.wn-vis { margin: 4px 0 10px; padding: 14px 12px; min-height: 80px; border-radius: 10px; background: var(--c-surface); display: flex; flex-direction: column; justify-content: center; gap: 2px; overflow: hidden; }
+.wn-t { font-family: var(--f-display); font-size: 21px; font-weight: 700; color: var(--c-text); margin: 6px 0 4px; }
+.wn-card { max-height: calc(100dvh - 32px); overflow-y: auto; }
+.wn-ol { margin: 0; padding: 0; list-style: none; counter-reset: wn; display: flex; flex-direction: column; gap: 7px; }
+.wn-ol li { counter-increment: wn; position: relative; padding-left: 28px; font-family: var(--f-sans); font-size: 15px; line-height: 1.35; color: var(--c-text); }
+.wn-ol li::before { content: counter(wn); position: absolute; left: 0; top: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--c-accent); color: #fff; font: 700 11px/20px var(--f-mono); text-align: center; }
+.wn-ol li b { color: var(--c-teal); }
+.wn-tip { margin-top: 10px; font-family: var(--f-sans); font-size: 13px; color: var(--c-teal-pale); line-height: 1.4; }
+.wn-more { margin-top: 12px; width: 100%; padding: 10px; border-radius: 8px; border: 1.5px dashed var(--c-teal); background: none; color: var(--c-teal); font-family: var(--f-mono); font-size: 12px; cursor: pointer; }
+.wn-more.on { border-style: solid; }
+.wn-more-body { margin-top: 10px; padding: 10px; border-radius: 8px; background: var(--c-surface); }
+.wn-more-body .wn-ol li::before { background: var(--c-teal); }
+.wn-hl { position: relative; display: inline-flex; align-items: center; border-radius: 8px; box-shadow: 0 0 0 2px var(--c-accent); padding: 1px; }
+.wn-hl.rd { border-radius: 50%; padding: 3px; }
+.wn-hl::after { content: attr(data-n); position: absolute; top: -9px; right: -9px; z-index: 2; width: 16px; height: 16px; border-radius: 50%; background: var(--c-accent); color: #fff; font: 700 9px/16px var(--f-mono); text-align: center; }
+.wn-hl .wn-lanes { height: 20px; padding: 0 2px; }
+.wn-r .wn-hl { padding: 2px 10px 2px 6px; }
+.wn-r:has(.wn-hl) { overflow: visible; }
+.wn-tabs .wn-hl { flex: 1; }
+.wn-tabs .wn-hl span { flex: 1; }
+.wn-head { min-height: 20px; margin-bottom: 4px; }
+.wn-hd-names { display: flex; gap: 0; margin-left: 46px; }
+.wn-hd-names b { width: 6px; font: 700 8px var(--f-mono); text-align: center; }
+.wn-open { background: var(--c-bg); border-radius: 8px; padding: 6px 4px 8px; }
+.wn-to { display: flex; gap: 6px; justify-content: center; margin-top: 10px; }
+.wn-to span { font-family: var(--f-mono); font-size: 11px; padding: 4px 9px; border-radius: 12px; border: 1.5px solid var(--mc); color: var(--c-text); }
+.wn-to span.on { background: var(--mc); color: #fff; }
+.wn-to .wn-hl { border-radius: 14px; }
 .wn-foot { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
 .wn-pips { flex: 1; display: flex; gap: 5px; }
 .wn-pips i { width: 6px; height: 6px; border-radius: 50%; background: var(--c-border); }
@@ -1348,15 +1348,11 @@ body.tab-view #tab-view-close { display:flex; }
 .wn-clip b { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
 .wn-clip b::before { content: ''; margin-left: 2px; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 8px solid #fff; }
 .wn-tab { font-family: var(--f-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 8px; color: var(--c-text); }
-.wn-arrow { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); text-align: center; padding: 2px 0; }
+.wn-arrow { font-family: var(--f-mono); font-size: 14px; color: var(--c-teal-pale); text-align: center; padding: 2px 0; }
 .wn-acts { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 8px; }
 .wn-acts span { font-family: var(--f-mono); font-size: 11px; padding: 5px 9px; border-radius: 6px; border: 1px solid var(--c-border); background: var(--c-bg); color: var(--c-teal-pale); }
 .wn-acts .wn-big { font-size: 15px; padding: 3px 12px; }
 </style>
-<script>
-  const _st = localStorage.getItem('ng-theme');
-  if (_st !== 'dark') document.documentElement.dataset.theme = 'light'; // light unless dark was chosen
-</script>
 </head>
 <body>
 
@@ -1458,9 +1454,8 @@ body.tab-view #tab-view-close { display:flex; }
         <button class="home-tool" onclick="openPlucker()"><span>𓅃</span>Pluck songs</button>
         <button class="home-tool" onclick="openTuner()"><span>𝄢</span>Tuner</button>
       </div>
-      <button class="home-whatsnew" onclick="wnOpen()" hidden>What’s new in this update</button>
+      <button class="home-whatsnew" onclick="wnOpen()">What’s new in this update</button>
     </div>
-    <button id="theme-toggle-btn" onclick="toggleTheme()" title="Switch to light mode">☀</button>
   </div>
 
   <!-- ── SESSIONS LIST ── -->
@@ -2681,38 +2676,57 @@ function buildNamePicker() {
 
 /* ── WHAT'S NEW ───────────────────────────────────────
    A short walkthrough shown once to each person after an update (per device, ng_whatsnew).
-   Bump WN_VERSION and rewrite WN_STEPS for the next one. Home → "What's new" reopens it. */
-const WN_VERSION = '2026-11-board';
+   Written to be skimmable: a mock-up with the bits to tap circled + numbered, then numbered
+   steps that match. Bump WN_VERSION and rewrite WN_STEPS for the next one.
+   Home → "What's new" reopens it. */
+const WN_VERSION = '2026-11-board-2';
+// circle something in a mock-up, with a number badge
+const _wnHl = (n, html, round) => `<span class="wn-hl${round ? ' rd' : ''}" data-n="${n}">${html}</span>`;
 function _wnLanes(bold = {}, rest = {}) {
   return `<span class="wn-lanes">${DB_LANES.map(m => `<i style="color:${MEMBER_COLORS[m] || '#888'}" class="${bold[m] ? 'b' : ''}${rest[m] ? ' r' : ''}"></i>`).join('')}</span>`;
 }
 function _wnRow(col, label, en, lanes, right) {
   return `<div class="wn-row"><span class="wn-en" style="width:${en}px"></span><span class="wn-dot" style="background:${col}"></span><span class="wn-lbl">${label}</span>${lanes}<span class="wn-r">${right}</span></div>`;
 }
+const _wnPill = (txt, col, clip) => `<span class="wn-pill${clip ? ' wn-clip' : ''}" style="border-color:${col}">${txt}${clip ? `<b style="background:${col}"></b>` : ''}</span>`;
 const WN_STEPS = [
-  { t: 'The song page has a new Structure tab',
-    p: 'Open any song: the tabs are now <b>Recordings · Lyrics · Tabs · Structure</b>. (The old Notes tab has gone.) Structure is the band’s shared map of the song: who plays what, where.',
-    v: () => `<div class="wn-tabs"><span>Recordings</span><span>Lyrics</span><span>Tabs</span><span class="on">Structure</span></div>` },
-  { t: 'Reading the board',
-    p: 'Each <b>dot is a bar</b>, coloured by section (blue verse, red chorus…). The brown strip on the left is the <b>energy</b>; tap it to set 1–5. Each bandmate has a <b>coloured line</b>, and a <b>gap</b> in your line means you rest there. Lyrics sit alongside.',
-    v: () => _wnRow(STRUCT_COLORS.V, 'V1', 8, _wnLanes(), 'Rows of houses on the street')
+  { t: 'New: the Structure tab',
+    v: () => `<div class="wn-tabs"><span>Recordings</span><span>Lyrics</span><span>Tabs</span>${_wnHl(1, '<span class="on">Structure</span>')}</div>`,
+    s: ['Open any <b>song</b>', 'Tap <b>STRUCTURE</b>', 'That’s the band’s map of the song: bars, who plays what, notes'] },
+  { t: 'What you’re looking at',
+    v: () => `<div class="wn-row wn-head">${_wnHl(1, '<span class="wn-en" style="width:12px;height:16px"></span>')}<span class="wn-hd-names">${DB_LANES.map(m => `<b style="color:${MEMBER_COLORS[m]}">${m[0]}</b>`).join('')}</span></div>`
+           + _wnRow(STRUCT_COLORS.V, 'V1', 8, _wnHl(3, _wnLanes()), 'Rows of houses on the street')
            + _wnRow(STRUCT_COLORS.V, '', 12, _wnLanes({}, { Rory: 1 }), 'Damp pavements and rain')
-           + _wnRow(STRUCT_COLORS.C, 'C1', 20, _wnLanes(), 'And I’ll never take you…') },
-  { t: 'Tap the coloured lines to flip the view',
-    p: 'Tapping the lines swaps between the <b>lyrics view</b> and the <b>tabs &amp; notes view</b>. In the lyrics view, notes are small dots; in the other view they open up.',
-    v: () => _wnRow(STRUCT_COLORS.C, 'C1', 18, _wnLanes(), '<span class="wn-ndot" style="background:' + MEMBER_COLORS.Rory + '"></span>And I’ll never…')
-           + '<div class="wn-arrow">⇅ tap the lines</div>'
-           + _wnRow(STRUCT_COLORS.C, 'C1', 18, _wnLanes(), `<span class="wn-pill" style="border-color:${MEMBER_COLORS.Rory}">Hold back here</span>`) },
-  { t: 'Notes and tabs for a bandmate',
-    p: '<b>Tap a bar</b> to open it, then <b>+ Note</b> or <b>+ Tab</b>. A note or tab can be <b>for someone</b>: their line goes bold and points at it. A circled <b>T</b> on your line is a tab for you. <b>Hold</b> any note or tab to cover a whole section, move it, and more.',
-    v: () => _wnRow(STRUCT_COLORS.C, 'C1', 18, _wnLanes({ Pat: 1, Rory: 1 }), `<span class="wn-pill" style="border-color:${MEMBER_COLORS.Rory}">Quieter here</span> <span class="wn-tab" style="background:${MEMBER_COLORS.Pat}">TAB</span>`)
-           + `<div class="wn-acts"><span>+ Note</span><span>+ Tab</span><span>+ New tab</span><span>🎙 Record</span></div>` },
-  { t: '“Rory, play this riff here”',
-    p: 'A note can carry a bit of a rehearsal: its <b>▶</b> plays that riff right there on the board. To send one: on the <b>Recordings</b> tab, <b>hold the Comment button</b> while the riff plays and let go at the end, then tap <b>⇢ Structure</b> on that comment and tap a bar. Or, when adding a note, use <b>▶ Add a riff from a recording</b>.',
-    v: () => `<div class="wn-row wn-solo"><span class="wn-pill wn-clip" style="border-color:${MEMBER_COLORS.Rory}">Play this riff here<b style="background:${MEMBER_COLORS.Rory}"></b></span></div><div class="wn-acts"><span>✎ Edit</span><span>⇢ Structure</span></div>` },
-  { t: 'Building it',
-    p: 'The <b>✎</b> at the top of the board edits the bars. While editing, <b>drag down your line</b> to mark where you rest. On the <b>Lyrics</b> tab, <b>⇅ Place</b> lets you drag lyric lines onto bars. Anyone can edit, and it all saves for everyone.',
-    v: () => `<div class="wn-acts"><span class="wn-big">✎</span><span>⇅ Place</span></div>` },
+           + `<div class="wn-row"><span class="wn-en" style="width:20px"></span>${_wnHl(2, `<span class="wn-dot" style="background:${STRUCT_COLORS.C}"></span>`, 1)}<span class="wn-lbl">C1</span>${_wnLanes()}<span class="wn-r">${_wnHl(4, 'And I’ll never…')}</span></div>`,
+    s: ['<b>Energy:</b> how hard to go. Tap it to set 1–5', '<b>Dots = bars.</b> Blue verse, red chorus…', '<b>Your coloured line.</b> A gap = you rest', '<b>Lyrics</b> sit next to their bar'] },
+  { t: 'Flip: lyrics ⇄ notes',
+    v: () => _wnRow(STRUCT_COLORS.C, 'C1', 18, _wnHl(1, _wnLanes()), `<span class="wn-ndot" style="background:${MEMBER_COLORS.Rory}"></span>And I’ll never…`)
+           + '<div class="wn-arrow">⇅</div>'
+           + _wnRow(STRUCT_COLORS.C, 'C1', 18, _wnLanes(), _wnPill('Rory: hold back', MEMBER_COLORS.Rory)),
+    s: ['<b>Tap the coloured lines</b>', 'Lyrics swap for the notes &amp; tabs', 'Tap again to go back'] },
+  { t: 'Leave a note for someone',
+    v: () => `<div class="wn-open">${_wnRow(STRUCT_COLORS.V, 'V2', 10, _wnLanes(), 'Pink in the morning light')}<div class="wn-acts">${_wnHl(2, '<span>+ Note</span>')}<span>+ Tab</span><span>+ New tab</span><span>🎙 Record</span></div></div>`
+           + `<div class="wn-to">${_wnHl(3, `<span style="--mc:${MEMBER_COLORS.Rory}" class="on">Rory</span>`)}<span style="--mc:${MEMBER_COLORS.Pat}">Pat</span><span style="--mc:${MEMBER_COLORS.Neda}">Neda</span></div>`,
+    s: ['<b>Tap a bar</b> (its row opens)', 'Tap <b>+ Note</b>', 'Type it, tap <b>who it’s for</b>', 'Tap <b>OK</b>. Their line now points at it'],
+    tip: 'Hold a note to move it or stretch it over a whole section.' },
+  { t: 'Attach a riff from a rehearsal',
+    v: () => `<div class="wn-acts">${_wnHl(2, '<span>Comment</span>')}${_wnHl(3, '<span>⇢ Structure</span>')}</div>`
+           + `<div class="wn-row wn-solo">${_wnHl(4, _wnPill('Rory, play this riff here', MEMBER_COLORS.Rory, 1))}</div>`,
+    s: ['<b>Recordings</b> tab: play the take', '<b>Hold Comment</b> when the riff starts, let go when it ends. Type “Rory, this riff”', 'Tap <b>⇢ Structure</b> on the comment, then tap the bar', 'Tap <b>▶</b> on the note to hear it'],
+    tip: 'Or: + Note → ▶ Add a riff from a recording (you can listen to each one first).' },
+  { t: 'You can write tabs! 🎸',
+    v: () => `<div class="wn-tabs"><span>Recordings</span><span>Lyrics</span>${_wnHl(1, '<span class="on">Tabs</span>')}<span>Structure</span></div><div class="wn-acts">${_wnHl(2, '<span>+ Add Tab</span>')}</div>`,
+    s: ['Song → <b>Tabs</b>', 'Tap <b>+ Add Tab</b>, pick Bass or Guitar'],
+    tip: 'Made one? Put it on the structure: tap a bar → + Tab, and pick who it’s for.',
+    more: { btn: 'Show me how the tab editor works', s: [
+      '<b>Turn your phone sideways</b> (it only works in landscape)',
+      '<b>Tap a fret</b> on the fretboard at the bottom: the note goes in at the cursor',
+      '<b>‹ ›</b> move the cursor. Or tap the tab itself to jump there',
+      '<b>Hold the fretboard and slide</b> to go further up the neck',
+      '<b>/</b> button = slides etc. Tap it, then tap a string to cycle 5 → 5/ → /5. <b>Hold</b> it for more (hammer-on, pull-off, mute…)',
+      '<b>𓅮</b> clears the spot under the cursor. <b>fret</b> shows note names instead',
+      '<b>Save</b> and give it a name. Open it later to <b>Share</b> it to WhatsApp',
+    ] } },
 ];
 let _wnI = 0;
 function wnMaybeShow() {
@@ -2726,7 +2740,7 @@ function wnOpen() {
     ov = document.createElement('div');
     ov.id = 'wn-overlay';
     ov.innerHTML = `<div class="wn-card"><div class="wn-top"><span class="wn-kicker">What’s new</span><button class="wn-skip" onclick="wnClose()">Skip</button></div>
-      <div class="wn-vis" id="wn-vis"></div><div class="wn-t" id="wn-t"></div><div class="wn-p" id="wn-p"></div>
+      <div class="wn-t" id="wn-t"></div><div class="wn-vis" id="wn-vis"></div><div class="wn-body" id="wn-body"></div>
       <div class="wn-foot"><span class="wn-pips" id="wn-pips"></span><button class="wn-back" id="wn-back" onclick="wnStep(-1)">Back</button><button class="wn-next" id="wn-next" onclick="wnStep(1)">Next</button></div></div>`;
     ov.addEventListener('click', e => { if (e.target === ov) wnClose(); });
     document.body.appendChild(ov);
@@ -2737,8 +2751,12 @@ function wnOpen() {
 function wnStep(d) {
   if (_wnI + d >= WN_STEPS.length) { wnClose(); return; }
   _wnI = Math.max(0, _wnI + d);
-  const s = WN_STEPS[_wnI];
-  $('wn-vis').innerHTML = s.v(); $('wn-t').textContent = s.t; $('wn-p').innerHTML = s.p;
+  const st = WN_STEPS[_wnI];
+  const ol = arr => `<ol class="wn-ol">${arr.map(x => `<li>${x}</li>`).join('')}</ol>`;
+  $('wn-t').textContent = st.t;
+  $('wn-vis').innerHTML = st.v();
+  $('wn-body').innerHTML = ol(st.s) + (st.tip ? `<div class="wn-tip">💡 ${st.tip}</div>` : '')
+    + (st.more ? `<button class="wn-more" onclick="this.nextElementSibling.hidden = !this.nextElementSibling.hidden; this.classList.toggle('on')">${st.more.btn}</button><div class="wn-more-body" hidden>${ol(st.more.s)}</div>` : '');
   $('wn-pips').innerHTML = WN_STEPS.map((_, i) => `<i class="${i === _wnI ? 'on' : ''}"></i>`).join('');
   $('wn-back').style.visibility = _wnI ? '' : 'hidden';
   $('wn-next').textContent = _wnI === WN_STEPS.length - 1 ? 'Got it' : 'Next';
@@ -2767,7 +2785,7 @@ async function enterApp() {
   S._entered = true;
   showScreen('screen-home');
   hideLoading();
-  // setTimeout(wnMaybeShow, 500); // off until the board sprint is finished (Patrick 2026-11-22)
+  setTimeout(wnMaybeShow, 500);
 }
 
 function updateUserUI() {
@@ -5104,23 +5122,8 @@ async function cdSubmitReply(cid){
 /* ══════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════ */
-function toggleTheme() {
-  const isLight = document.documentElement.dataset.theme === 'light';
-  document.documentElement.dataset.theme = isLight ? 'dark' : 'light';
-  localStorage.setItem('ng-theme', document.documentElement.dataset.theme);
-  updateThemeBtn();
-}
-function updateThemeBtn() {
-  const btn = $('theme-toggle-btn');
-  if (!btn) return;
-  const isLight = document.documentElement.dataset.theme === 'light';
-  btn.textContent = isLight ? '☾' : '☀';
-  btn.title = isLight ? 'Switch to dark mode' : 'Switch to light mode';
-}
-
 window.onload = () => {
   if (!S.tokenClient) showLoading('Starting up…'); // initGis may already have run
-  updateThemeBtn();
   buildNamePicker();
   // Tab canvas click — jump cursor
   $('tab-canvas')?.addEventListener('click', e => {
@@ -7367,7 +7370,8 @@ function renderTabCanvas() {
   canvas.width = W; canvas.height = H;
 
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#161E1E';
+  const C = _themeColors();
+  ctx.fillStyle = C.bg;
   ctx.fillRect(0, 0, W, H);
 
   // String lines and labels
@@ -7375,12 +7379,12 @@ function renderTabCanvas() {
     const row = strings - 1 - s;
     const y = Math.round(T_PAD + row * strH + strH / 2);
 
-    ctx.fillStyle = '#83A8A6';
+    ctx.fillStyle = C.pale;
     ctx.font = '10px monospace';
     ctx.textAlign = 'right';
     ctx.fillText(TE.tuning[s], TAB_L_PAD - 4, y + 4);
 
-    ctx.strokeStyle = '#2A4240';
+    ctx.strokeStyle = C.border;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(TAB_L_PAD, y); ctx.lineTo(W - 10, y);
@@ -7389,7 +7393,7 @@ function renderTabCanvas() {
 
   // Slot position markers (every 4 slots)
   ctx.font = '9px monospace';
-  ctx.fillStyle = '#2A4240';
+  ctx.fillStyle = C.pale;
   ctx.textAlign = 'center';
   for (let slot = 0; slot < maxSlot; slot += 4) {
     const x = Math.round(TAB_L_PAD + slot * TAB_SLOT_W + TAB_SLOT_W / 2);
@@ -7406,12 +7410,12 @@ function renderTabCanvas() {
     const nw = ctx.measureText(num).width;
     const left  = x - nw / 2 - ctx.measureText(pre).width;
     const right = x + nw / 2 + ctx.measureText(post).width;
-    ctx.fillStyle = '#161E1E';
+    ctx.fillStyle = C.bg;
     ctx.fillRect(Math.round(left - 3), y - 9, Math.round(right - left + 6), 14);
     ctx.textAlign = 'center';
-    ctx.fillStyle = n.fret == null ? '#E8A96A' : '#EDDDD4';
+    ctx.fillStyle = n.fret == null ? C.amber : C.text;
     ctx.fillText(num, x, y + 4);
-    ctx.fillStyle = '#E8A96A';
+    ctx.fillStyle = C.amber;
     if (pre)  { ctx.textAlign = 'right'; ctx.fillText(pre,  x - nw / 2, y + 4); }
     if (post) { ctx.textAlign = 'left';  ctx.fillText(post, x + nw / 2, y + 4); }
   });
@@ -7419,13 +7423,13 @@ function renderTabCanvas() {
   // Cursor line + beat counter (hidden in view-only mode)
   const cx = Math.round(TAB_L_PAD + TE.cursor * TAB_SLOT_W + TAB_SLOT_W / 2);
   if (TE.cursor >= 0) {
-    ctx.strokeStyle = '#E8A96A';
+    ctx.strokeStyle = C.accent;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(cx, 2); ctx.lineTo(cx, H - 16);
     ctx.stroke();
     ctx.font = '10px monospace';
-    ctx.fillStyle = '#E8A96A';
+    ctx.fillStyle = C.accent;
     ctx.textAlign = 'left';
     ctx.fillText(String(TE.cursor), cx + 3, 11);
   }
@@ -7439,6 +7443,12 @@ function renderTabCanvas() {
 }
 
 // Click on tab canvas to jump cursor
+// Theme colours for canvas drawing (read from the CSS tokens)
+function _themeColors() {
+  const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
+  return { bg: v('--c-bg'), surface: v('--c-surface'), surface2: v('--c-surface2'), text: v('--c-text'), pale: v('--c-teal-pale'),
+           border: v('--c-border'), amber: v('--c-amber'), accent: v('--c-accent') };
+}
 /* ══════════════════════════════════════════════════════
    FRETBOARD CANVAS
 ══════════════════════════════════════════════════════ */
@@ -7454,19 +7464,20 @@ function renderFretboard() {
   const offset  = TE.fretOffset;
 
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#111A1A';
+  const C = _themeColors();
+  ctx.fillStyle = C.surface;
   ctx.fillRect(0, 0, W, H);
 
   // Nut (only when fretOffset === 0)
   if (offset === 0) {
-    ctx.fillStyle = '#83A8A6';
+    ctx.fillStyle = C.pale;
     ctx.fillRect(LABEL_W, 0, 3, H - NUM_H);
   }
 
   // Fret lines
   for (let i = 1; i <= VISIBLE_FRETS; i++) {
     const x = Math.round(LABEL_W + i * cellW);
-    ctx.strokeStyle = '#32403E';
+    ctx.strokeStyle = C.border;
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H - NUM_H); ctx.stroke();
   }
@@ -7477,11 +7488,11 @@ function renderFretboard() {
   for (let s = 0; s < strings; s++) {
     const row = strings - 1 - s;
     const y = Math.round(row * cellH + cellH / 2);
-    ctx.fillStyle = '#83A8A6';
+    ctx.fillStyle = C.pale;
     ctx.font = '11px monospace';
     ctx.textAlign = 'center';
     ctx.fillText(TE.tuning[s], LABEL_W / 2, y + 4);
-    ctx.strokeStyle = '#4A6A68';
+    ctx.strokeStyle = C.pale;
     ctx.lineWidth = 0.6 + (strings - 1 - s) * 0.4; // s=0 (E, lowest) = thickest
     ctx.beginPath(); ctx.moveTo(LABEL_W, y); ctx.lineTo(W, y); ctx.stroke();
   }
@@ -7492,7 +7503,7 @@ function renderFretboard() {
     const visF = f - offset;
     if (visF < 0 || visF >= VISIBLE_FRETS) return;
     const x = Math.round(LABEL_W + (visF + 0.5) * cellW);
-    ctx.fillStyle = '#243630';
+    ctx.fillStyle = C.surface2;
     if (f === 12) {
       ctx.beginPath(); ctx.arc(x - cellW * 0.2, dotY, 5, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.arc(x + cellW * 0.2, dotY, 5, 0, Math.PI * 2); ctx.fill();
@@ -7503,7 +7514,7 @@ function renderFretboard() {
 
   // Fret numbers at bottom
   ctx.font = '11px monospace';
-  ctx.fillStyle = '#4A6A68';
+  ctx.fillStyle = C.pale;
   ctx.textAlign = 'center';
   for (let i = 0; i < VISIBLE_FRETS; i++) {
     const f = i + offset;
@@ -7521,11 +7532,11 @@ function renderFretboard() {
     const ncx = Math.round(LABEL_W + (visF + 0.5) * cellW);
     const ncy = Math.round(row * cellH + cellH / 2);
     const r   = Math.round(Math.min(cellW, cellH) / 2 - 1);
-    ctx.fillStyle = '#D4882A';
+    ctx.fillStyle = C.amber;
     ctx.beginPath(); ctx.arc(ncx, ncy, r, 0, Math.PI * 2); ctx.fill();
     const label = TE.showNoteNames ? fretToNote(n.string, n.fret) : String(n.fret);
     const fs = TE.showNoteNames ? Math.max(7, Math.round(r * 1.1)) : Math.round(r * 1.3);
-    ctx.fillStyle = '#0A1510';
+    ctx.fillStyle = '#fff';
     ctx.font = `bold ${fs}px monospace`;
     ctx.textAlign = 'center';
     ctx.fillText(label, ncx, ncy + Math.round(fs * 0.36));
@@ -7533,9 +7544,9 @@ function renderFretboard() {
 
   // Scroll mode overlay
   if (_fretScrollMode) {
-    ctx.fillStyle = 'rgba(17,26,26,0.52)';
+    ctx.fillStyle = 'rgba(237,221,212,0.6)';
     ctx.fillRect(LABEL_W, 0, W - LABEL_W, H - NUM_H);
-    ctx.fillStyle = '#83A8A6';
+    ctx.fillStyle = C.pale;
     ctx.font = 'bold 13px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('‹ scroll ›', Math.round((W + LABEL_W) / 2), Math.round((H - NUM_H) / 2) + 5);
