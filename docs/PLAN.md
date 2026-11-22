@@ -335,6 +335,15 @@ Asked 2026-11-20, awaiting answers:
 ## Known problems
 - ~~Doodle pins store `barIdx` (position), so inserting a bar shifts every later pin.~~ Fixed by
   step 1 (2026-11-20).
+- **2026-11-22, Patrick:** "there's a bug where i keep attaching the lyrics but when i reload it
+  they are back to their broken self again" / "all the energy levels i put in have gone".
+  Cause (from the code; couldn't read Drive): boards saved before dot ids existed got fresh
+  *random* ids every time they were opened, and `barIds` is last-writer-wins in the merge. A second
+  copy (another phone/laptop, or a stale quiet `loadSongs` on the same phone) saved its own ids over
+  the ones energy and lyric links pointed at, so they all came loose at once. Fix: ids for a board
+  that has none are now the same on every device (`_dbSeedIds`), and a save that meets ids already
+  on Drive adopts them and moves our energy/links/pins/rests across (`_dbAdoptIds`). Energy already
+  lost can't be re-linked (it only knew the dead ids), so it has to be put in once more.
 
 ## Notes for later steps
 - Step 2 shows existing pins as chips in the callout column. When lyrics arrive (step 3), the

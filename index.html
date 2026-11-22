@@ -2528,6 +2528,7 @@ const _clone = x => x === undefined ? undefined : JSON.parse(JSON.stringify(x));
 const _same  = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 function _merge3(base, local, remote, key) {
+  if (key === 'doodle') local = _dbAdoptIds(base, local, remote);
   if (_same(local, base))  return _clone(remote); // we didn't touch it
   if (_same(remote, base)) return _clone(local);  // they didn't touch it
   if (_ATOMIC_KEYS.has(key)) return _clone(local);
@@ -5938,13 +5939,41 @@ const DB = {
 function _dbNewBarId() { return 'b' + Date.now().toString(36).slice(-5) + Math.random().toString(36).slice(2, 6); }
 // barIds lined up with bars: fills gaps, drops extras and duplicates (old data, or an old app that changed bars alone)
 function _dbFitIds(bars, ids) {
-  const out = Array.isArray(ids) ? ids.slice(0, bars.length) : [];
+  // A board with no ids saved yet gets the same ids on every device. Random ones meant two phones
+  // (or one phone and a stale reload) each invented their own, and whichever saved last cut every
+  // energy level and lyric link loose from its dot.
+  if (!Array.isArray(ids) || !ids.length) return _dbSeedIds(bars.length);
+  const out = ids.slice(0, bars.length);
   const seen = new Set();
   for (let i = 0; i < bars.length; i++) {
     if (!out[i] || seen.has(out[i])) out[i] = _dbNewBarId();
     seen.add(out[i]);
   }
   return out;
+}
+function _dbSeedIds(n) { return Array.from({ length: n }, (_, i) => 'd' + i); }
+// Point everything that names a dot (energy, rests, pins, lyric links) at new ids. d is a doodle or DB.
+function _dbRemapIds(d, map) {
+  const m = id => (id != null && map[id] != null) ? map[id] : id;
+  if (Array.isArray(d.barIds)) d.barIds = d.barIds.map(m);
+  if (_isObj(d.energy)) { const e = {}; Object.entries(d.energy).forEach(([k, v]) => { e[m(k)] = v; }); d.energy = e; }
+  if (_isObj(d.lanes)) Object.values(d.lanes).forEach(l => { if (Array.isArray(l?.rest)) l.rest = l.rest.map(m); });
+  (d.pins || []).forEach(p => { if ('barId' in p) p.barId = m(p.barId); if ('endBarId' in p) p.endBarId = m(p.endBarId); });
+  (d.lyricLinks || []).forEach(l => { if (l) l.barId = m(l.barId); });
+  return d;
+}
+/* Saving a board when Drive already has a *different set* of ids for the same bars (another copy
+   invented its own): take Drive's ids and move ours across by position, instead of overwriting
+   theirs. Only when no id is shared, so a real edit (a dot deleted and another added) isn't
+   mistaken for this and attachments still float as they should. Used by _merge3. */
+function _dbAdoptIds(base, local, remote) {
+  if (!_isObj(local) || !_isObj(remote)) return local;
+  const l = local.barIds, r = remote.barIds, b = base?.barIds;
+  if (!Array.isArray(l) || !Array.isArray(r) || !r.length || l.length !== r.length || _same(l, r)) return local;
+  const ours = !Array.isArray(b) || !b.length || _same(l, b); // ids we never saw saved, or didn't change
+  if (!ours || !_same(local.bars, remote.bars) || r.some(id => l.includes(id))) return local;
+  const map = {}; l.forEach((id, i) => { map[id] = r[i]; });
+  return _dbRemapIds(_clone(local), map);
 }
 // Old pins only have barIdx: give them the id of the dot at that position
 function _dbMigratePins(pins, barIds) {
@@ -6034,8 +6063,17 @@ async function _dbPersist() {
     pins: DB.pins.map(p => ({...p})), energy: { ...DB.energy }, lyricLinks: DB.lyricLinks.map(l => ({...l})), lanes: _clone(DB.lanes),
     locked: true, // older app copies only show pins on a locked board
   });
+  const sent = [...DB.barIds];
   try { await saveSongsJson(); }
-  catch(e) { showToast('Save failed: ' + _errMsg(e)); }
+  catch(e) { showToast('Save failed: ' + _errMsg(e)); return; }
+  // The save may have adopted the ids already on Drive (_dbAdoptIds): follow them here too, or
+  // the next save would put ours back
+  const now = song.doodle?.barIds;
+  if (DB.songName === song.name && Array.isArray(now) && now.length === sent.length && !_same(now, sent) && !now.some(id => sent.includes(id))) {
+    const map = {}; sent.forEach((id, i) => { map[id] = now[i]; });
+    _dbRemapIds(DB, map);
+    if (!DB.editing) dbRender();
+  }
 }
 function _dbSaveSoon() { clearTimeout(DB._saveTimer); DB._saveTimer = setTimeout(_dbPersist, 1500); }
 function dbFlush() { if (DB._saveTimer) _dbPersist(); }
