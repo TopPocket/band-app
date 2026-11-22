@@ -36,6 +36,14 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-22 (Patrick): **A note for several members:** instead of a coloured line from each
+  member's dot, use **one dark line that goes around the outside of each relevant dot and joins
+  them up (never cutting through a dot)**, then runs on to the note. That colour is also the
+  **pill's border**. **The dark colour = the members' colours mixed together** (darkened). My
+  reading: each member's coloured dot on its lane gets a thin dark ring, rings are joined by the
+  line, and the last ring runs to the pill. Lanes are 7px apart, so rings on neighbouring lanes
+  just touch. Single-member notes stay as they are.
+  Built 2026-11-22 (pushed).
 - 2026-11-22 (Patrick, after versions):
   - **Edit structure: keep a little P, B, C, N, R at the top of each member lane** to remind you
     who's who. My call: it's a row that sticks to the top while you scroll in edit mode.

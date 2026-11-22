@@ -1024,6 +1024,8 @@ body.tab-view #tab-view-close { display:flex; }
 #db-mem-pop button.on { background: var(--mc); color: #fff; }
 #db-mem-pop button.ok { margin-left: auto; border-color: var(--c-teal); color: var(--c-teal); }
 .db-conn { position: absolute; height: 1.5px; pointer-events: none; opacity: 0.9; }
+.db-cgroup { position: absolute; left: 0; pointer-events: none; overflow: visible; }
+#tp-tabcontent-structure.db-editing .db-cgroup { display: none; }
 .db-call { position: relative; }
 .db-conn.note::before { content: ''; position: absolute; left: -4px; top: -3.25px; width: 8px; height: 8px; border-radius: 50%; background: inherit; }
 .db-pin { display: inline-flex; align-items: center; flex: 0 1 auto; min-width: 0; max-width: 100%; gap: 0; color: var(--c-teal-pale); }
@@ -5949,13 +5951,21 @@ function _dbRowEl(i, label, secStart, energy, pins, lyrics, cover) {
   row.append(en, dc, lanes, call);
   // a line from each addressee's lane across to its pin (placed by _dbPlaceConns after layout);
   // notes start with a dot on the lane
-  pins.filter(p => p.type !== 'tab').forEach(p => _dbPinTo(p).forEach(m => {
+  pins.filter(p => p.type !== 'tab').forEach(p => {
+    const to = _dbPinTo(p);
+    if (to.length > 1) { // several members: one dark line ringing each of their dots (_dbPlaceConns draws it)
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      g.setAttribute('class', 'db-cgroup');
+      g.dataset.pin = p.id; g.dataset.ms = to.join(',');
+      row.appendChild(g);
+      return;
+    }
     const ln = document.createElement('i');
     ln.className = 'db-conn note';
-    ln.dataset.pin = p.id; ln.dataset.j = DB_LANES.indexOf(m);
-    ln.style.background = MEMBER_COLORS[m];
-    row.appendChild(ln);
-  }));
+    ln.dataset.pin = p.id; ln.dataset.j = DB_LANES.indexOf(to[0] || '');
+    ln.style.background = MEMBER_COLORS[to[0]];
+    if (to.length) row.appendChild(ln);
+  });
   row.addEventListener('click', e => dbRowTap(i, e, row));
   return row;
 }
@@ -5968,7 +5978,7 @@ const _dbHasClip = p => !!(p.commentId || (p.type === 'snip' && p.snippetId));
 function _dbChipEl(p, full) {
   const tab = p.type === 'tab';
   const named = tab || full || DB._showNotes || DB.openChips.has(p.id);
-  const to = _dbPinTo(p), end = _dbPinEnd(p), s = _dbPinDot(p), col = MEMBER_COLORS[to[0]];
+  const to = _dbPinTo(p), end = _dbPinEnd(p), s = _dbPinDot(p), col = _dbPinColor(p);
   const wrap = document.createElement('span');
   wrap.className = 'db-pin' + (named ? ' named' : '');
   wrap.dataset.pin = p.id;
@@ -6045,11 +6055,37 @@ function _dbClipBtns() {
 _cdAudio.addEventListener('pause', () => { if (DB._clipId) { DB._clipId = null; _dbClipBtns(); } });
 
 // Lay each lane→pin line from the lane's centre to its pin's marker (needs layout, so after render)
+// A pin's colour: its member's, or for several members their colours mixed and darkened
+function _dbPinColor(p) {
+  const to = _dbPinTo(p);
+  if (to.length < 2) return MEMBER_COLORS[to[0]];
+  const rgb = to.map(m => MEMBER_COLORS[m].match(/[0-9a-f]{2}/gi).map(h => parseInt(h, 16)));
+  return '#' + [0, 1, 2].map(k => Math.round(rgb.reduce((a, c) => a + c[k], 0) / rgb.length * 0.6).toString(16).padStart(2, '0')).join('');
+}
 function _dbPlaceConns() {
   $('db-rows')?.querySelectorAll('.db-row').forEach(row => {
-    const conns = row.querySelectorAll('.db-conn');
-    if (!conns.length) return;
+    const conns = row.querySelectorAll('.db-conn'), groups = row.querySelectorAll('.db-cgroup');
+    if (!conns.length && !groups.length) return;
     const rr = row.getBoundingClientRect(), lanes = row.querySelector('.db-lanes').children;
+    // several members: each member's dot (in their colour) gets a dark ring; rings are joined by one
+    // dark line that never crosses a dot, and the last ring runs on to the note
+    groups.forEach(g => {
+      const pin = row.querySelector(`.db-pin[data-pin="${g.dataset.pin}"]`), p = DB.pins.find(x => x.id === g.dataset.pin);
+      if (!pin || !p) { g.style.display = 'none'; return; }
+      const pr = pin.getBoundingClientRect(), y = pr.top + pr.height / 2 - rr.top, H = 12, cy = H / 2, R = 3.4, col = _dbPinColor(p);
+      const xs = g.dataset.ms.split(',').map(m => ({ m, j: DB_LANES.indexOf(m) })).filter(o => lanes[o.j]).sort((a, b) => a.j - b.j)
+        .map(o => { const lr = lanes[o.j].getBoundingClientRect(); return { m: o.m, x: lr.left + lr.width / 2 - rr.left }; });
+      const x1 = pr.left + (pin.classList.contains('named') ? 0 : 3) - rr.left;
+      g.setAttribute('width', rr.width); g.setAttribute('height', H);
+      g.style.top = (y - cy) + 'px';
+      let d = '';
+      xs.forEach((o, k) => {
+        const next = k < xs.length - 1 ? xs[k + 1].x - R : x1;
+        if (next > o.x + R + 0.3) d += `M${(o.x + R).toFixed(1)},${cy}H${next.toFixed(1)}`;
+      });
+      g.innerHTML = `<path d="${d}" stroke="${col}" stroke-width="1.5" fill="none"/>`
+        + xs.map(o => `<circle cx="${o.x.toFixed(1)}" cy="${cy}" r="2.3" fill="${MEMBER_COLORS[o.m]}"/><circle cx="${o.x.toFixed(1)}" cy="${cy}" r="${R}" fill="none" stroke="${col}" stroke-width="1.3"/>`).join('');
+    });
     conns.forEach(ln => {
       const lane = lanes[+ln.dataset.j], pin = row.querySelector(`.db-pin[data-pin="${ln.dataset.pin}"]`);
       if (!lane || !pin) { ln.style.display = 'none'; return; }
