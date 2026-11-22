@@ -48,6 +48,7 @@ before building anything. Newest entries at the top of each section. Feature spe
     and no Pin (pins are for recordings). The file starts fetching as the menu opens; if Share
     loses the tap because the file was slow, a "Ready to share" box asks for one more tap. Not on
     the Feathers snippet list yet. Needs a phone test (iPhone saves to Files → Downloads).
+  - 2026-11-22: Patrick asked to bump the guide so it shows again: WN_VERSION → 2026-11-board-3.
 - 2026-11-22 (Patrick): **Guide tweaks.** "What you're looking at": columns aligned (they were
   indented by the energy bar's width), and the 1 2 3 4 numbers sit over their columns, pointing
   down, instead of jumping around. "Flip": one rectangle round the whole lanes column; 1 and 3 on
