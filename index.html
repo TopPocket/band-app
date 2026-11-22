@@ -994,6 +994,9 @@ body.tab-view #tab-view-close { display:flex; }
 #tp-tabcontent-structure.db-editing .db-lanes i.rest { box-shadow: inset 0 0 0 1px var(--c-border); }
 #tp-tabcontent-structure.db-editing .db-conn { display: none; }
 .db-head { min-height: 0; padding: 4px 0 0; cursor: default; }
+.db-lane-keys { position: sticky; top: -6px; z-index: 3; display: grid; grid-template-columns: 22px 40px 90px minmax(0, 1fr); background: var(--c-bg); padding: 3px 0 2px; }
+.db-lk { display: flex; gap: 4px; padding: 0 4px; }
+.db-lk b { flex: 1; text-align: center; font-family: var(--f-mono); font-size: 10px; font-weight: 700; }
 .db-head-en { display: flex; align-items: center; justify-content: center; }
 .db-head-en span { writing-mode: vertical-rl; transform: rotate(180deg); font-family: var(--f-mono); font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-teal-pale); }
 .db-head-ed { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 2px 0; }
@@ -1080,10 +1083,11 @@ body.tab-view #tab-view-close { display:flex; }
 #db-note-to span { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); margin-right: 2px; }
 #db-note-to button { font-family: var(--f-mono); font-size: 11px; padding: 5px 9px; border-radius: 12px; border: 1.5px solid var(--mc); background: none; color: var(--c-text); cursor: pointer; }
 #db-note-to button.on { background: var(--mc); color: #fff; }
-.db-call { display: flex; flex-wrap: nowrap; align-items: center; gap: 4px; min-width: 0; overflow: hidden; padding: 2px 0 2px 14px; }
-.db-mks { position: absolute; left: 1px; top: 0; bottom: 0; width: 12px; display: flex; flex-direction: column; justify-content: center; z-index: 1; }
+.db-call { display: flex; flex-wrap: nowrap; align-items: center; gap: 4px; min-width: 0; overflow: hidden; padding: 2px 0 2px 18px; }
+.db-mks { position: absolute; left: 1px; top: 0; bottom: 0; width: 12px; display: flex; flex-direction: column; justify-content: center; gap: 1px; z-index: 1; }
 .db-mks .db-pin { flex: 0 1 auto; min-height: 0; }
 .db-mks .db-mk { height: 9px; width: 12px; }
+.db-mks .db-pin:nth-child(even) { transform: translateX(5px); }
 .db-row.open .db-mks { position: static; width: auto; flex-direction: row; justify-content: flex-start; }
 .db-row.open .db-call { flex-direction: column; align-items: stretch; padding: 6px 6px 8px 8px; gap: 6px; }
 .db-chip {
@@ -5603,6 +5607,7 @@ function dbRender() {
   const cover = _dbLaneCover();
   const frag = document.createDocumentFragment();
   frag.appendChild(_dbHeadEl());
+  if (DB.editing) frag.appendChild(_dbLaneKeysEl());
   let gi = 0;
   sections.forEach((sec, si) => {
     for (let b = 0; b < sec.bars; b++, gi++) {
@@ -5740,12 +5745,13 @@ function _dbDrawHeadFan() {
     return `<path d="M${x1},0 C${x1},${box.height * 0.6} ${x2},${box.height * 0.4} ${x2},${box.height}" stroke="${MEMBER_COLORS[DB_LANES[j]] || '#888'}" stroke-width="1.5" fill="none" opacity="0.7"/>`;
   }).join('');
 }
-// Bars where a member has a note/tab addressed to them: { member: { barIndex: { end } } }
+// Bars where a member has a ranged note/tab addressed to them: { member: { barIndex: { end } } }
 function _dbLaneCover() {
   const cover = {};
   DB.pins.forEach(p => {
     const s = _dbPinDot(p); if (s < 0) return;
     const e = _dbPinEnd(p);
+    if (e <= s) return; // a single bar is just its dot (or Ⓣ) on the lane
     _dbPinTo(p).forEach(m => {
       const c = cover[m] = cover[m] || {};
       for (let i = s; i <= e; i++) c[i] = { end: (c[i]?.end) || i === e, start: (c[i]?.start) || i === s };
@@ -5843,6 +5849,13 @@ function _dbMemberPop(pin, anchor) {
   });
 }
 
+// Edit structure: P B C N R over the lanes, stuck to the top while you scroll
+function _dbLaneKeysEl() {
+  const el = document.createElement('div');
+  el.className = 'db-lane-keys';
+  el.innerHTML = `<span></span><span></span><span class="db-lk">${DB_LANES.map(m => `<b style="color:${MEMBER_COLORS[m] || '#888'}">${esc(m[0])}</b>`).join('')}</span><span></span>`;
+  return el;
+}
 function _dbCursorEl() { const el = document.createElement('div'); el.className = 'db-cursor'; return el; }
 
 const _DB_PIN_ICON = { note: '✎', tab: 'T', snip: '▸' };

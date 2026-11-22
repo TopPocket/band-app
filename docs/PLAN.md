@@ -36,6 +36,13 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-22 (Patrick, after versions):
+  - **Edit structure: keep a little P, B, C, N, R at the top of each member lane** to remind you
+    who's who. My call: it's a row that sticks to the top while you scroll in edit mode.
+  - **A note on a single bar is just a dot** on the lane, not a thick bar. Thick only when it
+    covers several bars. My call: same for tabs (a single-bar tab is just its Ⓣ).
+  - **Stagger the dots** when several notes sit on the same bar.
+  - Built 2026-11-22 (pushed): all three.
 - 2026-11-22 (Patrick, after the walkthrough):
   - **Take the walkthrough down until the rest is done.** Keep the code; stop auto-showing it and
     hide the Home link. Re-enable (and update the cards) at the end of the sprint.
