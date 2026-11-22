@@ -44,6 +44,13 @@ before building anything. Newest entries at the top of each section. Feature spe
     → not needed for now. **Versions are next** ("pretty important").
   - Asked for: "make a lane go off for bars the band members need to rest". That already exists
     (✎ → drag down your lane), so it may not be discoverable or visible enough. Asking him.
+  - **Answers:** rests: "it works, all good" (he'd missed it). **Versions:** a 🕘 button in the
+    header under ✎ opens a sheet with "+ Save this version" (optional name) and the saved list
+    (name, who, when) with Restore. **A version holds bars, energy and rests**; notes, tabs and
+    lyric placements aren't copied (they stay pinned to bar IDs). **Auto-save only just before a
+    restore.**
+  - Versions built 2026-11-22 (pushed). Each row shows a mini colour strip of its bars; ✕ deletes
+    (with a confirm).
 - 2026-11-22 (Patrick, after the riff build):
   - **Lane order: Pat, Barn, Christy, Neda, Rory** ("Neda and Barney are less likely to have
     tabs").

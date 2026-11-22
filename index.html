@@ -1000,6 +1000,12 @@ body.tab-view #tab-view-close { display:flex; }
 .db-head-btn { width: 32px; height: 28px; border-radius: 7px; border: 1px solid var(--c-border); background: var(--c-surface2); color: var(--c-teal-pale); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .db-head-btn.on { background: var(--c-teal); color: #fff; border-color: var(--c-teal); }
 .db-head-btn.fix { color: var(--c-accent); height: 24px; }
+.db-head-btn.ver { height: 24px; font-size: 12px; }
+.db-pick-del { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--c-border); background: none; color: var(--c-teal-pale); font-size: 11px; cursor: pointer; }
+.db-pick-item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.db-ver-strip { display: flex; gap: 1px; height: 6px; max-width: 100%; overflow: hidden; }
+.db-ver-strip i { flex: 1 1 0; min-width: 1px; max-width: 8px; border-radius: 1px; }
+.db-pick-item.db-pick-add .db-pick-item-name { color: var(--c-teal); }
 .db-head-names { grid-column: 3 / 5; display: flex; flex-direction: column; min-width: 0; }
 .db-head-row { display: flex; justify-content: space-around; padding: 0 4px; }
 .db-head-row b { font-family: var(--f-mono); font-size: 10px; font-weight: 700; }
@@ -5714,11 +5720,12 @@ function _dbHeadEl() {
   if (!DB.bars.length) DB._headTucked = false; // the ✎ must stay reachable
   head.className = 'db-head' + (DB._headTucked ? ' tuck' : '');
   head.innerHTML = `<div class="db-head-en"><span>Energy</span></div>
-    <div class="db-head-ed"><button class="db-head-btn${DB.editing ? ' on' : ''}" title="${DB.editing ? 'Done' : 'Edit structure'}">${DB.editing ? '✓' : '✎'}</button>${adrift && !DB.editing ? '<button class="db-head-btn fix" title="Some things aren\'t attached to a bar"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6.5 9.5l-1.8 1.8a2.1 2.1 0 0 1-3-3l1.8-1.8"/><path d="M9.5 6.5l1.8-1.8a2.1 2.1 0 0 1 3 3l-1.8 1.8"/><path d="M5 1.5v2M1.5 5h2M11 14.5v-2M14.5 11h-2"/></svg></button>' : ''}</div>
+    <div class="db-head-ed"><button class="db-head-btn${DB.editing ? ' on' : ''}" title="${DB.editing ? 'Done' : 'Edit structure'}">${DB.editing ? '✓' : '✎'}</button>${!DB.editing ? '<button class="db-head-btn ver" title="Versions: save or restore the structure">🕘</button>' : ''}${adrift && !DB.editing ? '<button class="db-head-btn fix" title="Some things aren\'t attached to a bar"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6.5 9.5l-1.8 1.8a2.1 2.1 0 0 1-3-3l1.8-1.8"/><path d="M9.5 6.5l1.8-1.8a2.1 2.1 0 0 1 3 3l-1.8 1.8"/><path d="M5 1.5v2M1.5 5h2M11 14.5v-2M14.5 11h-2"/></svg></button>' : ''}</div>
     <div class="db-head-names"><div class="db-head-row">${DB_LANES.map(m => `<b style="color:${MEMBER_COLORS[m] || '#888'}">${esc(m)}</b>`).join('')}</div><svg class="db-head-fan"></svg>${DB.editing ? '<div class="db-head-hint">drag down a lane to mark rests</div>' : ''}</div>`;
-  const [ed, fix] = head.querySelectorAll('.db-head-btn');
+  const ed = head.querySelector('.db-head-btn'), fix = head.querySelector('.db-head-btn.fix'), ver = head.querySelector('.db-head-btn.ver');
   ed.addEventListener('click', e => { e.stopPropagation(); dbToggleEdit(); });
   fix?.addEventListener('click', e => { e.stopPropagation(); dbShowFloating(); });
+  ver?.addEventListener('click', e => { e.stopPropagation(); dbShowVersions(); });
   return head;
 }
 function _dbDrawHeadFan() {
@@ -6350,10 +6357,18 @@ function _dbPickSheet(title, items) {
   $('db-pick-title').textContent = title;
   const list = $('db-pick-list');
   list.innerHTML = '';
-  items.forEach(({ name, sub, pick, clip }) => {
+  items.forEach(({ name, sub, pick, clip, extra, del, cls }) => {
     const item = document.createElement('div');
-    item.className = 'db-pick-item';
-    item.innerHTML = `<div class="db-pick-item-name">${esc(name)}</div><div class="db-pick-item-sub">${esc(sub)}</div>`;
+    item.className = 'db-pick-item' + (cls ? ' ' + cls : '');
+    item.innerHTML = extra != null
+      ? `<div class="db-pick-item-main"><div class="db-pick-item-name">${esc(name)}</div><div class="db-pick-item-sub">${esc(sub)}</div>${extra}</div>`
+      : `<div class="db-pick-item-name">${esc(name)}</div><div class="db-pick-item-sub">${esc(sub)}</div>`;
+    if (del) {
+      const x = document.createElement('button');
+      x.className = 'db-pick-del'; x.textContent = '✕'; x.title = 'Delete';
+      x.addEventListener('click', e => { e.stopPropagation(); del(); });
+      item.appendChild(x);
+    }
     if (clip) { // listen before choosing
       const pb = document.createElement('button');
       pb.className = 'db-clip db-pick-play' + (DB._clipId === clip ? ' playing' : '');
@@ -6581,6 +6596,70 @@ function dbAnchorPinToDot(dotIdx) {
   Object.assign(pin, _dbAnchorAt(dotIdx));
   dbRender();
   _dbPersist();
+}
+
+/* ── Versions: snapshots of the bars, energy and rests (song.doodle.versions) ──
+   Notes, tabs and lyric placements aren't copied: they point at bar ids, so after a restore
+   whatever still matches comes back and the rest floats. Restoring saves the current board first. */
+function _dbSnapshot(name, auto) {
+  const v = { id: 'v_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by: S.user?.name || '?', at: new Date().toISOString(),
+              bars: [...DB.bars], barIds: [...DB.barIds], customTiles: [...DB.customTiles], energy: { ...DB.energy }, lanes: _clone(DB.lanes) };
+  if (name) v.name = name;
+  if (auto) v.auto = true;
+  return v;
+}
+function _dbVersions() {
+  const d = S.songs?.find(x => x.name === DB.songName)?.doodle;
+  return Array.isArray(d?.versions) ? d.versions : [];
+}
+async function _dbSaveVersions(list) {
+  const song = S.songs?.find(x => x.name === DB.songName);
+  if (!song) return;
+  song.doodle = song.doodle || {};
+  song.doodle.versions = list;
+  await _dbPersist(); // saves the board (and the version list with it)
+}
+function dbShowVersions() {
+  const when = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }); };
+  const strip = bars => `<span class="db-ver-strip">${bars.map(b => `<i style="background:${dbGetTileColor(b)}${_dbIsHalf(b) ? ';max-width:4px' : ''}"></i>`).join('')}</span>`;
+  const list = [..._dbVersions()].sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+  _dbPickSheet('Versions', [
+    { name: '+ Save this version', sub: '', cls: 'db-pick-add', pick: dbSaveVersion },
+    ...list.map(v => ({
+      name: v.name || (v.auto ? 'Before a restore' : 'Untitled version'),
+      sub: `${v.by || '?'} · ${when(v.at)} · ${(v.bars || []).length} bars`,
+      extra: strip(v.bars || []),
+      pick: () => dbRestoreVersion(v.id),
+      del: async () => {
+        if (!await _confirmModal('Delete this version?', v.name || '')) return;
+        await _dbSaveVersions(_dbVersions().filter(x => x.id !== v.id));
+        dbShowVersions();
+      },
+    })),
+  ]);
+}
+async function dbSaveVersion() {
+  if (!DB.bars.length) { showToast('Nothing to save yet'); return; }
+  const name = await _promptModal('Save this version', { placeholder: 'Name (optional), e.g. "Long intro"', ok: 'Save', hint: 'Saves the bars, energy and rests. Notes, tabs and lyrics stay on their bars.' });
+  if (name === null) return;
+  await _dbSaveVersions([..._dbVersions(), _dbSnapshot(name.trim())]);
+  showToast('Version saved');
+}
+async function dbRestoreVersion(id) {
+  const v = _dbVersions().find(x => x.id === id);
+  if (!v) return;
+  if (!await _confirmModal('Restore this version?', 'The board as it is now is saved as a version first, so nothing is lost.', { yes: 'Restore' })) return;
+  const before = _dbSnapshot('', true);
+  DB.bars = [...(v.bars || [])];
+  DB.barIds = _dbFitIds(DB.bars, v.barIds);
+  DB.customTiles = [...(v.customTiles || DB.customTiles)];
+  DB.energy = { ...(v.energy || {}) };
+  DB.lanes = _clone(v.lanes || {});
+  DB.openIdx = -1; DB.cursor = DB.bars.length;
+  await _dbSaveVersions([..._dbVersions(), before]);
+  dbRender();
+  const adrift = DB.pins.filter(p => _dbPinDot(p) < 0).length + _dbLyrState().floating.length;
+  showToast(adrift ? 'Restored. Some notes or lyrics aren’t on a bar now (see the link icon)' : 'Restored');
 }
 
 /* ── Floating things (their dot was deleted): the fix-links tray ── */
