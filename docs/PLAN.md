@@ -20,7 +20,8 @@ before building anything. Newest entries at the top of each section. Feature spe
      Lyrics page (tap to pick a dot), edit-mode warning, lost/floating lines in the fix tray.
      2026-11-21 follow-up (pushed): ▲▼ replaced by hold-and-drag with bump physics, on both the
      Structure tab and a new ⇅ Place mode on the Lyrics page. Verse is blue, outro warm grey.
-  4. Member lanes and moments. 5. Layers (comments/tabs callouts, lyrics fade, linked track
+  4. Member lanes: ✅ rests (2026-11-22, pushed), and tabs/any pin addressed to members. Still to
+     do: chunk labels on lanes ("walking bass"), moments. 5. Layers (comments/tabs callouts, lyrics fade, linked track
      comment ▶). 6. Versions, then the horizontal toggle.
 - After pushing step 1: everyone should hard-refresh. An old app that edits a structure changes
   `bars` without `barIds`, and pins may then land on the wrong dot.
@@ -35,6 +36,19 @@ before building anything. Newest entries at the top of each section. Feature spe
   details (what's shown, can you tap into it) before building.
 
 ## Decisions
+- 2026-11-22 (Patrick: "nice one" on the drag):
+  - **Tabs can be addressed to band members too** (like notes): line from their lane.
+  - **Edit the member lanes, mostly so people can see when to stop playing.** My design: in Edit
+    structure the lanes column widens (initials on top) and you paint rests by tapping or dragging
+    down a lane. Lanes show a solid line where that member plays and a gap where they rest. Data:
+    `doodle.lanes = { member: { rest: [barId] } }`. Chunk labels ("walking bass") come later.
+  - **Long lyric lines on the Structure tab are trimmed in the middle** ("start … end"), because
+    the start and end are the cues.
+  - **Tabs/notes left-justified**, and a **toggle between a lyrics view and a tabs/notes view**:
+    tap the member lanes to flip. My calls: the lyrics view hides the pins (dots keep their rings);
+    the notes view shows the pins with the lyrics faded right back underneath (as agreed on
+    2026-11-20); a song with no placed lyrics always shows notes; a tapped-open dot shows
+    everything; the choice is remembered per device.
 - 2026-11-21 (after testing step 3):
   - **Verse and chorus colours too similar** (dark orange vs red). Verse changed to blue. Outro
     moved off slate-blue to warm grey so it doesn't clash. Barn's lane changed to cyan.

@@ -979,7 +979,29 @@ body.tab-view #tab-view-close { display:flex; }
 .db-vdot.has { box-shadow: 0 0 0 2px var(--c-bg), 0 0 0 3.5px var(--ring); }
 .db-sec { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); white-space: nowrap; }
 .db-lanes { display: flex; justify-content: center; gap: 3px; }
-.db-lanes i { width: 2px; opacity: 0.28; }
+.db-lanes i { width: 2px; opacity: 0.45; }
+.db-lanes i.rest { opacity: 0; }
+.db-lanes { cursor: pointer; }
+#tp-tabcontent-structure.db-editing .db-row, .db-lane-head { grid-template-columns: 22px 46px 90px minmax(0, 1fr); }
+#tp-tabcontent-structure.db-editing .db-lanes { gap: 4px; padding: 0 4px; touch-action: none; }
+#tp-tabcontent-structure.db-editing .db-lanes i { flex: 1; width: auto; opacity: 0.7; border-radius: 1px; }
+#tp-tabcontent-structure.db-editing .db-lanes i.rest { opacity: 1; background: transparent !important; box-shadow: inset 0 0 0 1px var(--c-border); }
+#tp-tabcontent-structure.db-editing .db-conn { display: none; }
+.db-lane-head { display: grid; position: sticky; top: 0; z-index: 3; background: var(--c-bg); padding: 2px 0 4px; }
+.db-lane-hint { grid-column: 2; font-family: var(--f-mono); font-size: 8px; color: var(--c-teal-pale); align-self: end; line-height: 1.1; }
+.db-lane-ini { display: flex; gap: 4px; padding: 0 4px; }
+.db-lane-ini b { flex: 1; text-align: center; font-family: var(--f-mono); font-size: 10px; }
+#db-rows.v-lyrics .db-row:not(.open) .db-chip,
+#db-rows.v-lyrics .db-row:not(.open) .db-rng,
+#db-rows.v-lyrics .db-row:not(.open) .db-conn { display: none; }
+#db-rows.v-lyrics .db-row:not(.open) .db-lanes i.hot { opacity: 0.45; }
+#db-rows.v-notes .db-row:not(.open) .db-lyrs { position: absolute; inset: 0; padding-left: 8px; opacity: 0.14; pointer-events: none; }
+.db-chip { position: relative; z-index: 1; }
+#db-mem-pop { position: fixed; left: 8px; right: 8px; z-index: 275; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 10px; padding: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+#db-mem-pop span { font-family: var(--f-mono); font-size: 10px; color: var(--c-teal-pale); margin-right: 2px; }
+#db-mem-pop button { font-family: var(--f-mono); font-size: 11px; padding: 6px 10px; border-radius: 12px; border: 1.5px solid var(--mc, var(--c-border)); background: none; color: var(--c-text); cursor: pointer; }
+#db-mem-pop button.on { background: var(--mc); color: #fff; }
+#db-mem-pop button.ok { margin-left: auto; border-color: var(--c-teal); color: var(--c-teal); }
 .db-lanes i.hot { opacity: 1; }
 .db-conn { position: absolute; height: 1.5px; pointer-events: none; opacity: 0.9; }
 .db-call { position: relative; }
@@ -989,7 +1011,7 @@ body.tab-view #tab-view-close { display:flex; }
 .db-rng.top.bot { top: 7px; bottom: 7px; }
 .db-lyrs { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--f-sans); font-size: 13px; color: var(--c-text); align-self: stretch; display: flex; align-items: center; gap: 10px; }
 .db-lyrs:empty { flex: 0 0 0; }
-.db-lyr-ln { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; border-radius: 5px; padding: 1px 3px; cursor: grab; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.db-lyr-ln { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; border-radius: 5px; padding: 1px 3px; cursor: grab; white-space: nowrap; overflow: hidden; text-overflow: clip; min-width: 0; }
 .db-lyr-ln.echo { opacity: 0.4; font-style: italic; cursor: default; }
 .db-row.open .db-lyrs { flex-direction: column; align-items: stretch; white-space: normal; }
 .db-row.open .db-lyr-ln { white-space: normal; display: flex; align-items: center; gap: 6px; }
@@ -5264,6 +5286,9 @@ const DB = {
   editing: false, cursor: 0, openIdx: -1, _saveTimer: null,
   openChips: new Set(), showNames: (() => { try { return localStorage.getItem('ng_db_names') === '1'; } catch(e) { return false; } })(),
   _rangePinId: null, _noteTo: [], lyricLinks: [], _anchoringLyricId: null, _lyr: null,
+  lanes: {}, // { member: { rest: [barId] } }: bars where that member doesn't play
+  view: (() => { try { return localStorage.getItem('ng_db_view') || 'lyrics'; } catch(e) { return 'lyrics'; } })(),
+  _showNotes: false,
   _anchoringPinId: null, _noteEditPinId: null, _noteTargetBarIdx: null,
   _awaitingNewTabBarIdx: null, _awaitingNewSnipBarIdx: null,
 };
@@ -5344,6 +5369,7 @@ async function dbLoad() {
   DB.pins        = Array.isArray(d.pins)        ? d.pins.map(p => ({...p})) : [];
   DB.energy      = _isObj(d.energy) ? { ...d.energy } : {};
   DB.lyricLinks  = Array.isArray(d.lyricLinks) ? d.lyricLinks.map(l => ({...l})) : [];
+  DB.lanes       = _isObj(d.lanes) ? _clone(d.lanes) : {};
   // First time: start from the song's structure in the old editors, if it had one
   if (!DB.bars.length) {
     await loadStructures();
@@ -5367,7 +5393,7 @@ async function _dbPersist() {
   st.byLine.forEach((lk, li) => { lk.text = st.lines[li].text; lk.occ = _lyrOcc(st.lines, li); });
   song.doodle = Object.assign(song.doodle || {}, {
     bars: [...DB.bars], barIds: [...DB.barIds], customTiles: [...DB.customTiles],
-    pins: DB.pins.map(p => ({...p})), energy: { ...DB.energy }, lyricLinks: DB.lyricLinks.map(l => ({...l})),
+    pins: DB.pins.map(p => ({...p})), energy: { ...DB.energy }, lyricLinks: DB.lyricLinks.map(l => ({...l})), lanes: _clone(DB.lanes),
     locked: true, // older app copies only show pins on a locked board
   });
   try { await saveSongsJson(); }
@@ -5408,7 +5434,19 @@ function dbRender() {
   DB.pins.forEach(p => { const i = _dbPinDot(p); if (i >= 0) (byDot[i] = byDot[i] || []).push(p); });
   const ranges   = _dbRangeSegments();
   const lyr      = _dbLyricsByDot(_dbLyrState(), sections);
+  // lyrics view or tabs/notes view (tap the lanes to flip); no placed lyrics = notes
+  DB._hasLyr = Object.values(lyr).some(a => a.some(x => !x.echo));
+  DB._showNotes = DB.view === 'notes' || !DB._hasLyr;
+  root.classList.toggle('v-notes', DB._showNotes);
+  root.classList.toggle('v-lyrics', !DB._showNotes);
   const frag = document.createDocumentFragment();
+  if (DB.editing) {
+    const head = document.createElement('div');
+    head.className = 'db-lane-head';
+    head.innerHTML = '<span></span><span class="db-lane-hint">drag lane = rest</span><span class="db-lane-ini">'
+      + CONFIG.BAND_MEMBERS.map(m => `<b style="color:${MEMBER_COLORS[m] || '#888'}">${esc(m[0])}</b>`).join('') + '</span>';
+    frag.appendChild(head);
+  }
   let gi = 0;
   sections.forEach((sec, si) => {
     for (let b = 0; b < sec.bars; b++, gi++) {
@@ -5418,6 +5456,7 @@ function dbRender() {
   });
   if (DB.editing && DB.cursor >= DB.bars.length) frag.appendChild(_dbCursorEl());
   root.appendChild(frag);
+  requestAnimationFrame(_dbTrimLyrics);
   dbRenderMini(sections, labels, prof);
   dbRenderBar();
 }
@@ -5497,6 +5536,95 @@ function _dbMiniVisible() {
   box?.addEventListener('pointermove', e => { if (box.hasPointerCapture(e.pointerId)) jump(e); });
 })();
 
+// Middle-trim long lyric lines ("start … end"): the start and end are the cues
+function _dbTrimLyrics() {
+  $('db-rows')?.querySelectorAll('.db-row:not(.open) .db-lyr-ln').forEach(sp => {
+    const full = sp.dataset.full ?? sp.textContent;
+    sp.dataset.full = full; sp.title = full; sp.textContent = full;
+    if (sp.scrollWidth <= sp.clientWidth + 1) return;
+    const cut = n => full.slice(0, n).trimEnd() + ' … ' + full.slice(-n).trimStart();
+    let lo = 1, hi = Math.floor(full.length / 2), best = 1;
+    while (lo <= hi) {
+      const n = (lo + hi) >> 1;
+      sp.textContent = cut(n);
+      if (sp.scrollWidth <= sp.clientWidth + 1) { best = n; lo = n + 1; } else hi = n - 1;
+    }
+    sp.textContent = cut(best);
+  });
+}
+
+function dbToggleView() {
+  if (DB._showNotes && !DB._hasLyr) { showToast('No lyrics on the structure yet: place them from the Lyrics page'); return; }
+  DB.view = DB._showNotes ? 'lyrics' : 'notes';
+  try { localStorage.setItem('ng_db_view', DB.view); } catch(e) {}
+  dbRender();
+  showToast(DB.view === 'notes' ? 'Showing tabs & notes' : 'Showing lyrics');
+}
+
+/* Edit structure: tap or drag down a member's lane to mark bars they rest (tap again to undo).
+   Painting follows the first bar's new state. */
+function _dbLanePaint(lanesEl, i, e) {
+  const r = lanesEl.getBoundingClientRect();
+  const j = Math.max(0, Math.min(CONFIG.BAND_MEMBERS.length - 1, Math.floor((e.clientX - r.left) / (r.width / CONFIG.BAND_MEMBERS.length))));
+  const m = CONFIG.BAND_MEMBERS[j];
+  const rest = new Set(DB.lanes[m]?.rest || []);
+  const makeRest = !rest.has(DB.barIds[i]);
+  const apply = k => {
+    const id = DB.barIds[k]; if (!id) return;
+    if (makeRest) rest.add(id); else rest.delete(id);
+    $('db-rows')?.querySelector(`.db-row[data-i="${k}"] .db-lanes i:nth-child(${j + 1})`)?.classList.toggle('rest', makeRest);
+  };
+  let last = i;
+  apply(i);
+  try { lanesEl.setPointerCapture(e.pointerId); } catch(err) {}
+  const mv = ev => {
+    const row = document.elementFromPoint(r.left + r.width / 2, ev.clientY)?.closest('.db-row');
+    if (!row) return;
+    const k = +row.dataset.i, a = Math.min(k, last), b = Math.max(k, last);
+    for (let x = a; x <= b; x++) apply(x);
+    last = k;
+  };
+  const up = () => {
+    lanesEl.removeEventListener('pointermove', mv); lanesEl.removeEventListener('pointerup', up); lanesEl.removeEventListener('pointercancel', up);
+    DB.lanes[m] = { ...(DB.lanes[m] || {}), rest: [...rest] };
+    _dbSaveSoon();
+  };
+  lanesEl.addEventListener('pointermove', mv);
+  lanesEl.addEventListener('pointerup', up);
+  lanesEl.addEventListener('pointercancel', up);
+}
+
+// "For…": address any pin (tab, note, snippet) to bandmates
+function _dbMemberPop(pin, anchor) {
+  $('db-mem-pop')?.remove();
+  let to = [...(pin.to || [])];
+  const pop = document.createElement('div');
+  pop.id = 'db-mem-pop';
+  const paint = () => {
+    pop.innerHTML = '<span>For</span>' + CONFIG.BAND_MEMBERS.map(m =>
+      `<button data-m="${m}" class="${to.includes(m) ? 'on' : ''}" style="--mc:${MEMBER_COLORS[m] || '#888'}">${m}</button>`).join('')
+      + '<button data-ok="1" class="ok">✓</button>';
+  };
+  paint();
+  document.body.appendChild(pop);
+  const r = anchor.getBoundingClientRect();
+  pop.style.top = Math.min(window.innerHeight - pop.offsetHeight - 8, r.bottom + 6) + 'px';
+  const close = () => { pop.remove(); document.removeEventListener('pointerdown', outside); };
+  const outside = e => { if (!pop.contains(e.target)) close(); };
+  setTimeout(() => document.addEventListener('pointerdown', outside), 0);
+  pop.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.ok) {
+      if (to.length) pin.to = to; else delete pin.to;
+      close(); dbRender(); _dbPersist();
+      return;
+    }
+    const m = b.dataset.m;
+    to = to.includes(m) ? to.filter(x => x !== m) : [...to, m];
+    paint();
+  });
+}
+
 function _dbCursorEl() { const el = document.createElement('div'); el.className = 'db-cursor'; return el; }
 
 const _DB_PIN_ICON = { note: '✎', tab: 'T', snip: '▸' };
@@ -5538,7 +5666,12 @@ function _dbRowEl(i, label, secStart, energy, pins, ranges, lyrics) {
   const to = new Set(pins.flatMap(_dbPinTo));
   const lanes = document.createElement('div');
   lanes.className = 'db-lanes';
-  lanes.innerHTML = CONFIG.BAND_MEMBERS.map(m => `<i class="${to.has(m) ? 'hot' : ''}" style="background:${MEMBER_COLORS[m] || '#888'}"></i>`).join('');
+  lanes.innerHTML = CONFIG.BAND_MEMBERS.map(m => {
+    const rest = DB.lanes[m]?.rest?.includes(DB.barIds[i]);
+    return `<i class="${rest ? 'rest' : ''}${to.has(m) ? ' hot' : ''}" style="background:${MEMBER_COLORS[m] || '#888'}"></i>`;
+  }).join('');
+  lanes.addEventListener('click', e => { e.stopPropagation(); if (!DB.editing) dbToggleView(); });
+  lanes.addEventListener('pointerdown', e => { if (DB.editing) { e.stopPropagation(); e.preventDefault(); _dbLanePaint(lanes, i, e); } });
 
   const call = document.createElement('div');
   call.className = 'db-call';
@@ -5665,7 +5798,7 @@ function dbRenderBar() {
   $('db-edit-btn').textContent = DB.editing ? 'Done' : '✎ Edit structure';
   $('db-edit-btn').classList.toggle('on', DB.editing);
   $('db-clear-btn').style.display = DB.editing ? '' : 'none';
-  $('db-names-btn').style.display = DB.editing ? 'none' : '';
+  $('db-names-btn').style.display = DB.editing || !DB._showNotes ? 'none' : '';
   $('db-names-btn').classList.toggle('on', DB.showNames);
   $('db-fix-btn').style.display = floating && !DB.editing ? '' : 'none';
 }
@@ -5990,6 +6123,7 @@ function dbShowPinMenu(pin, el) {
     body.appendChild(btn);
   };
   if (pin.type === 'note') addBtn('Edit note', '', () => dbEditNote(pin.id));
+  addBtn((pin.to || []).length ? `For: ${pin.to.join(', ')}…` : 'For a bandmate…', '', () => _dbMemberPop(pin, el));
   addBtn(_dbPinDot(pin) < 0 ? 'Attach to a dot' : 'Move to dot', '', () => dbStartAnchorMode(pin.id));
   if (_dbPinDot(pin) >= 0) {
     addBtn('Cover whole section', '', () => dbCoverSection(pin.id));
