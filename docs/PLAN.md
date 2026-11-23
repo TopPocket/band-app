@@ -76,6 +76,9 @@ before building anything. Newest entries at the top of each section. Feature spe
     the inbox, hold a snippet → Share a link, hold a note → Share a link, tab Share. The inbox
     refresh now also reloads songs.json (so bandmates' note replies show), skipped while editing.
     My calls: picture = 2 bars a line; chat is text only (photos/snippets still on the Comments page).
+  - Update pop-up (2026-11-23, Patrick: "can you add an update pop up showing how you can share
+    things now"): three cards at the front of the guide (comment link; snippet/note link; tab
+    picture), earlier cards kept behind them, `WN_VERSION` bumped to `2026-11-share-1`.
 
 ## Decisions
 - 2026-11-22 (Patrick): **New comments inbox** on the avatar circle (top right), For you / All,

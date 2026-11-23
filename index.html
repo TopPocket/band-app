@@ -1472,6 +1472,19 @@ body.tab-view #tab-help-btn { display:none; }
 .wn-rec { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 6px; background: var(--c-bg); font-family: var(--f-mono); font-size: 11px; color: var(--c-text); min-width: 210px; }
 .wn-rec b { font-weight: 500; } .wn-rec i { font-style: normal; color: var(--c-teal-pale); } .wn-rec em { font-style: normal; margin-left: auto; color: var(--c-teal-pale); }
 .wn-sheet { margin-top: 12px; }
+.wn-cm { background: var(--c-surface2); border: 1px solid var(--c-border); border-radius: 8px; padding: 7px 9px; }
+.wn-cm-top { display: flex; justify-content: space-between; font-family: var(--f-mono); font-size: 10px; color: var(--c-teal); }
+.wn-cm-top span { color: var(--c-teal-pale); }
+.wn-cm-t { font: 12px var(--f-sans); color: var(--c-text); margin: 3px 0 2px; }
+.wn-acts.wn-left { justify-content: flex-start; margin-top: 6px; }
+.wn-acts .wn-wa { background: #25D366; border-color: #25D366; color: #fff; }
+.wn-msg { margin: 10px 0 0 auto; width: 78%; background: #DCF8C6; border-radius: 10px 10px 2px 10px; padding: 6px 9px; font: 11px/1.4 var(--f-sans); color: #1d2b28; }
+.wn-msg .wn-hl { margin: 4px 0 0 12px; }
+.wn-msg .wn-hl::after { right: auto; left: -13px; top: -4px; }
+.wn-msg u { color: #1a73c9; padding: 0 3px; }
+.wn-pic { margin-top: 10px; display: flex; }
+.wn-pic .wn-hl { flex: 1; }
+.wn-tabpic { display: block; width: 100%; height: auto; border-radius: 6px; }
 .wn-acts .wn-big { font-size: 15px; padding: 3px 12px; }
 </style>
 </head>
@@ -2807,7 +2820,15 @@ function buildNamePicker() {
    steps that match. Bump WN_VERSION and rewrite WN_STEPS for the next one.
    Home → "What's new" reopens it. The same card shows the tab-editor how-to (TAB_HELP) the
    first time someone starts a new tab (ng_tabhelp), and from the editor's ? button. */
-const WN_VERSION = '2026-11-board-4';
+const WN_VERSION = '2026-11-share-1';
+// a WhatsApp-style message bubble ending in a link (sharing cards)
+const _wnMsg = (text, linkHl) => `<div class="wn-msg">${text}<br>${_wnHl(linkHl, '<u>nesting-ground/?go=…</u>')}</div>`;
+// the real tab picture, small, for the tab-sharing card
+function _wnTabPic() {
+  const notes = [0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28].map((s, i) => ({ slot: s, string: [0, 0, 1, 2, 1, 0, 3, 2, 0, 1, 2, 3][i], fret: [3, 5, 5, 7, 7, 3, 9, 7, 3, 5, 7, 9][i] }));
+  notes.push({ slot: 18, string: 1, fret: 7, mod: 'h', modPos: 'before' });
+  return `<img class="wn-tabpic" alt="" src="${_tabPicture({ title: 'Pink riff', songName: 'Pink Pavements', author: 'Pat', instrument: 'bass', notes }).toDataURL()}">`;
+}
 // circle something in a mock-up, with a number badge
 const _wnHl = (n, html, round) => `<span class="wn-hl${round ? ' rd' : ''}" data-n="${n}">${html}</span>`;
 // a number badge with a little pointer under it (sits over a column)
@@ -2833,6 +2854,25 @@ const TAB_HELP = [
   '<b>Save</b> and give it a name. Open it later to <b>Share</b> it to WhatsApp',
 ];
 const WN_STEPS = [
+  { t: 'Send someone a comment',
+    v: () => `<div class="wn-cm"><div class="wn-cm-top"><b>0:30</b><span>B → P</span></div><div class="wn-cm-t">Pat, can you double this bit?</div>`
+           + `<div class="wn-acts wn-left"><span>✎ Edit</span><span>💬 Reply</span>${_wnHl(1, '<span>↗ Link</span>')}</div></div>`
+           + `<div class="wn-acts">${_wnHl(2, '<span class="wn-wa">WhatsApp</span>')}<span>Messages</span><span>Copy</span></div>`
+           + _wnMsg('“Pat, can you double this bit?” — Barn', 3),
+    s: ['Tap <b>↗ Link</b> on any comment under a track', 'Pick <b>WhatsApp</b> (or anywhere)', 'They <b>tap the link</b>: the app opens right on that comment, from its time'],
+    tip: 'On the Comments page it’s the WhatsApp button. In your inbox: hold an item → Share.' },
+  { t: 'Send a snippet or a note',
+    v: () => `<div class="wn-row wn-solo">${_wnHl(1, '<span class="wn-rec"><b>12 Mar 2026</b><i>Snippet · P</i><em>0:18</em></span>')}</div>`
+           + `<div class="wn-acts wn-sheet"><span>⬇ Download</span><span>↗ Share</span>${_wnHl(2, '<span>🔗 Share a link</span>')}</div>`
+           + _wnMsg('Pink Pavements: riff idea', 3),
+    s: ['<b>Hold a snippet</b>, or hold a <b>note</b> on the Structure tab', 'Tap <b>Share a link</b>', 'They <b>tap the link</b> and land right on it'],
+    tip: 'Want the actual audio? Hold → ↗ Share sends the file itself.' },
+  { t: 'Tabs now send as a picture',
+    v: () => `<div class="wn-row wn-solo">${_wnHl(1, '<span class="wn-rec"><b>𝄆 Pink riff</b><i>Bass · Pat</i></span>')}</div>`
+           + `<div class="wn-acts">${_wnHl(2, '<span>Share</span>')}</div>`
+           + `<div class="wn-pic">${_wnHl(3, _wnTabPic())}</div>`,
+    s: ['Open a tab (song → <b>Tabs</b>)', 'Tap <b>Share</b> → WhatsApp', 'They get a <b>picture</b> that’s easy to read, plus a link to open it in the app'],
+    tip: 'The small amber numbers under each line count the beats, like in the editor.' },
   { t: 'New: the Structure tab',
     v: () => `<div class="wn-songhd">${_wnHl(1, '<span>‹ Rainy Street</span>')}</div><div class="wn-tabs"><span>Recordings</span><span>Lyrics</span><span>Tabs</span>${_wnHl(2, '<span class="on">Structure</span>')}</div>`,
     s: ['Open any <b>song</b>', 'Tap <b>STRUCTURE</b>', 'That’s the band’s map of the song: bars, who plays what, notes'] },
