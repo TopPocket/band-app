@@ -8030,13 +8030,17 @@ function _tabPicture(tab) {
       ctx.beginPath(); ctx.moveTo(x, yOf(strings - 1)); ctx.lineTo(x, yOf(0) + 1); ctx.stroke();
     }
     // notes
+    // backings first, then text, so a neighbour's backing never covers a symbol
     ctx.font = 'bold 13px monospace';
-    notes.filter(n => n.slot >= from && n.slot < to).forEach(n => {
-      const x = xAt(n.slot - from), y = yOf(n.string);
-      const { pre, num, post } = _tabNoteParts(n);
-      const nw = ctx.measureText(num).width;
+    const inRow = notes.filter(n => n.slot >= from && n.slot < to);
+    const pos = n => { const { pre, num, post } = _tabNoteParts(n); return { x: xAt(n.slot - from), y: yOf(n.string), pre, num, post, nw: ctx.measureText(num).width }; };
+    inRow.forEach(n => {
+      const { x, y, pre, post, nw } = pos(n);
       const left = x - nw / 2 - ctx.measureText(pre).width, right = x + nw / 2 + ctx.measureText(post).width;
       ctx.fillStyle = '#ffffff'; ctx.fillRect(left - 2, y - 8, right - left + 4, 15);
+    });
+    inRow.forEach(n => {
+      const { x, y, pre, num, post, nw } = pos(n);
       ctx.textAlign = 'center'; ctx.fillStyle = n.fret == null ? C.amber : C.text;
       ctx.fillText(num, x, y + 5);
       ctx.fillStyle = C.amber;
@@ -8254,17 +8258,25 @@ function renderTabCanvas() {
   }
 
   // Notes — the fret number stays centred on the slot; a symbol hangs off its left or right edge
+  // Two passes: every note's backing (hides the string line) first, then all the text, so a
+  // neighbour's backing can never paint over a symbol (13p11, 5/7)
   ctx.font = 'bold 12px monospace';
-  TE.notes.forEach(n => {
+  const _tnPos = n => {
     const row = strings - 1 - n.string;
     const y = Math.round(T_PAD + row * strH + strH / 2);
     const x = Math.round(TAB_L_PAD + n.slot * TAB_SLOT_W + TAB_SLOT_W / 2);
     const { pre, num, post } = _tabNoteParts(n);
-    const nw = ctx.measureText(num).width;
+    return { x, y, pre, num, post, nw: ctx.measureText(num).width };
+  };
+  TE.notes.forEach(n => {
+    const { x, y, pre, post, nw } = _tnPos(n);
     const left  = x - nw / 2 - ctx.measureText(pre).width;
     const right = x + nw / 2 + ctx.measureText(post).width;
     ctx.fillStyle = C.bg;
     ctx.fillRect(Math.round(left - 3), y - 9, Math.round(right - left + 6), 14);
+  });
+  TE.notes.forEach(n => {
+    const { x, y, pre, num, post, nw } = _tnPos(n);
     ctx.textAlign = 'center';
     ctx.fillStyle = n.fret == null ? C.amber : C.text;
     ctx.fillText(num, x, y + 4);
