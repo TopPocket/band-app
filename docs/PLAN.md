@@ -59,6 +59,14 @@ before building anything. Newest entries at the top of each section. Feature spe
     guide ("Upload a recording from home"), the sharing cards kept behind it, `WN_VERSION` →
     `2026-11-upload-1`.
 
+- 2026-11-24 (Patrick, bugs): "there's a bug in the structure tab where i add a snip to a bar and
+  pay it, i can't stop it playing and if i click the play button again it starts to play a second
+  version of the song again over the top. also the [save] button on the snippet upload should have
+  brighter text to make it readable."
+  - Fixed 2026-11-24 (pushed): a snippet ▶ made a new player every tap (unstoppable, and taps
+    stacked up). Now all ▶s share one player: tap again = stop. Save text is white and bold. Bug fix,
+    so no update pop-up.
+
 ## Wishlist (not scheduled yet)
 - 2026-11-21: **Whole-song view:** a button that fits the full structure on one screen, a bit like
   print preview, so you can see the whole song at a glance without scrolling. Not started. Ask about

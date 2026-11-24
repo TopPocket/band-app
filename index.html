@@ -6086,18 +6086,12 @@ function renderAnSnipsList() {
   });
 }
 
-async function anPlaySnippet(snipId) {
+// Play (or stop) a snippet through the shared clip player, so a second tap stops it
+// (it used to make a new Audio each tap: unstoppable, and taps stacked up on top of each other)
+function anPlaySnippet(snipId) {
   const sn = (S.snippets||[]).find(s => s.id === snipId);
-  if (!sn) return;
-  showLoading('Loading…');
-  try {
-    const blob = await Drive.fetchBlob(sn.driveFileId);
-    hideLoading();
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    audio.play();
-    audio.onended = () => URL.revokeObjectURL(url);
-  } catch(e) { hideLoading(); showToast('Could not play: ' + _errMsg(e)); }
+  if (!sn) { showToast('That snippet isn’t there any more'); return; }
+  return _dbPlayAudio('snip:' + snipId, sn.driveFileId, sn.trimStart || 0, null);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -6815,7 +6809,11 @@ function _dbChipEl(p, full) {
 /* ▶ on a note: play its riff. A recording comment plays its range (a point comment: 2 s before to
    10 s after) through the comments player; a recorded snippet plays as before. */
 async function dbPlayClip(p) {
-  if (!p.commentId) { if (!S.snippetsLoaded) { showLoading('…'); await loadSnippets(); hideLoading(); } anPlaySnippet(p.snippetId); return; }
+  if (!p.commentId) {
+    if (DB._clipId === 'snip:' + p.snippetId && !_cdAudio.paused) { _cdAudio.pause(); return; }
+    if (!S.snippetsLoaded) { showLoading('…'); await loadSnippets(); hideLoading(); }
+    anPlaySnippet(p.snippetId); return;
+  }
   _dbPlayComment(p.commentId);
 }
 // Play (or stop) one recording comment's bit; every ▶ for it (data-clip = comment id) shows the state
@@ -6824,20 +6822,29 @@ async function _dbPlayComment(cid) {
   try { await ensureCommentsLoaded(); } catch (e) {}
   const c = _cdAllComments.find(x => x.id === cid);
   if (!c) { showToast('That recording comment has been deleted'); return; }
+  // its timeupdate stops at the end (or start + 10 s)
+  return _dbPlayAudio(cid, c.fileId, c.endTime > c.startTime ? c.startTime : Math.max(0, c.startTime - 2), c.id);
+}
+// The one clip player (_cdAudio) for board ▶s and snippets: a tap on what's playing stops it, and
+// starting something else stops the last. A ticket makes a slower earlier load give way.
+async function _dbPlayAudio(key, fileId, at, commentId) {
+  if (DB._clipId === key && !_cdAudio.paused) { _cdAudio.pause(); return; }
+  const seq = DB._clipSeq = (DB._clipSeq || 0) + 1;
   S.tp?.audio?.pause();
   _cdAudio.pause();
-  DB._clipId = cid; _dbClipBtns();
+  DB._clipId = key; _dbClipBtns();
   try {
-    const blob = await Drive.fetchBlob(c.fileId);
-    if (DB._clipId !== cid) return;
+    const blob = await Drive.fetchBlob(fileId);
+    if (DB._clipSeq !== seq) return;
     if (_cdAudio.src) { try { URL.revokeObjectURL(_cdAudio.src); } catch (e) {} }
     _cdAudio.src = URL.createObjectURL(blob);
-    _cdAudio.currentTime = c.endTime > c.startTime ? c.startTime : Math.max(0, c.startTime - 2);
-    _cdPlayingId = c.id; // its timeupdate stops at the end (or start + 10 s)
-    DB._clipId = cid;
+    _cdAudio.currentTime = at;
+    _cdPlayingId = commentId;
+    DB._clipId = key;
     await _cdAudio.play();
-    _dbClipBtns();
+    if (DB._clipSeq === seq) _dbClipBtns();
   } catch (e) {
+    if (DB._clipSeq !== seq) return;
     if (e?.name !== 'NotAllowedError') showToast('Could not play: ' + (e?.message || e));
     else showToast('Tap ▶ again to play');
     DB._clipId = null; _dbClipBtns();
@@ -12561,7 +12568,7 @@ function plkSaveSettings() {
   <div class="snip-nav">
     <button onclick="snipClose()" style="background:none;border:none;color:var(--c-teal-pale);font-family:var(--f-mono);font-size:13px;cursor:pointer;padding:4px 8px;">✕</button>
     <button class="snip-nav-title" id="snip-nav-title" onclick="snipPickSong()">🎙 Choose song ▾</button>
-    <button id="snip-save-btn" onclick="snipSave()" disabled style="background:var(--c-teal);border:none;border-radius:5px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;padding:6px 12px;cursor:pointer;opacity:0.35;">Save</button>
+    <button id="snip-save-btn" onclick="snipSave()" disabled style="background:var(--c-teal);border:none;border-radius:5px;color:#fff;font-weight:600;font-family:var(--f-mono);font-size:11px;padding:6px 12px;cursor:pointer;opacity:0.35;">Save</button>
   </div>
   <div class="snip-up-meta" id="snip-up-meta">
     <input id="snip-up-title" class="snip-up-in" placeholder="Name (optional)" maxlength="80">
