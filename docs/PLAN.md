@@ -33,6 +33,32 @@ before building anything. Newest entries at the top of each section. Feature spe
 - 2026-11-21: During the doodle-board sprint, **commit and push each finished, tested change
   without asking**, so Patrick can test on his phone. (Commit messages as usual.)
 
+## Requests in progress
+- 2026-11-24 (Patrick): **Upload a snippet from your phone or laptop.** His words:
+  > "I want to be able to upload recordings from my phone or laptop to the app. this is more of a
+  > single snippet recorded at home kind of thing than a full session, so it wouldn't go into the
+  > session folder and be more of a snip, it would need a track or an egg to link it though, and
+  > also a band member link and date and length. there's currently and upload tracks bit in the app
+  > but this is defo for sessions, so maybe that should eb changed to upload session. The pluck
+  > songs button just isn't working for some reason, I have a local version of this so i don't need
+  > in the app so maybe just remove that and replace it with an upload snippets button for the task
+  > i said above"
+  - Plan: Home Tools row: "Upload tracks" → **"Upload session"**; "Pluck songs" → **"Upload
+    snippet"**. An uploaded file becomes a normal snippet (`snippets.json` entry, file in `_meta`
+    like recorded snippets) with `songName` (song or idea), `author` (band member), `createdAt`
+    (date) and `duration` (decoded from the file).
+  - Answers (2026-11-24): **trim screen first** (same trim view as the snippet recorder, saved as
+    WAV); member = **pick one, defaults to me**; date = **the file's date, editable**; Pluck songs
+    = **remove the Home button only**, keep the code.
+  - **Built 2026-11-24 (pushed):** Home Tools: Upload session, Upload snippet (Pluck songs
+    button gone). Pick a file → the snippet trim screen with name (from the file name), member,
+    date → Save asks for the song/idea. My calls: an untrimmed file is uploaded as it is (an m4a
+    stays small); the trim knobs now work with a mouse too. Needs a phone test (iPhone voice memos
+    must be saved to Files first to be pickable).
+  - Update pop-up (Patrick: "push it - get the update pop up"): one card at the front of the
+    guide ("Upload a recording from home"), the sharing cards kept behind it, `WN_VERSION` →
+    `2026-11-upload-1`.
+
 ## Wishlist (not scheduled yet)
 - 2026-11-21: **Whole-song view:** a button that fits the full structure on one screen, a bit like
   print preview, so you can see the whole song at a glance without scrolling. Not started. Ask about

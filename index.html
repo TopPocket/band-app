@@ -718,6 +718,12 @@ header[data-page="nav"] .hdr-t-nav { display: flex; }
 /* ══ SNIPPET RECORDER ══ */
 .snip-panel { position:fixed; inset:0; z-index:300; flex-direction:column; background:var(--c-bg); display:none; }
 .snip-panel.open { display:flex; }
+.snip-up-meta { display:none; flex-direction:column; gap:8px; padding:10px 16px; background:var(--c-surface); border-bottom:1px solid var(--c-border); flex-shrink:0; }
+.snip-panel.upload .snip-up-meta { display:flex; }
+.snip-panel.upload .snip-metro, .snip-panel.upload #snip-rec-btn, .snip-panel.upload #snip-snap-btn { display:none; }
+.snip-up-row { display:flex; gap:8px; }
+.snip-up-row > * { flex:1; min-width:0; }
+.snip-up-in { background:var(--c-bg); border:1px solid var(--c-border); border-radius:6px; color:var(--c-text); font-size:15px; padding:8px 10px; font-family:inherit; box-sizing:border-box; }
 .snip-nav { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:var(--c-surface); border-bottom:1px solid var(--c-border); flex-shrink:0; height:50px; }
 .snip-nav-title { font-family:var(--f-mono); font-size:11px; color:var(--c-teal-pale); letter-spacing:0.08em; background:none; border:1px solid var(--c-border); border-radius:5px; padding:5px 10px; cursor:pointer; max-width:55vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 /* song picker sheet */
@@ -1584,8 +1590,8 @@ body.tab-view #tab-help-btn { display:none; }
       <div class="home-tools">
         <button class="home-tool" onclick="openSnipRecorder('home')"><span>🎙</span>Record snippet</button>
         <button class="home-tool" onclick="openBpmTapper('feathers')"><span>♩</span>Tap BPM</button>
-        <button class="home-tool" onclick="openImporter()"><span>𓆑</span>Upload tracks</button>
-        <button class="home-tool" onclick="openPlucker()"><span>𓅃</span>Pluck songs</button>
+        <button class="home-tool" onclick="openImporter()"><span>𓆑</span>Upload session</button>
+        <button class="home-tool" onclick="openSnipUpload()"><span>𓅃</span>Upload snippet</button>
         <button class="home-tool" onclick="openTuner()"><span>𝄢</span>Tuner</button>
       </div>
       <button class="home-whatsnew" onclick="wnOpen()">What’s new in this update</button>
@@ -1713,7 +1719,7 @@ body.tab-view #tab-help-btn { display:none; }
   <div class="screen" id="screen-import">
     <div class="screen-nav">
       <button class="back-btn" onclick="impBack()">‹ Home</button>
-      <div class="screen-nav-title">Upload Tracks</div>
+      <div class="screen-nav-title">Upload Session</div>
     </div>
     <!-- Step 1: pick files -->
     <div class="imp-step active" id="imp-step-pick">
@@ -2820,7 +2826,7 @@ function buildNamePicker() {
    steps that match. Bump WN_VERSION and rewrite WN_STEPS for the next one.
    Home → "What's new" reopens it. The same card shows the tab-editor how-to (TAB_HELP) the
    first time someone starts a new tab (ng_tabhelp), and from the editor's ? button. */
-const WN_VERSION = '2026-11-share-1';
+const WN_VERSION = '2026-11-upload-1';
 // a WhatsApp-style message bubble ending in a link (sharing cards)
 const _wnMsg = (text, linkHl) => `<div class="wn-msg">${text}<br>${_wnHl(linkHl, '<u>nesting-ground/?go=…</u>')}</div>`;
 // the real tab picture, small, for the tab-sharing card
@@ -2854,6 +2860,12 @@ const TAB_HELP = [
   '<b>Save</b> and give it a name. Open it later to <b>Share</b> it to WhatsApp',
 ];
 const WN_STEPS = [
+  { t: 'Upload a recording from home',
+    v: () => `<div class="wn-acts"><span>🎙 Record snippet</span>${_wnHl(1, '<span>𓅃 Upload snippet</span>')}</div>`
+           + `<div class="wn-acts wn-left">${_wnHl(2, '<span>Bass idea</span><span>Pat</span><span>20 Nov</span>')}</div>`
+           + `<div class="wn-acts">${_wnHl(3, '<span>Save</span>')}</div>`,
+    s: ['Home → <b>Upload snippet</b>, pick the file', 'Check the <b>name, who’s playing and date</b>. Drag the knobs to trim if you like', 'Tap <b>Save</b>, pick the song or idea. It shows up there as a snippet'],
+    tip: 'Whole rehearsals still go in Home → Upload session.' },
   { t: 'Send someone a comment',
     v: () => `<div class="wn-cm"><div class="wn-cm-top"><b>0:30</b><span>B → P</span></div><div class="wn-cm-t">Pat, can you double this bit?</div>`
            + `<div class="wn-acts wn-left"><span>✎ Edit</span><span>💬 Reply</span>${_wnHl(1, '<span>↗ Link</span>')}</div></div>`
@@ -8644,6 +8656,36 @@ function openSnipRecorder(context, commentId, explicitSongName) {
   requestAnimationFrame(_snipResizeCanvas);
 }
 
+/* Upload snippet (Home → Tools): a recording made at home. Pick the file, then the usual trim
+   screen with name / who's playing / date, saved as a snippet on a song or idea. */
+function openSnipUpload(songName) {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'audio/*,.m4a,.mp3,.wav,.aac,.ogg,.opus,.flac,.webm';
+  inp.onchange = () => { const f = inp.files?.[0]; if (f) _snipLoadUpload(f, songName); };
+  inp.click();
+}
+function _localDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+async function _snipLoadUpload(file, songName) {
+  openSnipRecorder('upload', null, songName || null);
+  $('snip-panel').classList.add('upload');
+  SnipR.file = file;
+  const me = S.user?.name;
+  $('snip-up-member').innerHTML = CONFIG.BAND_MEMBERS.map(m => `<option${m === me ? ' selected' : ''}>${esc(m)}</option>`).join('');
+  $('snip-up-date').value = _localDate(new Date(file.lastModified || Date.now()));
+  $('snip-up-title').value = file.name.replace(/\.[^.]+$/, '');
+  SnipR.blob = file;
+  SnipR.blobUrl = URL.createObjectURL(file);
+  SnipR.audio.src = SnipR.blobUrl;
+  showLoading('Reading recording…');
+  const ok = await _snipGenPeaks(file);
+  hideLoading();
+  if (SnipR.file !== file) return; // closed meanwhile
+  if (!ok) { snipClose(); showToast("Couldn't read that file. Is it an audio recording?"); return; }
+  const sb = $('snip-save-btn'); sb.disabled = false; sb.style.opacity = '1';
+}
+
 // The title says which song/idea the snippet will be saved to; tap it to change
 function _snipUpdateTitle() {
   $('snip-nav-title').textContent = SnipR.songName ? `🎙 ${SnipR.songName} ▾` : '🎙 Choose song ▾';
@@ -8676,7 +8718,8 @@ function snipClose() {
   const sb = $('snip-save-btn'); if (sb) { sb.disabled = true; sb.textContent = 'Save'; sb.style.opacity = '0.35'; }
   $('snip-ks').style.transform = ''; $('snip-ke').style.transform = '';
   $('snip-ts-lbl').textContent = '0:00.0'; $('snip-te-lbl').textContent = '—'; $('snip-cur-lbl').textContent = '0:00.0';
-  $('snip-panel').classList.remove('open');
+  $('snip-panel').classList.remove('open', 'upload');
+  SnipR.file = null;
   _snipDrawWave();
 }
 
@@ -8740,7 +8783,8 @@ async function _snipGenPeaks(blob) {
     SnipR.trimStart = 0; SnipR.trimEnd = buf.duration;
     _snipUpdateKnob('s'); _snipUpdateKnob('e');
     _snipUpdateLabels(); _snipDrawWave();
-  } catch(e) { console.warn('snip peaks:', e); }
+    return true;
+  } catch(e) { console.warn('snip peaks:', e); return false; }
 }
 
 function _snipResizeCanvas() {
@@ -8889,7 +8933,12 @@ function snipToggleLoop() {
 /* Knob interaction */
 function snipKnobDown(e, which) {
   e.preventDefault();
-  const touch = e.touches[0];
+  const touch = e.touches ? e.touches[0] : e;
+  if (!e.touches) { // mouse (laptop): follow the pointer until the button comes up
+    const mv = ev => snipKnobMove(ev);
+    const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); snipKnobUp(); };
+    window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+  }
   SnipR._knob = { which, startY: touch.clientY, startVal: which === 's' ? SnipR.trimStart : SnipR.trimEnd };
   $(which === 's' ? 'snip-ks' : 'snip-ke').classList.add('turning');
 }
@@ -8897,7 +8946,7 @@ function snipKnobDown(e, which) {
 function snipKnobMove(e) {
   if (!SnipR._knob || !SnipR.duration) return;
   e.preventDefault();
-  const dy = SnipR._knob.startY - e.touches[0].clientY;
+  const dy = SnipR._knob.startY - (e.touches ? e.touches[0] : e).clientY;
   const delta = (dy / 280) * SnipR.duration;
   let val = SnipR._knob.startVal + delta;
   if (SnipR.metro.snap && SnipR.metro.bpm > 0) {
@@ -10221,11 +10270,20 @@ async function snipSave() {
     await loadSnippets();
     const metaId = S.folders._meta;
     if (!metaId) throw new Error('_meta folder not found');
-    // Trim audio to the set trim points before uploading
-    const trimmedBlob = await _trimBlobToWav(SnipR.blob, SnipR.trimStart, SnipR.trimEnd);
+    const up = SnipR.context === 'upload' ? SnipR.file : null;
     const trimmedDuration = SnipR.trimEnd - SnipR.trimStart;
-    const fname = `snip_${Date.now()}.wav`;
-    const driveFileId = await Drive.uploadFile(trimmedBlob, 'audio/wav', fname, metaId);
+    let fname, driveFileId;
+    if (up && SnipR.trimStart < 0.05 && SnipR.trimEnd > SnipR.duration - 0.05) {
+      // untrimmed upload: send the file as it is (an m4a/mp3 is far smaller than a WAV)
+      const ext = (up.name.match(/\.([a-z0-9]{1,5})$/i)?.[1] || 'm4a').toLowerCase();
+      fname = `snip_${Date.now()}.${ext}`;
+      driveFileId = await Drive.uploadFile(up, up.type || 'audio/mp4', fname, metaId);
+    } else {
+      // Trim audio to the set trim points before uploading
+      const trimmedBlob = await _trimBlobToWav(SnipR.blob, SnipR.trimStart, SnipR.trimEnd);
+      fname = `snip_${Date.now()}.wav`;
+      driveFileId = await Drive.uploadFile(trimmedBlob, 'audio/wav', fname, metaId);
+    }
     const entry = {
       id: 'snip_' + Date.now().toString(36),
       driveFileId, fileName: fname, songName,
@@ -10236,6 +10294,15 @@ async function snipSave() {
       notes: SnipR.context === 'lyrics-ann' ? 'lyrics' : '',
       createdAt: new Date().toISOString(),
     };
+    if (up) {
+      entry.author = $('snip-up-member').value || entry.author;
+      if (entry.author !== (S.user?.name || '')) entry.uploadedBy = S.user?.name || '';
+      const title = $('snip-up-title').value.trim(); if (title) entry.title = title;
+      const day = $('snip-up-date').value; // keep the file's time of day if the day is unchanged
+      const t = new Date(up.lastModified || Date.now());
+      if (/^\d{4}-\d{2}-\d{2}$/.test(day)) entry.createdAt = (day === _localDate(t) ? t : new Date(day + 'T12:00:00')).toISOString();
+      entry.notes = 'upload';
+    }
     S.snippets.push(entry);
     await saveSnippets();
     hideLoading(); showToast(`Snippet saved to ${songName}`);
@@ -12496,6 +12563,13 @@ function plkSaveSettings() {
     <button class="snip-nav-title" id="snip-nav-title" onclick="snipPickSong()">🎙 Choose song ▾</button>
     <button id="snip-save-btn" onclick="snipSave()" disabled style="background:var(--c-teal);border:none;border-radius:5px;color:var(--c-text);font-family:var(--f-mono);font-size:11px;padding:6px 12px;cursor:pointer;opacity:0.35;">Save</button>
   </div>
+  <div class="snip-up-meta" id="snip-up-meta">
+    <input id="snip-up-title" class="snip-up-in" placeholder="Name (optional)" maxlength="80">
+    <div class="snip-up-row">
+      <select id="snip-up-member" class="snip-up-in" title="Who's playing"></select>
+      <input id="snip-up-date" class="snip-up-in" type="date" title="Recorded on">
+    </div>
+  </div>
   <div class="snip-metro">
     <button class="snip-metro-toggle" id="snip-metro-on" onclick="snipMetroToggle()">Off</button>
     <div class="snip-metro-light" id="snip-metro-light"></div>
@@ -12519,7 +12593,7 @@ function plkSaveSettings() {
   <div class="snip-controls">
     <div class="snip-knob-wrap">
       <div class="snip-knob" id="snip-ks"
-           ontouchstart="snipKnobDown(event,'s')" ontouchmove="snipKnobMove(event)" ontouchend="snipKnobUp()">
+           ontouchstart="snipKnobDown(event,'s')" ontouchmove="snipKnobMove(event)" ontouchend="snipKnobUp()" onmousedown="snipKnobDown(event,'s')">
         <div class="snip-knob-pip"></div>
       </div>
       <div class="snip-knob-lbl">Start</div>
@@ -12529,7 +12603,7 @@ function plkSaveSettings() {
     <button class="snip-ctl" id="snip-play-btn" onclick="snipTogglePlay()"><svg class="pp-ic" viewBox="0 0 16 16"><path d="M4 2.5v11l9.5-5.5z" fill="currentColor"/></svg></button>
     <div class="snip-knob-wrap">
       <div class="snip-knob" id="snip-ke"
-           ontouchstart="snipKnobDown(event,'e')" ontouchmove="snipKnobMove(event)" ontouchend="snipKnobUp()">
+           ontouchstart="snipKnobDown(event,'e')" ontouchmove="snipKnobMove(event)" ontouchend="snipKnobUp()" onmousedown="snipKnobDown(event,'e')">
         <div class="snip-knob-pip"></div>
       </div>
       <div class="snip-knob-lbl">End</div>
